@@ -8,7 +8,7 @@ import (
 
 func NewStore(dataSourceName string) (*Store, error) {
 	// configure database connection
-	db, err := sqlx.Open("mysql", dataSourceName)
+	db, err := sqlx.Open("mysql", dataSourceName) // username:password@host/mysql(address)?param=value
 	if err != nil {
 		return nil, fmt.Errorf("error opening database: #{err}")
 	}
