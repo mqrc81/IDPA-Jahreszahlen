@@ -21,6 +21,4 @@
 *.iml
 migrations/
 *.sql
-/backend/migrations/
-/backend/migrations/1_create_tables.down.sql
-/backend/migrations/1_create_tables.up.sql
+/migrations/
