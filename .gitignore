@@ -19,6 +19,4 @@
 .idea/
 *.xml
 *.iml
-migrations/
-*.sql
-/migrations/
+.env
