@@ -2,19 +2,22 @@ package mysql
 
 import (
 	"fmt"
-
+	//
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 )
 
+/*
+ * Connects to MySQL ClearDB database via Heroku.com
+ */
 func NewStore(dsn string) (*Store, error) {
-	// configure database connection
+	// Opens and pings database
 	db, err := sqlx.Connect("mysql", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("error opening or pinning database connection: %w", err)
 	}
 
-	return &Store{
+	return &Store {
 		&UnitStore{db},
 		&EventStore{db},
 	}, nil

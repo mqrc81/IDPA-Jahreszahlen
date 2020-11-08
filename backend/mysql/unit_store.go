@@ -2,9 +2,9 @@ package mysql
 
 import (
 	"fmt"
-
+	//
 	"github.com/jmoiron/sqlx"
-
+	//
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
@@ -12,7 +12,9 @@ type UnitStore struct {
 	*sqlx.DB
 }
 
-// get unit by id
+/*
+ * Get unit by id
+ */
 func (s *UnitStore) Unit(id int) (backend.Unit, error) {
 	var u backend.Unit
 	if err := s.Get(&u, `SELECT * FROM units WHERE id = $1`, id); err != nil {
@@ -21,7 +23,9 @@ func (s *UnitStore) Unit(id int) (backend.Unit, error) {
 	return u, nil
 }
 
-// get units by id
+/*
+ * Get units by id
+ */
 func (s *UnitStore) Units() ([]backend.Unit, error) {
 	var uu []backend.Unit
 	if err := s.Select(&uu, `SELECT * FROM units`); err != nil {
@@ -30,7 +34,9 @@ func (s *UnitStore) Units() ([]backend.Unit, error) {
 	return uu, nil
 }
 
-// create unit
+/*
+ * Create unit
+ */
 func (s *UnitStore) CreateUnit(u *backend.Unit) error {
 	if err := s.Get(&u, `INSERT INTO units VALUES ($1, $2, $3, $4, $5, $6)`,
 		u.ID, u.Title, u.StartYear, u.EndYear, u.Description, u.PlayCount); err != nil {
@@ -39,16 +45,20 @@ func (s *UnitStore) CreateUnit(u *backend.Unit) error {
 	return nil
 }
 
-// update unit
+/*
+ * Update unit
+ */
 func (s *UnitStore) UpdateUnit(u *backend.Unit) error {
-	if err := s.Get(&u, `UPDATE units SET title = $1, start_year = $2, end_year = $3, description = $4 WHERE id = $3`,
+	if err := s.Get(&u, `UPDATE units SET title = $1, start_year = $2, end_year = $3, description = $4 WHERE id = $5`,
 		u.Title, u.StartYear, u.EndYear, u.Description, u.ID); err != nil {
 		return fmt.Errorf("error updating unit: %w", err)
 	}
 	return nil
 }
 
-// delete unit by id
+/*
+ * Delete unit by id
+ */
 func (s *UnitStore) DeleteUnit(id int) error {
 	if _, err := s.Exec(`DELETE FROM units WHERE id = $1`, id); err != nil {
 		return fmt.Errorf("error deleting unit: %w", err)

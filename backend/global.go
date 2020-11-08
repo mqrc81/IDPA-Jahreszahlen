@@ -1,16 +1,20 @@
 package backend
 
-// "Thema"
+/*
+ * "Thema"
+ */
 type Unit struct {
 	ID          int    `db:"id"`
+	Title       string `db:"title"`
 	StartYear   int    `db:"start_year"`
 	EndYear     int    `db:"end_year"`
-	Title       string `db:"title"`
 	Description string `db:"description"`
 	PlayCount   int    `db:"playcount"`
 }
 
-// "Ereignis"
+/*
+ * "Ereignis"
+ */
 type Event struct {
 	ID     int    `db:"id"`
 	UnitID int    `db:"unit_id"`
