@@ -1,10 +1,10 @@
 package web
 
 import (
-	"html/template"
 	"log"
 	"net/http"
 	"strconv"
+	"text/template"
 	//
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -22,9 +22,14 @@ func NewHandler(store backend.Store) *Handler {
 	}
 
 	h.Use(middleware.Logger)
-	h.Route("/units", func(router chi.Router) {
-		router.Get("/", h.UnitsList())
-		router.Get("/new", h.UnitsCreate())
+	h.Route("/units", func(r chi.Router) {
+		r.Get("/", h.UnitsList())
+		r.Get("/new", h.UnitsCreate())
+		r.Post("/", h.UnitsStore())
+		r.Post("/{id}/delete", h.UnitsDelete())
+
+		//r.Get("/{id}", h.UnitsInfo())
+		//r.Post("/{id}/play", h.UnitsPlay())
 	})
 
 	return h
@@ -43,8 +48,14 @@ const unitsListHTML = `
         <dt><strong>{{.Title}} ({{.YearStart}} - {{.YearEnd}})</strong></dt>
         <dd>{{.Description}}</dd>
         <dd>Times played: {{.Playcount}}</dd>
+		<dd>
+			<form action="/threads/{{.ID}}/delete" method="POST">
+				<button type="submit">Thema löschen</button>
+			</form>
+		</dd>
     {{end}}
 </dl>
+<a href="/units/new">Thema erstellen</a>
 `
 
 // Temporary template for 'unitsCreate()'
@@ -70,7 +81,7 @@ const unitsCreateHTML = `
 `
 
 /*
- * List of all units according to 'units_list.html' template
+ * List of all units
  */
 func (h *Handler) UnitsList() http.HandlerFunc {
 	type data struct {
@@ -92,7 +103,7 @@ func (h *Handler) UnitsList() http.HandlerFunc {
 }
 
 /*
- * Form to create new unit according to 'units_create.html' template
+ * Form to create new unit
  */
 func (h *Handler) UnitsCreate() http.HandlerFunc {
 	tmpl := template.Must(template.New("").Parse(unitsCreateHTML)) //TODO: ParseFiles("_.html")
@@ -104,7 +115,7 @@ func (h *Handler) UnitsCreate() http.HandlerFunc {
 }
 
 /*
- * Stores unit created in 'UnitsCreate()'
+ * Stores unit created
  */
 func (h *Handler) UnitsStore() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -122,5 +133,23 @@ func (h *Handler) UnitsStore() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		// Redirect to list of units
+		http.Redirect(w, r, "/units", http.StatusFound)
+	}
+}
+
+/*
+ * Deletes unit
+ */
+func (h *Handler) UnitsDelete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+		if err := h.store.DeleteUnit(id); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		// Redirect to list of units
+		http.Redirect(w, r, "/units", http.StatusFound)
 	}
 }

@@ -38,7 +38,8 @@ func (s *EventStore) EventsByUnit(unitID int) ([]backend.Event, error) {
  * Create event
  */
 func (s *EventStore) CreateEvent(e *backend.Event) error {
-	if err := s.Get(e, `INSERT INTO events VALUES ($1, $2, $3, $4)`, e.ID, e.UnitID, e.Title, e.Year); err != nil {
+	if _, err := s.Exec(`INSERT INTO events VALUES ($1, $2, $3, $4)`,
+		e.ID, e.UnitID, e.Title, e.Year); err != nil {
 		return fmt.Errorf("error creating event: %w", err)
 	}
 	return nil
@@ -48,7 +49,8 @@ func (s *EventStore) CreateEvent(e *backend.Event) error {
  * Update event
  */
 func (s *EventStore) UpdateEvent(e *backend.Event) error {
-	if err := s.Get(e, `UPDATE events SET unit_id = $1, title = $2, year = $3 WHERE id = $4`, e.UnitID, e.Title, e.Year, e.ID); err != nil {
+	if _, err := s.Exec(`UPDATE events SET unit_id = $1, title = $2, year = $3 WHERE id = $4`,
+		e.UnitID, e.Title, e.Year, e.ID); err != nil {
 		return fmt.Errorf("error updating event: %w", err)
 	}
 	return nil
