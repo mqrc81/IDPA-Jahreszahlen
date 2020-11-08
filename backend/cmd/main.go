@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -17,9 +16,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	dbURL := fmt.Sprint("mysql://", os.Getenv("DB_USERNAME"), ":", os.Getenv("DB_PASSWORD"), "@", os.Getenv("DB_ADDRESS"), "/", os.Getenv("DB_NAME"), "?reconnect=true")
-	fmt.Println(dbURL)
-	store, err := mysql.NewStore(dbURL)
+	dsn := os.Getenv("DB_DSN")
+	store, err := mysql.NewStore(dsn)
 	if err != nil {
 		log.Fatal(err)
 	}

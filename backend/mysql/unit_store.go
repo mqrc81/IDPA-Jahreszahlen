@@ -32,7 +32,8 @@ func (s *UnitStore) Units() ([]backend.Unit, error) {
 
 // create unit
 func (s *UnitStore) CreateUnit(u *backend.Unit) error {
-	if err := s.Get(&u, `INSERT INTO units VALUES ($1, $2, $3, $4)`, u.ID, u.Title, u.Description, u.PlayCount); err != nil {
+	if err := s.Get(&u, `INSERT INTO units VALUES ($1, $2, $3, $4, $5, $6)`,
+		u.ID, u.Title, u.StartYear, u.EndYear, u.Description, u.PlayCount); err != nil {
 		return fmt.Errorf("error creating unit: %w", err)
 	}
 	return nil
@@ -40,7 +41,8 @@ func (s *UnitStore) CreateUnit(u *backend.Unit) error {
 
 // update unit
 func (s *UnitStore) UpdateUnit(u *backend.Unit) error {
-	if err := s.Get(&u, `UPDATE units SET title = $1, description = $2 WHERE id = $3`, u.Title, u.Description, u.ID); err != nil {
+	if err := s.Get(&u, `UPDATE units SET title = $1, start_year = $2, end_year = $3, description = $4 WHERE id = $3`,
+		u.Title, u.StartYear, u.EndYear, u.Description, u.ID); err != nil {
 		return fmt.Errorf("error updating unit: %w", err)
 	}
 	return nil

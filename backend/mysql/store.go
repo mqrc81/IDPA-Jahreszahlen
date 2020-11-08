@@ -7,17 +7,13 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func NewStore(dataSourceName string) (*Store, error) {
+func NewStore(dsn string) (*Store, error) {
 	// configure database connection
-	db, err := sqlx.Open("mysql", dataSourceName) // username:password@host/mysql(address)?param=value
+	db, err := sqlx.Connect("mysql", dsn)
 	if err != nil {
-		return nil, fmt.Errorf("error opening database: %w", err)
+		return nil, fmt.Errorf("error opening or pinning database connection: %w", err)
 	}
 
-	// initialize database connection
-	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("error connecting to database: %w", err)
-	}
 	return &Store{
 		&UnitStore{db},
 		&EventStore{db},

@@ -3,6 +3,8 @@ package backend
 // "Thema"
 type Unit struct {
 	ID          int    `db:"id"`
+	StartYear   int    `db:"start_year"`
+	EndYear     int    `db:"end_year"`
 	Title       string `db:"title"`
 	Description string `db:"description"`
 	PlayCount   int    `db:"playcount"`

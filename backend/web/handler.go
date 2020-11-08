@@ -34,7 +34,7 @@ type Handler struct {
 const unitsListHTML = `
 <h1>Units</h1>
 <dl>
-{{range .}}
+{{range .Units}}
 <dt><strong>{{.Title}}</strong> ({{.ID}})</dt>
 <dd>{{.Description}}</dd>
 <dd>Times played: {{.Playcount}}</dd>
