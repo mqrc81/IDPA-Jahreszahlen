@@ -15,17 +15,19 @@ import (
  * Main method
  */
 func main() {
-	// Loads '.env' file, where database environment variables are stored
+	// Loads '.env' file, where global environment variables are stored
 	if err := godotenv.Load("backend/.env"); err != nil {
 		log.Fatal(err)
 	}
 
+	// Establishes database connection
 	dsn := os.Getenv("DB_DSN")
 	store, err := mysql.NewStore(dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// Hosts website
 	handler := web.NewHandler(store)
 	if err := http.ListenAndServe(":3000", handler); err != nil {
 		log.Fatal(err)

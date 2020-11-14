@@ -38,8 +38,11 @@ func (s *UnitStore) Units() ([]backend.Unit, error) {
  * Create unit
  */
 func (s *UnitStore) CreateUnit(u *backend.Unit) error {
-	if _, err := s.Exec(`INSERT INTO units VALUES ($1, $2, $3, $4, $5, $6)`,
-		u.ID, u.Title, u.StartYear, u.EndYear, u.Description, u.PlayCount); err != nil {
+	if _, err := s.Exec(`INSERT INTO units(title, start_year, end_year, description) VALUES ($1, $2, $3, $4)`,
+		u.Title,
+		u.StartYear,
+		u.EndYear,
+		u.Description); err != nil {
 		return fmt.Errorf("error creating unit: %w", err)
 	}
 	return nil
@@ -50,7 +53,11 @@ func (s *UnitStore) CreateUnit(u *backend.Unit) error {
  */
 func (s *UnitStore) UpdateUnit(u *backend.Unit) error {
 	if _, err := s.Exec(`UPDATE units SET title = $1, start_year = $2, end_year = $3, description = $4 WHERE id = $5`,
-		u.Title, u.StartYear, u.EndYear, u.Description, u.ID); err != nil {
+		u.Title,
+		u.StartYear,
+		u.EndYear,
+		u.Description,
+		u.ID); err != nil {
 		return fmt.Errorf("error updating unit: %w", err)
 	}
 	return nil

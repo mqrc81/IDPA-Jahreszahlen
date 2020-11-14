@@ -1,7 +1,6 @@
 package web
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 	"text/template"
@@ -17,19 +16,22 @@ import (
  */
 func NewHandler(store backend.Store) *Handler {
 	h := &Handler{
-		Mux: chi.NewMux(),
+		Mux:   chi.NewMux(),
 		store: store,
 	}
 
 	h.Use(middleware.Logger)
+
 	h.Route("/units", func(r chi.Router) {
+
 		r.Get("/", h.UnitsList())
 		r.Get("/new", h.UnitsCreate())
 		r.Post("/", h.UnitsStore())
 		r.Post("/{id}/delete", h.UnitsDelete())
-
-		//r.Get("/{id}", h.UnitsInfo())
-		//r.Post("/{id}/play", h.UnitsPlay())
+		r.Get("/{id}/edit", h.UnitsEdit())
+		r.Get("/{id}", h.UnitsShow())
+		r.Get("/{id}/events/new", h.EventsCreate())
+		r.Post("/", h.EventsStore())
 	})
 
 	return h
@@ -40,46 +42,6 @@ type Handler struct {
 	store backend.Store
 }
 
-// Temporary template for 'unitsList()'
-const unitsListHTML = `
-<h1>Themen</h1>
-<dl>
-    {{range .Units}}
-        <dt><strong>{{.Title}} ({{.YearStart}} - {{.YearEnd}})</strong></dt>
-        <dd>{{.Description}}</dd>
-        <dd>Times played: {{.Playcount}}</dd>
-		<dd>
-			<form action="/threads/{{.ID}}/delete" method="POST">
-				<button type="submit">Thema löschen</button>
-			</form>
-		</dd>
-    {{end}}
-</dl>
-<a href="/units/new">Thema erstellen</a>
-`
-
-// Temporary template for 'unitsCreate()'
-const unitsCreateHTML = `
-<h1>Neues Thema</h1>
-<form action="/units" method="POST">
-    <table>
-        <tr>
-            <td>Titel</td>
-            <td><input type="text" name="title"/></td>
-        </tr>
-        <tr>
-            <td>Zeitspanne</td>
-            <td><input type="number" name="start_year"/> - <input type="number" name="end_year"></td>
-        </tr>
-        <tr>
-            <td>Beschreibung (optional)</td>
-            <td><input type="text" name="description"/></td>
-        </tr>
-    </table>
-    <button type="submit">Thema erstellen</button>
-</form>
-`
-
 /*
  * List of all units
  */
@@ -89,7 +51,8 @@ func (h *Handler) UnitsList() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		tmpl := template.Must(template.New("").Parse(unitsListHTML)) //TODO: ParseFiles("_.html")
+		tmpl := template.Must(template.New("").Parse(unitsListHTML))
+
 		uu, err := h.store.Units()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -97,7 +60,8 @@ func (h *Handler) UnitsList() http.HandlerFunc {
 		}
 
 		if err := tmpl.Execute(w, data{Units: uu}); err != nil {
-			log.Fatal(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	}
 }
@@ -106,10 +70,12 @@ func (h *Handler) UnitsList() http.HandlerFunc {
  * Form to create new unit
  */
 func (h *Handler) UnitsCreate() http.HandlerFunc {
-	tmpl := template.Must(template.New("").Parse(unitsCreateHTML)) //TODO: ParseFiles("_.html")
+	tmpl := template.Must(template.New("").Parse(unitsCreateHTML))
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := tmpl.Execute(w, nil); err != nil {
-			log.Fatal(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	}
 }
@@ -125,10 +91,12 @@ func (h *Handler) UnitsStore() http.HandlerFunc {
 		description := r.FormValue("description")
 
 		if err := h.store.CreateUnit(&backend.Unit{
-			Title: title,
-			StartYear: startYear,
-			EndYear: endYear,
+			ID:			 0,
+			Title:       title,
+			StartYear:   startYear,
+			EndYear:     endYear,
 			Description: description,
+			PlayCount:   0,
 		}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -147,9 +115,100 @@ func (h *Handler) UnitsDelete() http.HandlerFunc {
 		id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 		if err := h.store.DeleteUnit(id); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		// Redirect to list of units
 		http.Redirect(w, r, "/units", http.StatusFound)
+	}
+}
+
+/*
+ * Shows Unit with options to play, see leaderboard, (edit if admin)
+ */
+func (h *Handler) UnitsShow() http.HandlerFunc {
+	type data struct {
+		Unit backend.Unit
+	}
+
+	tmpl := template.Must(template.New("").Parse(unitsShowHTML))
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+		u, err := h.store.Unit(id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if err := tmpl.Execute(w, data{Unit: u}); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+/*
+ * Edit unit and its events
+ */
+func (h *Handler) UnitsEdit() http.HandlerFunc {
+	type data struct {
+		Unit   backend.Unit
+		Events []backend.Event
+	}
+
+	tmpl := template.Must(template.New("").Parse(unitsEditHTML))
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+		u, err := h.store.Unit(id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		ee, err := h.store.EventsByUnit(id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if err := tmpl.Execute(w, data{Unit: u, Events: ee}); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+/*
+ * Form to create new event
+ */
+func (h *Handler) EventsCreate() http.HandlerFunc {
+	tmpl := template.Must(template.New("").Parse(eventsCreateHTML))
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := tmpl.Execute(w, nil); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+/*
+ * Stores event created
+ */
+func (h *Handler) EventsStore() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		unitID, _ := strconv.Atoi(chi.URLParam(r, "id"))
+		title := r.FormValue("title")
+		year, _ := strconv.Atoi(r.FormValue("year"))
+
+		if err := h.store.CreateEvent(&backend.Event{
+			ID:     0,
+			UnitID: unitID,
+			Title:  title,
+			Year:   year,
+		}); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	}
 }
