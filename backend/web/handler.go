@@ -4,15 +4,15 @@ import (
 	"net/http"
 	"strconv"
 	"text/template"
-	//
+
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	//
+
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
 /*
- * Creates new handler, including routers and middleware
+ * NewHandler creates a new handler, including routes and middleware
  */
 func NewHandler(store backend.Store) *Handler {
 	h := &Handler{
@@ -22,44 +22,51 @@ func NewHandler(store backend.Store) *Handler {
 
 	h.Use(middleware.Logger)
 
-	h.Route("/units", func(r chi.Router) {
+	h.Route("/topics", func(r chi.Router) {
+		r.Get("/", h.TopicsList())
+		r.Get("/new", h.TopicsCreate())
+		r.Post("/store", h.TopicsStore())
+		r.Post("/{topicID}/delete", h.TopicsDelete())
+		r.Get("/{topicID}/edit", h.TopicsEdit())
+		r.Get("/{topicID}", h.TopicsShow())
 
-		r.Get("/", h.UnitsList())
-		r.Get("/new", h.UnitsCreate())
-		r.Post("/", h.UnitsStore())
-		r.Post("/{id}/delete", h.UnitsDelete())
-		r.Get("/{id}/edit", h.UnitsEdit())
-		r.Get("/{id}", h.UnitsShow())
-		r.Get("/{id}/events/new", h.EventsCreate())
-		r.Post("/", h.EventsStore())
+		r.Get("/{topicID}/events/new", h.EventsCreate())
+		r.Post("/{topicID}/events/store", h.EventsStore())
 	})
 
 	return h
 }
 
+/*
+ * Handler consists of the chi-multiplexer and a store with functions for topics and events
+ */
 type Handler struct {
 	*chi.Mux
 	store backend.Store
 }
 
 /*
- * List of all units
+ * TopicsList is a GET method that lists all topics
  */
-func (h *Handler) UnitsList() http.HandlerFunc {
+func (h *Handler) TopicsList() http.HandlerFunc {
+	// Data to pass to HTML-template
 	type data struct {
-		Units []backend.Unit
+		Topics []backend.Topic
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
-		tmpl := template.Must(template.New("").Parse(unitsListHTML))
+	// Parse HTML-template
+	tmpl := template.Must(template.New("").Parse(topicsListHTML))
 
-		uu, err := h.store.Units()
+	return func(w http.ResponseWriter, r *http.Request) {
+		//Execute SQL statement and return slice of topics
+		uu, err := h.store.Topics()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		if err := tmpl.Execute(w, data{Units: uu}); err != nil {
+		// Execute HTML-template
+		if err := tmpl.Execute(w, data{Topics: uu}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -67,12 +74,14 @@ func (h *Handler) UnitsList() http.HandlerFunc {
 }
 
 /*
- * Form to create new unit
+ * TopicsCreate is a GET method for a form to create a new topic
  */
-func (h *Handler) UnitsCreate() http.HandlerFunc {
-	tmpl := template.Must(template.New("").Parse(unitsCreateHTML))
+func (h *Handler) TopicsCreate() http.HandlerFunc {
+	// Parse HTML-template
+	tmpl := template.Must(template.New("").Parse(topicsCreateHTML))
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Execute HTML-template
 		if err := tmpl.Execute(w, nil); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -81,17 +90,19 @@ func (h *Handler) UnitsCreate() http.HandlerFunc {
 }
 
 /*
- * Stores unit created
+ * TopicsStore is a POST method that stores topic created
  */
-func (h *Handler) UnitsStore() http.HandlerFunc {
+func (h *Handler) TopicsStore() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Retrieve variables from form (TopicsCreate)
 		title := r.FormValue("title")
 		startYear, _ := strconv.Atoi(r.FormValue("start_year"))
 		endYear, _ := strconv.Atoi(r.FormValue("end_year"))
 		description := r.FormValue("description")
 
-		if err := h.store.CreateUnit(&backend.Unit{
-			ID:			 0,
+		// Execute SQL statement
+		if err := h.store.CreateTopic(&backend.Topic{
+			TopicID:     0,
 			Title:       title,
 			StartYear:   startYear,
 			EndYear:     endYear,
@@ -102,46 +113,55 @@ func (h *Handler) UnitsStore() http.HandlerFunc {
 			return
 		}
 
-		// Redirect to list of units
-		http.Redirect(w, r, "/units", http.StatusFound)
+		// Redirect to list of topics
+		http.Redirect(w, r, "/topics", http.StatusFound)
 	}
 }
 
 /*
- * Deletes unit
+ * TopicsDelete is a POST method that deletes a topic
  */
-func (h *Handler) UnitsDelete() http.HandlerFunc {
+func (h *Handler) TopicsDelete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-		if err := h.store.DeleteUnit(id); err != nil {
+		// Retrieve TopicID from URL
+		topicID, _ := strconv.Atoi(chi.URLParam(r, "topicID"))
+
+		// Execute SQL statement
+		if err := h.store.DeleteTopic(topicID); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// Redirect to list of units
-		http.Redirect(w, r, "/units", http.StatusFound)
+		// Redirect to list of topics
+		http.Redirect(w, r, "/topics", http.StatusFound)
 	}
 }
 
 /*
- * Shows Unit with options to play, see leaderboard, (edit if admin)
+ * TopicsShow is a GET method that shows a specific topic with options to play, see leaderboard, (edit if admin)
  */
-func (h *Handler) UnitsShow() http.HandlerFunc {
+func (h *Handler) TopicsShow() http.HandlerFunc {
+	// Data to pass to HTML-template
 	type data struct {
-		Unit backend.Unit
+		Topic backend.Topic
 	}
 
-	tmpl := template.Must(template.New("").Parse(unitsShowHTML))
+	// Parse HTML-template
+	tmpl := template.Must(template.New("").Parse(topicsShowHTML))
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-		u, err := h.store.Unit(id)
+		// Retrieve TopicID from URL
+		topicID, _ := strconv.Atoi(chi.URLParam(r, "topicID"))
+
+		// Execute SQL statement and return topic
+		u, err := h.store.Topic(topicID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		if err := tmpl.Execute(w, data{Unit: u}); err != nil {
+		// Execute HTML-template
+		if err := tmpl.Execute(w, data{Topic: u}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -149,30 +169,37 @@ func (h *Handler) UnitsShow() http.HandlerFunc {
 }
 
 /*
- * Edit unit and its events
+ * TopicsEdit is a GET method with the option to edit a specific topic and its events
  */
-func (h *Handler) UnitsEdit() http.HandlerFunc {
+func (h *Handler) TopicsEdit() http.HandlerFunc {
+	// Data to pass to HTML-template
 	type data struct {
-		Unit   backend.Unit
+		Topic   backend.Topic
 		Events []backend.Event
 	}
 
-	tmpl := template.Must(template.New("").Parse(unitsEditHTML))
+	//Parse HTML-template
+	tmpl := template.Must(template.New("").Parse(topicsEditHTML))
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-		u, err := h.store.Unit(id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		ee, err := h.store.EventsByUnit(id)
+		// Retrieve TopicID from URL
+		topicID, _ := strconv.Atoi(chi.URLParam(r, "topicID"))
+		// Execute SQL statement and return topic
+		u, err := h.store.Topic(topicID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		if err := tmpl.Execute(w, data{Unit: u, Events: ee}); err != nil {
+		// Execute SQL statement and return events
+		ee, err := h.store.EventsByTopic(topicID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Execute HTML-template
+		if err := tmpl.Execute(w, data{Topic: u, Events: ee}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -180,12 +207,14 @@ func (h *Handler) UnitsEdit() http.HandlerFunc {
 }
 
 /*
- * Form to create new event
+ * EventsCreate is a GET method for a form to create a new event
  */
 func (h *Handler) EventsCreate() http.HandlerFunc {
+	//Parse HTML-template
 	tmpl := template.Must(template.New("").Parse(eventsCreateHTML))
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Execute HTML-template
 		if err := tmpl.Execute(w, nil); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -194,21 +223,28 @@ func (h *Handler) EventsCreate() http.HandlerFunc {
 }
 
 /*
- * Stores event created
+ * EventsStore is a POST method that stores event created
  */
 func (h *Handler) EventsStore() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		unitID, _ := strconv.Atoi(chi.URLParam(r, "id"))
+		// Retrieve TopicID from URL
+		topicID, _ := strconv.Atoi(chi.URLParam(r, "topicID"))
+
+		// Retrieve variables from form (EventsCreate)
 		title := r.FormValue("title")
 		year, _ := strconv.Atoi(r.FormValue("year"))
 
+		//Execute SQL statement
 		if err := h.store.CreateEvent(&backend.Event{
-			ID:     0,
-			UnitID: unitID,
-			Title:  title,
-			Year:   year,
+			EventID: 0,
+			TopicID: topicID,
+			Title:   title,
+			Year:    year,
 		}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
+
+		// Redirect to list of topics
+		http.Redirect(w, r, "/topics", http.StatusFound)
 	}
 }

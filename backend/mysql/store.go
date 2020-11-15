@@ -2,7 +2,7 @@ package mysql
 
 import (
 	"fmt"
-	//
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 )
@@ -18,12 +18,12 @@ func NewStore(dsn string) (*Store, error) {
 	}
 
 	return &Store {
-		&UnitStore{db},
+		&TopicStore{db},
 		&EventStore{db},
 	}, nil
 }
 
 type Store struct {
-	*UnitStore
+	*TopicStore
 	*EventStore
 }

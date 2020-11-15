@@ -1,27 +1,27 @@
 package web
 
-// Temporary template for 'UnitsList()'
-const unitsListHTML = `
+// Temporary template for 'TopicsList()'
+const topicsListHTML = `
 <h1>Themen</h1>
 <dl>
-    {{range .Units}}
+    {{range .Topics}}
         <dt><strong>{{.Title}} ({{.StartYear}} - {{.EndYear}})</strong></dt>
         <dd>{{.Description}}</dd>
         <dd>Times played: {{.PlayCount}}</dd>
 		<dd>
-			<form action="/threads/{{.ID}}/delete" method="POST">
+			<form action="/threads/{{.TopicID}}/delete" method="POST">
 				<button type="submit">Thema löschen</button>
 			</form>
 		</dd>
     {{end}}
 </dl>
-<a href="/units/new">Thema erstellen</a>
+<a href="/topics/new">Thema erstellen</a>
 `
 
-// Temporary template for 'UnitsCreate()'
-const unitsCreateHTML = `
+// Temporary template for 'TopicsCreate()'
+const topicsCreateHTML = `
 <h1>Neues Thema</h1>
-<form action="/units" method="POST">
+<form action="/topics/store" method="POST">
     <table>
         <tr>
             <td>Titel</td>
@@ -40,21 +40,21 @@ const unitsCreateHTML = `
 </form>
 `
 
-// Temporary template for 'UnitsShow()'
-const unitsShowHTML = `
-<h1>Thema: {{.Unit.Title}}</h1>
+// Temporary template for 'TopicsShow()'
+const topicsShowHTML = `
+<h1>Thema: {{.Topic.Title}}</h1>
 <button type="button">Spielen</button>
 <button type="button">Scoreboard</button>
 <button type="button">Bearbeiten</button>
 `
 
-// Temporary template for 'UnitsEdit()'
-const unitsEditHTML = `
-<h1>Thema: {{.Unit.Title}}</h1>
+// Temporary template for 'TopicsEdit()'
+const topicsEditHTML = `
+<h1>Thema: {{.Topic.Title}}</h1>
 <dl>
-	<dt><strong>{{.Unit.Title}} ({{.Unit.StartYear}} - {{.Unit.EndYear}})</strong></dt>
-	<dd>{{.Unit.Description}}</dd>
-	<dd>Times played: {{.Unit.PlayCount}}</dd>
+	<dt><strong>{{.Topic.Title}} ({{.Topic.StartYear}} - {{.Topic.EndYear}})</strong></dt>
+	<dd>{{.Topic.Description}}</dd>
+	<dd>Times played: {{.Topic.PlayCount}}</dd>
 	<dd>
 		{{range .Events}}
 			<dd>{{.Title}} ({{.Year}}</dd>
@@ -66,7 +66,7 @@ const unitsEditHTML = `
 // Temporary template for 'EventsCreate()'
 const eventsCreateHTML = `
 <h1>Neues Ereignis</h1>
-<form action="/units/{id}/events" method="POST">
+<form action="/topics/{topicID}/events/store" method="POST">
     <table>
         <tr>
             <td>Titel</td>

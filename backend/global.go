@@ -1,10 +1,10 @@
 package backend
 
 /*
- * "Thema"
+ * Topic (ger. "Thema") marks a historical segment consisting of multiple events (e.g. World War 1)
  */
-type Unit struct {
-	ID          int    `db:"id"`
+type Topic struct {
+	TopicID     int    `db:"topic_id"`
 	Title       string `db:"title"`
 	StartYear   int    `db:"start_year"`
 	EndYear     int    `db:"end_year"`
@@ -13,32 +13,42 @@ type Unit struct {
 }
 
 /*
- * "Ereignis"
+ * Event (ger. "Ereignis") marks a historical event associated with a specific year (e.g. Battle of Britain)
  */
 type Event struct {
-	ID     int    `db:"id"`
-	UnitID int    `db:"unit_id"`
-	Title  string `db:"title"`
-	Year   int    `db:"year"`
+	EventID int    `db:"event_id"`
+	TopicID int    `db:"topic_id"`
+	Title   string `db:"title"`
+	Year    int    `db:"year"`
 }
 
-type UnitStore interface {
-	Unit(id int) (Unit, error)
-	Units() ([]Unit, error)
-	CreateUnit(u *Unit) error
-	UpdateUnit(u *Unit) error
-	DeleteUnit(id int) error
+/*
+ * TopicStore stores functions for Topic to inherit
+ */
+type TopicStore interface {
+	Topic(topicID int) (Topic, error)
+	Topics() ([]Topic, error)
+	CreateTopic(u *Topic) error
+	UpdateTopic(u *Topic) error
+	DeleteTopic(topicID int) error
 }
 
+/*
+ * EventStore stores functions for Event to inherit
+ */
 type EventStore interface {
-	Event(id int) (Event, error)
-	EventsByUnit(unitID int) ([]Event, error)
+	Event(eventID int) (Event, error)
+	EventsByTopic(topicID int) ([]Event, error)
 	CreateEvent(e *Event) error
 	UpdateEvent(e *Event) error
-	DeleteEvent(id int) error
+	DeleteEvent(eventID int) error
 }
 
+
+/*
+ * Store inherits TopicStore and EventStore
+ */
 type Store interface {
-	UnitStore
+	TopicStore
 	EventStore
 }

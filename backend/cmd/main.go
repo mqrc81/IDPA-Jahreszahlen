@@ -4,15 +4,15 @@ import (
 	"log"
 	"net/http"
 	"os"
-	//
+
 	"github.com/joho/godotenv"
-	//
+
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/mysql"
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/web"
 )
 
 /*
- * Main method
+ * Main function
  */
 func main() {
 	// Loads '.env' file, where global environment variables are stored
