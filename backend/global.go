@@ -5,7 +5,7 @@ package backend
  */
 
 /*
- * Topic (ger. "Thema") marks a historical segment consisting of multiple events (e.g. World War 1)
+ * Topic (ger. "Thema") represents a historical segment consisting of multiple events (e.g. World War 1)
  */
 type Topic struct {
 	TopicID     int    `db:"topic_id"`
@@ -17,7 +17,7 @@ type Topic struct {
 }
 
 /*
- * Event (ger. "Ereignis") marks a historical event associated with a specific year (e.g. Battle of Britain)
+ * Event (ger. "Ereignis") represents a historical event associated with a specific year (e.g. Battle of Britain)
  */
 type Event struct {
 	EventID int    `db:"event_id"`
@@ -27,13 +27,32 @@ type Event struct {
 }
 
 /*
+ * User represents an account created
+ */
+type User struct {
+	Username string `db:"username"`
+	Password string `db:"password"`
+	Admin    bool   `db:"admin"`
+}
+
+/*
+ * Score represents points scored by a user upon finishing a topic
+ */
+type Score struct {
+	ScoreID   int `db:"score_id"`
+	TopicID int `db:"topic_id"`
+	Username  int `db:"username"`
+	Points  int `db:"points"`
+}
+
+/*
  * TopicStore stores functions for Topic to inherit
  */
 type TopicStore interface {
 	Topic(topicID int) (Topic, error)
 	Topics() ([]Topic, error)
-	CreateTopic(u *Topic) error
-	UpdateTopic(u *Topic) error
+	CreateTopic(t *Topic) error
+	UpdateTopic(t *Topic) error
 	DeleteTopic(topicID int) error
 }
 
@@ -48,11 +67,31 @@ type EventStore interface {
 	DeleteEvent(eventID int) error
 }
 
+/*
+ * UserStore stores functions for User to inherit
+ */
+type UserStore interface {
+	User(username string) (User, error)
+	CreateUser(u *User) error
+	UpdateUser(u *User) error
+	DeleteUser(username string) error
+}
 
 /*
- * Store inherits TopicStore and EventStore
+ * ScoreStore stores functions for Score to inherit
+ */
+type ScoreStore interface {
+	ScoresByTopic(topicID int) ([]Score, error)
+	ScoresByUser(username string) ([]Score, error)
+	CreateScore(s *Score) error
+}
+
+/*
+ * Store inherits TopicStore, EventStore, UserStore and ScoreStore
  */
 type Store interface {
 	TopicStore
 	EventStore
+	UserStore
+	ScoreStore
 }

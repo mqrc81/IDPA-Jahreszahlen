@@ -17,7 +17,7 @@ type EventStore struct {
 }
 
 /*
- * Get event by event id
+ * Event gets event by event ID
  */
 func (s *EventStore) Event(eventID int) (backend.Event, error) {
 	var e backend.Event
@@ -28,12 +28,12 @@ func (s *EventStore) Event(eventID int) (backend.Event, error) {
 }
 
 /*
- * Get events by topic id sorted randomly or by year
+ * EventsByTopic gets events by topic ID, sorted randomly or by year
  */
-func (s *EventStore) EventsByTopic(topicID int, orderByRand bool) ([]backend.Event, error) {
+func (s *EventStore) EventsByTopic(topicID int, sortRandom bool) ([]backend.Event, error) {
 	var ee []backend.Event
 	order := "year"
-	if orderByRand {
+	if sortRandom {
 		order = "RAND()"
 	}
 	if err := s.Select(&ee, `SELECT * FROM events WHERE topic_id = ? ORDER BY ?`, topicID, order); err != nil {
@@ -43,33 +43,33 @@ func (s *EventStore) EventsByTopic(topicID int, orderByRand bool) ([]backend.Eve
 }
 
 /*
- * Create event
+ * CreateEvent creates event
  */
-func (s *EventStore) CreateEvent(e *backend.Event) error {
+func (s *EventStore) CreateEvent(event *backend.Event) error {
 	if _, err := s.Exec(`INSERT INTO events(topic_id, title, year) VALUES (?, ?, ?)`,
-		e.TopicID,
-		e.Title,
-		e.Year); err != nil {
+		event.TopicID,
+		event.Title,
+		event.Year); err != nil {
 		return fmt.Errorf("error creating event: %w", err)
 	}
 	return nil
 }
 
 /*
- * Update event
+ * UpdateEvent updates event
  */
-func (s *EventStore) UpdateEvent(e *backend.Event) error {
+func (s *EventStore) UpdateEvent(event *backend.Event) error {
 	if _, err := s.Exec(`UPDATE events SET title = ?, year = ? WHERE event_id = ?`,
-		e.Title,
-		e.Year,
-		e.EventID); err != nil {
+		event.Title,
+		event.Year,
+		event.EventID); err != nil {
 		return fmt.Errorf("error updating event: %w", err)
 	}
 	return nil
 }
 
 /*
- * Delete event
+ * DeleteEvent deletes event by event ID
  */
 func (s *EventStore) DeleteEvent(eventID int) error {
 	if _, err := s.Exec(`DELETE FROM events WHERE event_id = ?`, eventID); err != nil {

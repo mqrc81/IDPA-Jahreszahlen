@@ -7,11 +7,12 @@ const topicsListHTML = `
     {{range .Topics}}
         <dt><strong>{{.Title}} ({{.StartYear}} - {{.EndYear}})</strong></dt>
         <dd>{{.Description}}</dd>
-        <dd>Times played: {{.PlayCount}}</dd>
+        <dd>Spielanzahl: {{.PlayCount}}</dd>
 		<dd>
 			<form action="/topics/{{.TopicID}}/delete" method="POST">
 				<button type="submit">Thema löschen</button>
 			</form>
+        <a href="/topics/{{.TopicID}}/edit">Thema bearbeiten</a>
 		</dd>
     {{end}}
 </dl>
@@ -56,8 +57,15 @@ const topicsEditHTML = `
 	<dd>{{.Topic.Description}}</dd>
 	<dd>Times played: {{.Topic.PlayCount}}</dd>
 	<dd>
-		{{range .Events}}
-			<dd>{{.Title}} ({{.Year}}</dd>
+		{{range .Events}}	
+		<dd>
+			{{.Title}} - {{.Year}} - 
+			<form action="/topics/{{$.Topic.TopicID}}/events/{{.EventID}}/delete" method="POST">
+				<button type="submit">
+					Löschen
+				</button>
+			</form>
+		</dd>
 		{{end}}
 	</dd>
 </dl>

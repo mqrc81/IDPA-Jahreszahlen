@@ -18,16 +18,20 @@ func NewStore(dsn string) (*Store, error) {
 	// Opens and pings database
 	db, err := sqlx.Connect("mysql", dsn)
 	if err != nil {
-		return nil, fmt.Errorf("error opening or pinning database connection: %w", err)
+		return nil, fmt.Errorf("error opening or pinging database: %w", err)
 	}
 
-	return &Store {
-		&TopicStore{db},
-		&EventStore{db},
+	return &Store{
+		&TopicStore{DB: db},
+		&EventStore{DB: db},
+		&UserStore{DB: db},
+		&ScoreStore{DB: db},
 	}, nil
 }
 
 type Store struct {
 	*TopicStore
 	*EventStore
+	*UserStore
+	*ScoreStore
 }

@@ -17,58 +17,58 @@ type TopicStore struct {
 }
 
 /*
- * Get topic by topic id
+ * Topic gets topic by topic ID
  */
 func (s *TopicStore) Topic(topicID int) (backend.Topic, error) {
-	var u backend.Topic
-	if err := s.Get(&u, `SELECT * FROM topics WHERE topic_id = ?`, topicID); err != nil {
+	var t backend.Topic
+	if err := s.Get(&t, `SELECT * FROM topics WHERE topic_id = ?`, topicID); err != nil {
 		return backend.Topic{}, fmt.Errorf("error getting topic: %w", err)
 	}
-	return u, nil
+	return t, nil
 }
 
 /*
- * Get topics
+ * Topic gets topics
  */
 func (s *TopicStore) Topics() ([]backend.Topic, error) {
-	var uu []backend.Topic
-	if err := s.Select(&uu, `SELECT * FROM topics ORDER BY start_year`); err != nil {
+	var tt []backend.Topic
+	if err := s.Select(&tt, `SELECT * FROM topics ORDER BY start_year`); err != nil {
 		return []backend.Topic{}, fmt.Errorf("error getting topics: %w", err)
 	}
-	return uu, nil
+	return tt, nil
 }
 
 /*
- * Create topic
+ * CreateTopic creates topic
  */
-func (s *TopicStore) CreateTopic(u *backend.Topic) error {
+func (s *TopicStore) CreateTopic(topic *backend.Topic) error {
 	if _, err := s.Exec(`INSERT INTO topics(title, start_year, end_year, description) VALUES (?, ?, ?, ?)`,
-		u.Title,
-		u.StartYear,
-		u.EndYear,
-		u.Description); err != nil {
+		topic.Title,
+		topic.StartYear,
+		topic.EndYear,
+		topic.Description); err != nil {
 		return fmt.Errorf("error creating topic: %w", err)
 	}
 	return nil
 }
 
 /*
- * Update topic
+ * UpdateTopic updates topic
  */
-func (s *TopicStore) UpdateTopic(u *backend.Topic) error {
+func (s *TopicStore) UpdateTopic(topic *backend.Topic) error {
 	if _, err := s.Exec(`UPDATE topics SET title = ?, start_year = ?, end_year = ?, description = ? WHERE topic_id = ?`,
-		u.Title,
-		u.StartYear,
-		u.EndYear,
-		u.Description,
-		u.TopicID); err != nil {
+		topic.Title,
+		topic.StartYear,
+		topic.EndYear,
+		topic.Description,
+		topic.TopicID); err != nil {
 		return fmt.Errorf("error updating topic: %w", err)
 	}
 	return nil
 }
 
 /*
- * Delete topic by topic id
+ * DeleteTopic deletes topic by topic ID
  */
 func (s *TopicStore) DeleteTopic(topicID int) error {
 	if _, err := s.Exec(`DELETE FROM topics WHERE topic_id = ?`, topicID); err != nil {
