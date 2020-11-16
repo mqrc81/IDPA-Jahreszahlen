@@ -1,5 +1,9 @@
 package web
 
+/*
+ * TODO Header
+ */
+
 import (
 	"net/http"
 	"strconv"
@@ -29,6 +33,7 @@ func NewHandler(store backend.Store) *Handler {
 		r.Post("/{topicID}/delete", h.TopicsDelete())
 		r.Get("/{topicID}/edit", h.TopicsEdit())
 		r.Get("/{topicID}", h.TopicsShow())
+		r.Get("/{topicID}/play", h.TopicsPlay())
 
 		r.Get("/{topicID}/events/new", h.EventsCreate())
 		r.Post("/{topicID}/events/store", h.EventsStore())
@@ -169,12 +174,53 @@ func (h *Handler) TopicsShow() http.HandlerFunc {
 }
 
 /*
+ * TopicsPlay is a GET method that goes through the 3 phases of the quiz and stores the user's score
+ */
+func (h *Handler) TopicsPlay() http.HandlerFunc {
+	// Data to pass to HTML-template
+	type data struct {
+		Topic       backend.Topic
+		Events      []backend.Event
+		EventsCount int
+	}
+
+	// Parse HTML-template
+	tmpl := template.Must(template.New("").Parse("frontend/templates/topics_play_1.html"))
+	// topics_play_<1/2/3>.html
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Retrieve TopicID from URL
+		topicID, _ := strconv.Atoi(chi.URLParam(r, "topicID"))
+
+		// Execute SQL statement and return topic
+		u, err := h.store.Topic(topicID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Execute SQL statement and return events
+		ee, err := h.store.EventsByTopic(topicID, true)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Execute HTML-template
+		if err := tmpl.Execute(w, data{Topic: u, Events: ee, EventsCount: len(ee)}); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+/*
  * TopicsEdit is a GET method with the option to edit a specific topic and its events
  */
 func (h *Handler) TopicsEdit() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
-		Topic   backend.Topic
+		Topic  backend.Topic
 		Events []backend.Event
 	}
 
@@ -184,6 +230,7 @@ func (h *Handler) TopicsEdit() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Retrieve TopicID from URL
 		topicID, _ := strconv.Atoi(chi.URLParam(r, "topicID"))
+
 		// Execute SQL statement and return topic
 		u, err := h.store.Topic(topicID)
 		if err != nil {
@@ -192,7 +239,7 @@ func (h *Handler) TopicsEdit() http.HandlerFunc {
 		}
 
 		// Execute SQL statement and return events
-		ee, err := h.store.EventsByTopic(topicID)
+		ee, err := h.store.EventsByTopic(topicID, false)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

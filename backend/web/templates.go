@@ -9,7 +9,7 @@ const topicsListHTML = `
         <dd>{{.Description}}</dd>
         <dd>Times played: {{.PlayCount}}</dd>
 		<dd>
-			<form action="/threads/{{.TopicID}}/delete" method="POST">
+			<form action="/topics/{{.TopicID}}/delete" method="POST">
 				<button type="submit">Thema löschen</button>
 			</form>
 		</dd>

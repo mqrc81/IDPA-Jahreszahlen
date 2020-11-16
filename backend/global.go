@@ -1,6 +1,10 @@
 package backend
 
 /*
+ * TODO Header
+ */
+
+/*
  * Topic (ger. "Thema") marks a historical segment consisting of multiple events (e.g. World War 1)
  */
 type Topic struct {
@@ -38,7 +42,7 @@ type TopicStore interface {
  */
 type EventStore interface {
 	Event(eventID int) (Event, error)
-	EventsByTopic(topicID int) ([]Event, error)
+	EventsByTopic(topicID int, orderByRand bool) ([]Event, error)
 	CreateEvent(e *Event) error
 	UpdateEvent(e *Event) error
 	DeleteEvent(eventID int) error

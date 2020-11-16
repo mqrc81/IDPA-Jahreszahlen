@@ -1,5 +1,9 @@
 package mysql
 
+/*
+ * TODO Header
+ */
+
 import (
 	"fmt"
 
@@ -17,7 +21,7 @@ type TopicStore struct {
  */
 func (s *TopicStore) Topic(topicID int) (backend.Topic, error) {
 	var u backend.Topic
-	if err := s.Get(&u, `SELECT * FROM topics WHERE topic_id = $1`, topicID); err != nil {
+	if err := s.Get(&u, `SELECT * FROM topics WHERE topic_id = ?`, topicID); err != nil {
 		return backend.Topic{}, fmt.Errorf("error getting topic: %w", err)
 	}
 	return u, nil
@@ -28,7 +32,7 @@ func (s *TopicStore) Topic(topicID int) (backend.Topic, error) {
  */
 func (s *TopicStore) Topics() ([]backend.Topic, error) {
 	var uu []backend.Topic
-	if err := s.Select(&uu, `SELECT * FROM topics`); err != nil {
+	if err := s.Select(&uu, `SELECT * FROM topics ORDER BY start_year`); err != nil {
 		return []backend.Topic{}, fmt.Errorf("error getting topics: %w", err)
 	}
 	return uu, nil
@@ -38,7 +42,7 @@ func (s *TopicStore) Topics() ([]backend.Topic, error) {
  * Create topic
  */
 func (s *TopicStore) CreateTopic(u *backend.Topic) error {
-	if _, err := s.Exec(`INSERT INTO topics(title, start_year, end_year, description) VALUES ($1, $2, $3, $4)`,
+	if _, err := s.Exec(`INSERT INTO topics(title, start_year, end_year, description) VALUES (?, ?, ?, ?)`,
 		u.Title,
 		u.StartYear,
 		u.EndYear,
@@ -52,7 +56,7 @@ func (s *TopicStore) CreateTopic(u *backend.Topic) error {
  * Update topic
  */
 func (s *TopicStore) UpdateTopic(u *backend.Topic) error {
-	if _, err := s.Exec(`UPDATE topics SET title = $1, start_year = $2, end_year = $3, description = $4 WHERE topic_id = $5`,
+	if _, err := s.Exec(`UPDATE topics SET title = ?, start_year = ?, end_year = ?, description = ? WHERE topic_id = ?`,
 		u.Title,
 		u.StartYear,
 		u.EndYear,
@@ -67,7 +71,7 @@ func (s *TopicStore) UpdateTopic(u *backend.Topic) error {
  * Delete topic by topic id
  */
 func (s *TopicStore) DeleteTopic(topicID int) error {
-	if _, err := s.Exec(`DELETE FROM topics WHERE topic_id = $1`, topicID); err != nil {
+	if _, err := s.Exec(`DELETE FROM topics WHERE topic_id = ?`, topicID); err != nil {
 		return fmt.Errorf("error deleting topic: %w", err)
 	}
 	return nil

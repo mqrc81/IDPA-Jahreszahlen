@@ -1,5 +1,9 @@
 package mysql
 
+/*
+ * TODO Header
+ */
+
 import (
 	"fmt"
 
@@ -17,18 +21,22 @@ type EventStore struct {
  */
 func (s *EventStore) Event(eventID int) (backend.Event, error) {
 	var e backend.Event
-	if err := s.Get(&e, `SELECT * FROM events WHERE event_id = $1`, eventID); err != nil {
+	if err := s.Get(&e, `SELECT * FROM events WHERE event_id = ?`, eventID); err != nil {
 		return backend.Event{}, fmt.Errorf("error getting event: %w", err)
 	}
 	return e, nil
 }
 
 /*
- * Get events by topic id
+ * Get events by topic id sorted randomly or by year
  */
-func (s *EventStore) EventsByTopic(topicID int) ([]backend.Event, error) {
+func (s *EventStore) EventsByTopic(topicID int, orderByRand bool) ([]backend.Event, error) {
 	var ee []backend.Event
-	if err := s.Select(&ee, `SELECT * FROM events WHERE topic_id = $1`, topicID); err != nil {
+	order := "year"
+	if orderByRand {
+		order = "RAND()"
+	}
+	if err := s.Select(&ee, `SELECT * FROM events WHERE topic_id = ? ORDER BY ?`, topicID, order); err != nil {
 		return []backend.Event{}, fmt.Errorf("error getting events: %w", err)
 	}
 	return ee, nil
@@ -38,7 +46,7 @@ func (s *EventStore) EventsByTopic(topicID int) ([]backend.Event, error) {
  * Create event
  */
 func (s *EventStore) CreateEvent(e *backend.Event) error {
-	if _, err := s.Exec(`INSERT INTO events(topic_id, title, year) VALUES ($1, $2, $3)`,
+	if _, err := s.Exec(`INSERT INTO events(topic_id, title, year) VALUES (?, ?, ?)`,
 		e.TopicID,
 		e.Title,
 		e.Year); err != nil {
@@ -51,7 +59,7 @@ func (s *EventStore) CreateEvent(e *backend.Event) error {
  * Update event
  */
 func (s *EventStore) UpdateEvent(e *backend.Event) error {
-	if _, err := s.Exec(`UPDATE events SET title = $1, year = $2 WHERE event_id = $2`,
+	if _, err := s.Exec(`UPDATE events SET title = ?, year = ? WHERE event_id = ?`,
 		e.Title,
 		e.Year,
 		e.EventID); err != nil {
@@ -64,7 +72,7 @@ func (s *EventStore) UpdateEvent(e *backend.Event) error {
  * Delete event
  */
 func (s *EventStore) DeleteEvent(eventID int) error {
-	if _, err := s.Exec(`DELETE FROM events WHERE event_id = $1`, eventID); err != nil {
+	if _, err := s.Exec(`DELETE FROM events WHERE event_id = ?`, eventID); err != nil {
 		return fmt.Errorf("error deleting event: %w", err)
 	}
 	return nil
