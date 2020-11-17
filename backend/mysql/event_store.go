@@ -30,10 +30,10 @@ func (s *EventStore) Event(eventID int) (backend.Event, error) {
 /*
  * EventsByTopic gets events by topic ID, sorted randomly or by year
  */
-func (s *EventStore) EventsByTopic(topicID int, sortRandom bool) ([]backend.Event, error) {
+func (s *EventStore) EventsByTopic(topicID int, orderByRand bool) ([]backend.Event, error) {
 	var ee []backend.Event
 	order := "year"
-	if sortRandom {
+	if orderByRand {
 		order = "RAND()"
 	}
 	if err := s.Select(&ee, `SELECT * FROM events WHERE topic_id = ? ORDER BY ?`, topicID, order); err != nil {

@@ -39,10 +39,11 @@ type User struct {
  * Score represents points scored by a user upon finishing a topic
  */
 type Score struct {
-	ScoreID   int `db:"score_id"`
-	TopicID int `db:"topic_id"`
-	Username  int `db:"username"`
-	Points  int `db:"points"`
+	ScoreID  int    `db:"score_id"`
+	TopicID  int    `db:"topic_id"`
+	Username string `db:"username"`
+	Points   int    `db:"points"`
+	Date     string `db:"date"`
 }
 
 /*
@@ -81,8 +82,8 @@ type UserStore interface {
  * ScoreStore stores functions for Score to inherit
  */
 type ScoreStore interface {
-	ScoresByTopic(topicID int) ([]Score, error)
-	ScoresByUser(username string) ([]Score, error)
+	ScoresByTopic(topicID int, limit int) ([]Score, error)
+	ScoresByUser(username string, limit int) ([]Score, error)
 	CreateScore(s *Score) error
 }
 

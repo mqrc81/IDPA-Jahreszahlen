@@ -15,6 +15,17 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
+var (
+	funcMap = template.FuncMap{
+		"rank": func(num int, page int, limit int) int {
+			return (page  - 1) * limit + num + 1
+		},
+		"increment": func(num int) int {
+			return num + 1
+		},
+	}
+)
+
 /*
  * NewHandler creates a new handler, including routes and middleware
  */
@@ -29,13 +40,13 @@ func NewHandler(store backend.Store) *Handler {
 	h.Get("/", h.Home())
 
 	h.Route("/users", func(r chi.Router) {
-		//r.Get("/register", UsersRegister())
-		//r.Get("/login", UsersLogin())
-		//r.Get("/{username}", UsersProfile())
-		//r.Get("/{username}/edit", UsersEdit())
-		//r.Get("/{username}/scoreboard", UsersScoreboard())
+		//r.Get("/register", h.UsersRegister())
+		//r.Get("/login", h.UsersLogin())
+		//r.Get("/{username}", h.UsersProfile())
+		//r.Get("/{username}/edit", h.UsersEdit())
+		//r.Get("/{username}/scoreboard", h.UsersScoreboard())
 		//
-		//r.Post("/store", UsersStore())
+		//r.Post("/store", h.UsersStore())
 	})
 
 	h.Route("/topics", func(r chi.Router) {
@@ -46,7 +57,7 @@ func NewHandler(store backend.Store) *Handler {
 		r.Get("/{topicID}/edit", h.TopicsEdit())
 		r.Get("/{topicID}", h.TopicsShow())
 		r.Get("/{topicID}/play", h.TopicsPlay())
-		//r.Get("/{topicID}/scoreboard", TopicsScoreboard())
+		r.Get("/{topicID}/scoreboard", h.TopicsScoreboard())
 
 		r.Get("/{topicID}/events/new", h.EventsCreate())
 		r.Post("/{topicID}/events/store", h.EventsStore())
@@ -69,11 +80,13 @@ type Handler struct {
  */
 func (h *Handler) Home() http.HandlerFunc {
 	// Parse HTML-template
-	tmpl := template.Must(template.New("").Parse(``))
+	tmpl := template.Must(template.New("").Parse(homeHTML))
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Execute HTML-template
 		if err := tmpl.Execute(w, nil); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	}
 }
@@ -213,7 +226,7 @@ func (h *Handler) TopicsPlay() http.HandlerFunc {
 	}
 
 	// Parse HTML-template
-	tmpl := template.Must(template.New("").Parse(`TODO`)) // TODO
+	tmpl := template.Must(template.New("").Parse(`<h1>TODO</h1>`)) // TODO
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Retrieve topic ID from URL
@@ -284,12 +297,20 @@ func (h *Handler) TopicsEdit() http.HandlerFunc {
  * EventsCreate is a GET method for a form to create a new event
  */
 func (h *Handler) EventsCreate() http.HandlerFunc {
+	// Data to pass to HTML-template
+	type data struct {
+		TopicID int
+	}
+
 	// Parse HTML-template
 	tmpl := template.Must(template.New("").Parse(eventsCreateHTML))
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Retrieve topic ID from URL
+		topicID, _ := strconv.Atoi(chi.URLParam(r, "topicID"))
+
 		// Execute HTML-template
-		if err := tmpl.Execute(w, nil); err != nil {
+		if err := tmpl.Execute(w, data{topicID}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -302,7 +323,8 @@ func (h *Handler) EventsCreate() http.HandlerFunc {
 func (h *Handler) EventsStore() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Retrieve topic ID from URL
-		topicID, _ := strconv.Atoi(chi.URLParam(r, "topicID"))
+		topicIDstr := chi.URLParam(r, "topicID")
+		topicID, _ := strconv.Atoi(topicIDstr)
 
 		// Retrieve variables from form (EventsCreate)
 		title := r.FormValue("title")
@@ -316,10 +338,11 @@ func (h *Handler) EventsStore() http.HandlerFunc {
 			Year:    year,
 		}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		// Redirect to list of topics
-		http.Redirect(w, r, "/topics", http.StatusFound)
+		http.Redirect(w, r, "/topics/" +topicIDstr + "/edit", http.StatusFound)
 	}
 }
 
@@ -342,5 +365,39 @@ func (h *Handler) EventsDelete() http.HandlerFunc {
 
 		// Redirect to list of topics
 		http.Redirect(w, r, "/topics/" + strconv.Itoa(topicID) + "/edit", http.StatusFound)
+	}
+}
+
+func (h *Handler) TopicsScoreboard() http.HandlerFunc {
+	// Data to pass to HTML-template
+	type data struct {
+		Scores []backend.Score
+		TopicName string
+	}
+
+	// Parse HTML-template
+	tmpl := template.Must(template.New("").Funcs(funcMap).Parse(topicsScoreboardHTML))
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Retrieve topic ID from URL
+		topicID, _ := strconv.Atoi(chi.URLParam(r, "topicID"))
+
+		// Execute SQL statement and return slice of scores
+		ss, err := h.store.ScoresByTopic(topicID, 50)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Execute SQL statement and return topic
+		t, err := h.store.Topic(topicID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		// Execute HTML-template
+		if err := tmpl.Execute(w, data{Scores: ss, TopicName: t.Title}); err != nil {
+		    http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }

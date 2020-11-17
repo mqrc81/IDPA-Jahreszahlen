@@ -17,22 +17,26 @@ type ScoreStore struct {
 }
 
 /*
- * ScoresByTopic gets scores by topic ID sorted by points
+ * ScoresByTopic gets a certain amount of scores by topic ID sorted by points
  */
-func (s ScoreStore) ScoresByTopic(topicID int) ([]backend.Score, error) {
+func (s ScoreStore) ScoresByTopic(topicID int, limit int) ([]backend.Score, error) {
 	var ss []backend.Score
-	if err := s.Select(&ss, `SELECT * FROM scores WHERE topic_id = ? ORDER BY points DESC`, topicID); err != nil {
+	if err := s.Select(&ss, `SELECT * FROM scores WHERE topic_id = ? ORDER BY points DESC LIMIT ?`,
+		topicID,
+		limit); err != nil {
 		return []backend.Score{}, fmt.Errorf("error getting scores: %w", err)
 	}
 	return ss, nil
 }
 
 /*
- * ScoresByUser gets scores by username sorted by points
+ * ScoresByUser gets a certain amount of scores by username sorted by points
  */
-func (s ScoreStore) ScoresByUser(username string) ([]backend.Score, error) {
+func (s ScoreStore) ScoresByUser(username string, limit int) ([]backend.Score, error) {
 	var ss []backend.Score
-	if err := s.Select(&ss, `SELECT * FROM scores WHERE username = ? ORDER BY points DESC`, username); err != nil {
+	if err := s.Select(&ss, `SELECT * FROM scores WHERE username = ? ORDER BY points DESC LIMIT ?`,
+		username,
+		limit); err != nil {
 		return []backend.Score{}, fmt.Errorf("error getting scores: %w", err)
 	}
 	return ss, nil
@@ -42,10 +46,11 @@ func (s ScoreStore) ScoresByUser(username string) ([]backend.Score, error) {
  * CreateScore creates score
  */
 func (s ScoreStore) CreateScore(score *backend.Score) error {
-	if _, err := s.Exec(`INSERT INTO scores(topic_id, username, points) VALUES (?, ?, ?)`,
+	if _, err := s.Exec(`INSERT INTO scores(topic_id, username, points, date) VALUES (?, ?, ?, ?)`,
 		score.TopicID,
 		score.Username,
-		score.Points); err != nil {
+		score.Points,
+		score.Date); err != nil {
 		return fmt.Errorf("error creating score: %w", err)
 	}
 	return nil

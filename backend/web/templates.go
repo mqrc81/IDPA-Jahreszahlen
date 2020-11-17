@@ -1,5 +1,11 @@
 package web
 
+// Temporary template for 'Home()'
+const homeHTML = `
+<h1>Home</h1>
+<a href="/topics">Themen</a>
+`
+
 // Temporary template for 'TopicsList()'
 const topicsListHTML = `
 <h1>Themen</h1>
@@ -61,12 +67,11 @@ const topicsEditHTML = `
 		<dd>
 			{{.Title}} - {{.Year}} - 
 			<form action="/topics/{{$.Topic.TopicID}}/events/{{.EventID}}/delete" method="POST">
-				<button type="submit">
-					Löschen
-				</button>
+				<button type="submit">Löschen</button>
 			</form>
 		</dd>
 		{{end}}
+		<a href="/topics/{{.Topic.TopicID}}/events/new">Neues Ereignis</a>
 	</dd>
 </dl>
 `
@@ -74,7 +79,7 @@ const topicsEditHTML = `
 // Temporary template for 'EventsCreate()'
 const eventsCreateHTML = `
 <h1>Neues Ereignis</h1>
-<form action="/topics/{topicID}/events/store" method="POST">
+<form action="/topics/{{.TopicID}}/events/store" method="POST">
     <table>
         <tr>
             <td>Titel</td>
@@ -87,4 +92,25 @@ const eventsCreateHTML = `
     </table>
     <button type="submit">Thema erstellen</button>
 </form>
+`
+
+// Temporary template for 'TopicsScoreboard()'
+const topicsScoreboardHTML = `
+<h1>Scoreboard '{{.TopicName}}'</h1>
+<table>
+	<tr>
+		<th>#</th>
+		<th>Benutzer</th>
+		<th>Datum</th>
+		<th>Punkte</th>
+	</tr>
+	{{range $i, $s := .Scores}}
+		<tr>
+			<td>{{increment $i}}</td>
+			<td>{{$s.Username}}</td>
+			<td>{{$s.Date}}</td>
+			<td><strong>{{$s.Points}}</strong></td>
+		</tr>
+	{{end}}
+</table>
 `
