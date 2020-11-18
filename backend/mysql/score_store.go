@@ -53,5 +53,8 @@ func (s ScoreStore) CreateScore(score *backend.Score) error {
 		score.Date); err != nil {
 		return fmt.Errorf("error creating score: %w", err)
 	}
+	if err := s.Get(score, `SELECT * FROM scores WHERE score_id = last_insert_id()`); err != nil {
+	    return fmt.Errorf("error getting created score: %w", err)
+	}
 	return nil
 }

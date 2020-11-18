@@ -6,7 +6,7 @@ const homeHTML = `
 <a href="/topics">Themen</a>
 `
 
-// Temporary template for 'TopicsList()'
+// Temporary template for 'List()'
 const topicsListHTML = `
 <h1>Themen</h1>
 <dl>
@@ -25,7 +25,7 @@ const topicsListHTML = `
 <a href="/topics/new">Thema erstellen</a>
 `
 
-// Temporary template for 'TopicsCreate()'
+// Temporary template for 'Create()'
 const topicsCreateHTML = `
 <h1>Neues Thema</h1>
 <form action="/topics/store" method="POST">
@@ -47,7 +47,7 @@ const topicsCreateHTML = `
 </form>
 `
 
-// Temporary template for 'TopicsShow()'
+// Temporary template for 'Show()'
 const topicsShowHTML = `
 <h1>Thema: {{.Topic.Title}}</h1>
 <button type="button">Spielen</button>
@@ -55,7 +55,7 @@ const topicsShowHTML = `
 <button type="button">Bearbeiten</button>
 `
 
-// Temporary template for 'TopicsEdit()'
+// Temporary template for 'Edit()'
 const topicsEditHTML = `
 <h1>Thema: {{.Topic.Title}}</h1>
 <dl>
@@ -76,7 +76,7 @@ const topicsEditHTML = `
 </dl>
 `
 
-// Temporary template for 'EventsCreate()'
+// Temporary template for 'Create()'
 const eventsCreateHTML = `
 <h1>Neues Ereignis</h1>
 <form action="/topics/{{.TopicID}}/events/store" method="POST">
@@ -94,7 +94,7 @@ const eventsCreateHTML = `
 </form>
 `
 
-// Temporary template for 'TopicsScoreboard()'
+// Temporary template for 'Scoreboard()'
 const topicsScoreboardHTML = `
 <h1>Scoreboard '{{.TopicName}}'</h1>
 <table>

@@ -49,6 +49,9 @@ func (s *TopicStore) CreateTopic(topic *backend.Topic) error {
 		topic.Description); err != nil {
 		return fmt.Errorf("error creating topic: %w", err)
 	}
+	if err := s.Get(topic, `SELECT * FROM topics WHERE topic_id = last_insert_id()`); err != nil {
+	    return fmt.Errorf("error getting created topic: %w", err)
+	}
 	return nil
 }
 
@@ -63,6 +66,9 @@ func (s *TopicStore) UpdateTopic(topic *backend.Topic) error {
 		topic.Description,
 		topic.TopicID); err != nil {
 		return fmt.Errorf("error updating topic: %w", err)
+	}
+	if err := s.Get(topic, `SELECT * FROM topics WHERE topic_id = last_insert_id()`); err != nil {
+		return fmt.Errorf("error getting updated topic: %w", err)
 	}
 	return nil
 }

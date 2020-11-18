@@ -52,6 +52,9 @@ func (s *EventStore) CreateEvent(event *backend.Event) error {
 		event.Year); err != nil {
 		return fmt.Errorf("error creating event: %w", err)
 	}
+	if err := s.Get(event, `SELECT * FROM events WHERE event_id = last_insert_id()`); err != nil {
+		return fmt.Errorf("error getting created event: %w", err)
+	}
 	return nil
 }
 
@@ -64,6 +67,9 @@ func (s *EventStore) UpdateEvent(event *backend.Event) error {
 		event.Year,
 		event.EventID); err != nil {
 		return fmt.Errorf("error updating event: %w", err)
+	}
+	if err := s.Get(event, `SELECT * FROM events WHERE event_id = last_insert_id()`); err != nil {
+		return fmt.Errorf("error getting updated event: %w", err)
 	}
 	return nil
 }
