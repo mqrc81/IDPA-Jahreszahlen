@@ -23,19 +23,22 @@ func main() {
 	if err := godotenv.Load("backend/.env"); err != nil {
 		log.Fatal(err)
 	}
+	dsn := os.Getenv("DB_DSN")
 
 	// Establish database connection
-	dsn := os.Getenv("DB_DSN")
 	store, err := mysql.NewStore(dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	//// Create CSRF protection key
-	//csrfKey := []byte("01234567890123456789012345678901")
+	// Initialize session manager
+	sessions, err := web.NewSessionManager(dsn)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Host website
-	handler := web.NewHandler(store/*, csrfKey*/)
+	handler := web.NewHandler(store, sessions)
 	if err := http.ListenAndServe(":3000", handler); err != nil {
 		log.Fatal(err)
 	}

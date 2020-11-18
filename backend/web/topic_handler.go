@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi"
 
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
@@ -12,6 +13,7 @@ import (
 
 type TopicHandler struct {
 	store backend.Store
+	sessions *scs.SessionManager
 }
 
 /*

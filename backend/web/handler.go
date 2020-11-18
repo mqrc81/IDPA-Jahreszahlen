@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"net/http"
 
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 
@@ -17,7 +18,7 @@ import (
 var (
 	funcMap = template.FuncMap{
 		"rank": func(num int, page int, limit int) int {
-			return (page  - 1) * limit + num + 1
+			return (page-1)*limit + num + 1
 		},
 		"increment": func(num int) int {
 			return num + 1
@@ -28,17 +29,19 @@ var (
 /*
  * NewHandler creates a new handler, including routes and middleware
  */
-func NewHandler(store backend.Store/*, csrfKey []byte*/) *Handler {
+func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 	h := &Handler{
-		Mux:   chi.NewMux(),
-		store: store,
+		Mux:      chi.NewMux(),
+		store:    store,
+		sessions: sessions,
 	}
 
-	topics := TopicHandler{store: store}
-	events := EventHandler{store: store}
+	topics := TopicHandler{store: store, sessions: sessions}
+	events := EventHandler{store: store, sessions: sessions}
 
 	h.Use(middleware.Logger)
-	//h.Use(csrf.Protect(csrfKey, csrf.Secure(false)))
+	h.Use(sessions.LoadAndSave)
+
 	h.Get("/", h.Home())
 
 	h.Route("/topics", func(r chi.Router) {
@@ -73,7 +76,8 @@ func NewHandler(store backend.Store/*, csrfKey []byte*/) *Handler {
  */
 type Handler struct {
 	*chi.Mux
-	store backend.Store
+	store    backend.Store
+	sessions *scs.SessionManager
 }
 
 /*
