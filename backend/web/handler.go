@@ -38,6 +38,7 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 
 	topics := TopicHandler{store: store, sessions: sessions}
 	events := EventHandler{store: store, sessions: sessions}
+	users := UserHandler{store: store, sessions: sessions}
 
 	h.Use(middleware.Logger)
 	h.Use(sessions.LoadAndSave)
@@ -59,13 +60,13 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		r.Post("/{topicID}/events/{eventID}/delete", events.Delete())
 	})
 	h.Route("/users", func(r chi.Router) {
-		//r.Get("/register", h.UsersRegister())
-		//r.Get("/login", h.UsersLogin())
-		//r.Get("/{username}", h.UsersProfile())
-		//r.Get("/{username}/edit", h.UsersEdit())
-		//r.Get("/{username}/scoreboard", h.UsersScoreboard())
-		//
-		//r.Post("/store", h.UsersStore())
+		r.Get("/register", users.Register())
+		r.Post("/register", users.RegisterSubmit())
+		//r.Get("/login", users.Login())
+		//r.Get("/{username}", users.Profile())
+		//r.Get("/{username}/edit", users.Edit())
+		//r.Get("/{username}/scoreboard", users.Scoreboard())
+		//r.Post("/store", users.Store())
 	})
 
 	return h

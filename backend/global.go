@@ -30,6 +30,7 @@ type Event struct {
  * User represents an account created
  */
 type User struct {
+	UserID   int    `db:"user_id"`
 	Username string `db:"username"`
 	Password string `db:"password"`
 	Admin    bool   `db:"admin"`
@@ -39,11 +40,11 @@ type User struct {
  * Score represents points scored by a user upon finishing a topic
  */
 type Score struct {
-	ScoreID  int    `db:"score_id"`
-	TopicID  int    `db:"topic_id"`
-	Username string `db:"username"`
-	Points   int    `db:"points"`
-	Date     string `db:"date"`
+	ScoreID int    `db:"score_id"`
+	TopicID int    `db:"topic_id"`
+	UserID  int    `db:"user_id"`
+	Points  int    `db:"points"`
+	Date    string `db:"date"`
 }
 
 /*
@@ -72,18 +73,20 @@ type EventStore interface {
  * UserStore stores functions for User to inherit
  */
 type UserStore interface {
-	User(username string) (User, error)
+	User(userID int) (User, error)
+	UserByUsername(username string) (User, error)
 	CreateUser(u *User) error
 	UpdateUser(u *User) error
-	DeleteUser(username string) error
+	DeleteUser(userID int) error
 }
 
 /*
  * ScoreStore stores functions for Score to inherit
  */
 type ScoreStore interface {
+	Scores(limit int) ([]Score, error)
 	ScoresByTopic(topicID int, limit int) ([]Score, error)
-	ScoresByUser(username string, limit int) ([]Score, error)
+	ScoresByUser(userID int, limit int) ([]Score, error)
 	CreateScore(s *Score) error
 }
 

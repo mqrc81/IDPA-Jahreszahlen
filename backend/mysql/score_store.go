@@ -17,6 +17,18 @@ type ScoreStore struct {
 }
 
 /*
+ * Scores gets a certain amount of scores sorted by points
+ */
+func (s ScoreStore) Scores(limit int) ([]backend.Score, error) {
+	var ss []backend.Score
+	if err := s.Select(&ss, `SELECT * FROM scores ORDER BY points DESC LIMIT ?`,
+		limit); err != nil {
+		return []backend.Score{}, fmt.Errorf("error getting scores: %w", err)
+	}
+	return ss, nil
+}
+
+/*
  * ScoresByTopic gets a certain amount of scores by topic ID sorted by points
  */
 func (s ScoreStore) ScoresByTopic(topicID int, limit int) ([]backend.Score, error) {
@@ -32,10 +44,10 @@ func (s ScoreStore) ScoresByTopic(topicID int, limit int) ([]backend.Score, erro
 /*
  * ScoresByUser gets a certain amount of scores by username sorted by points
  */
-func (s ScoreStore) ScoresByUser(username string, limit int) ([]backend.Score, error) {
+func (s ScoreStore) ScoresByUser(userID int, limit int) ([]backend.Score, error) {
 	var ss []backend.Score
-	if err := s.Select(&ss, `SELECT * FROM scores WHERE username = ? ORDER BY points DESC LIMIT ?`,
-		username,
+	if err := s.Select(&ss, `SELECT * FROM scores WHERE user_id = ? ORDER BY points DESC LIMIT ?`,
+		userID,
 		limit); err != nil {
 		return []backend.Score{}, fmt.Errorf("error getting scores: %w", err)
 	}
@@ -46,9 +58,9 @@ func (s ScoreStore) ScoresByUser(username string, limit int) ([]backend.Score, e
  * CreateScore creates score
  */
 func (s ScoreStore) CreateScore(score *backend.Score) error {
-	if _, err := s.Exec(`INSERT INTO scores(topic_id, username, points, date) VALUES (?, ?, ?, ?)`,
+	if _, err := s.Exec(`INSERT INTO scores(topic_id, user_id, points, date) VALUES (?, ?, ?, ?)`,
 		score.TopicID,
-		score.Username,
+		score.UserID,
 		score.Points,
 		score.Date); err != nil {
 		return fmt.Errorf("error creating score: %w", err)

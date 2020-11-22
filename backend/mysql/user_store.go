@@ -17,9 +17,20 @@ type UserStore struct {
 }
 
 /*
- * User gets user by username
+ * User gets user by user ID
  */
-func (s UserStore) User(username string) (backend.User, error) {
+func (s UserStore) User(userID int) (backend.User, error) {
+	var u backend.User
+	if err := s.Get(&u, `SELECT * FROM users WHERE user_id = ?`, userID); err != nil {
+		return backend.User{}, fmt.Errorf("error getting user: %w", err)
+	}
+	return u, nil
+}
+
+/*
+ * UserByUsername gets user by username
+ */
+func (s UserStore) UserByUsername(username string) (backend.User, error) {
 	var u backend.User
 	if err := s.Get(&u, `SELECT * FROM users WHERE username = ?`, username); err != nil {
 		return backend.User{}, fmt.Errorf("error getting user: %w", err)
@@ -55,8 +66,8 @@ func (s UserStore) UpdateUser(user *backend.User) error {
 /*
  * DeleteUser deletes user by username
  */
-func (s UserStore) DeleteUser(username string) error {
-	if _, err := s.Exec(`DELETE FROM users WHERE username = ?`, username); err != nil {
+func (s UserStore) DeleteUser(userID int) error {
+	if _, err := s.Exec(`DELETE FROM users WHERE user_id = ?`, userID); err != nil {
 		return fmt.Errorf("error deleting user: %w", err)
 	}
 	return nil
