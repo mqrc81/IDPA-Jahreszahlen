@@ -132,3 +132,20 @@ const usersRegisterHTML = `
     <button type="submit">Registrieren</button>
 </form>
 `
+
+const usersLoginHTML = `
+<h1>Register</h1>
+<form action="/users/login" method="POST">
+	<table>
+        <tr>
+            <td>Username</td>
+            <td><input type="text" name="username"/></td>
+        </tr>
+        <tr>
+            <td>Passwort</td>
+            <td><input type="password" name="password"></td>
+        </tr>
+    </table>
+    <button type="submit">Einloggen</button>
+</form>
+`

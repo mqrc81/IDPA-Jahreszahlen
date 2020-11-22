@@ -56,3 +56,38 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 		http.Redirect(w, r, "/", http.StatusFound)
 	}
 }
+
+/*
+ * Login is a GET method with form to login
+ */
+func (h *UserHandler) Login() http.HandlerFunc {
+	// Parse HTML-template
+	tmpl := template.Must(template.New("").Parse(usersLoginHTML))
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Execute HTML-template
+		if err := tmpl.Execute(w, nil); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+/*
+ * LoginSubmit is a POST method that stores user created
+ */
+func (h *UserHandler) LoginSubmit() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Execute SQL statement
+		user, err := h.store.UserByUsername(r.FormValue("username"))
+		if err != nil {
+			// TODO Username incorrect
+		} else {
+			if err := bcrypt.CompareHashAndPassword([]byte(user.Password),[]byte(r.FormValue("password")));
+				err != nil {
+				// TODO Password incorrect
+			}
+		}
+		http.Redirect(w, r, "/", http.StatusFound)
+	}
+}
