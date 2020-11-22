@@ -53,7 +53,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		http.Redirect(w, r, "/", http.StatusFound)
+		http.Redirect(w, r, "/users/login", http.StatusFound)
 	}
 }
 
@@ -74,20 +74,31 @@ func (h *UserHandler) Login() http.HandlerFunc {
 }
 
 /*
- * LoginSubmit is a POST method that stores user created
+ * LoginSubmit is a POST method that logs in user
  */
 func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Execute SQL statement
 		user, err := h.store.UserByUsername(r.FormValue("username"))
 		if err != nil {
-			// TODO Username incorrect
+			// TODO username incorrect
 		} else {
 			if err := bcrypt.CompareHashAndPassword([]byte(user.Password),[]byte(r.FormValue("password")));
 				err != nil {
-				// TODO Password incorrect
+				// TODO password incorrect
 			}
 		}
+		http.Redirect(w, r, "/", http.StatusFound)
+	}
+}
+
+/*
+ * Logout is a POST method that logs out user
+ */
+func (h *UserHandler) Logout() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// TODO log out
+
 		http.Redirect(w, r, "/", http.StatusFound)
 	}
 }

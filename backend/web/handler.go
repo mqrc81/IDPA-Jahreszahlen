@@ -44,6 +44,7 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 	h.Use(sessions.LoadAndSave)
 
 	h.Get("/", h.Home())
+	h.Get("/about", h.About())
 
 	h.Route("/topics", func(r chi.Router) {
 		r.Get("/", topics.List())
@@ -62,11 +63,12 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 	h.Route("/users", func(r chi.Router) {
 		r.Get("/register", users.Register())
 		r.Post("/register", users.RegisterSubmit())
-		//r.Get("/login", users.Login())
+		r.Get("/login", users.Login())
+		r.Post("/login", users.LoginSubmit())
+		r.Post("/logout", users.Logout())
 		//r.Get("/{username}", users.Profile())
 		//r.Get("/{username}/edit", users.Edit())
 		//r.Get("/{username}/scoreboard", users.Scoreboard())
-		//r.Post("/store", users.Store())
 	})
 
 	return h
@@ -82,11 +84,27 @@ type Handler struct {
 }
 
 /*
- * Home TODO
+ * Home is a GET method that shows Homepage
  */
 func (h *Handler) Home() http.HandlerFunc {
 	// Parse HTML-template
 	tmpl := template.Must(template.New("").Parse(homeHTML))
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Execute HTML-template
+		if err := tmpl.Execute(w, nil); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+/*
+ * Home is a GET method that shows About-page
+ */
+func (h *Handler) About() http.HandlerFunc {
+	// Parse HTML-template
+	tmpl := template.Must(template.New("").Parse(aboutHTML))
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Execute HTML-template

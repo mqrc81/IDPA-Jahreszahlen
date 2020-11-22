@@ -133,6 +133,7 @@ const usersRegisterHTML = `
 </form>
 `
 
+// Temporary template for 'Login()'
 const usersLoginHTML = `
 <h1>Register</h1>
 <form action="/users/login" method="POST">
@@ -148,4 +149,9 @@ const usersLoginHTML = `
     </table>
     <button type="submit">Einloggen</button>
 </form>
+`
+
+// Temporary HTML-template for 'About()'
+const aboutHTML = `
+<h1>About</h1>
 `
