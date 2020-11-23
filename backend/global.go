@@ -84,9 +84,10 @@ type UserStore interface {
  * ScoreStore stores functions for Score to inherit
  */
 type ScoreStore interface {
-	Scores(limit int) ([]Score, error)
-	ScoresByTopic(topicID int, limit int) ([]Score, error)
-	ScoresByUser(userID int, limit int) ([]Score, error)
+	Scores(limit int, offset int) ([]Score, error)
+	ScoresByTopic(topicID int, limit int, offset int) ([]Score, error)
+	ScoresByUser(userID int, limit int, offset int) ([]Score, error)
+	ScoresByTopicAndUser(topicID int, userID int, limit int, offset int) ([]Score, error)
 	CreateScore(s *Score) error
 }
 

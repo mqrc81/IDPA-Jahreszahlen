@@ -28,7 +28,7 @@ const topicsListHTML = `
 // Temporary template for 'Create()'
 const topicsCreateHTML = `
 <h1>Neues Thema</h1>
-<form action="/topics/store" method="POST">
+<form action="/topics" method="POST">
     <table>
         <tr>
             <td>Titel</td>
@@ -51,7 +51,7 @@ const topicsCreateHTML = `
 const topicsShowHTML = `
 <h1>Thema: {{.Topic.Title}}</h1>
 <button type="button">Spielen</button>
-<button type="button">Scoreboard</button>
+<button type="button">List</button>
 <button type="button">Bearbeiten</button>
 `
 
@@ -79,7 +79,7 @@ const topicsEditHTML = `
 // Temporary template for 'Create()'
 const eventsCreateHTML = `
 <h1>Neues Ereignis</h1>
-<form action="/topics/{{.TopicID}}/events/store" method="POST">
+<form action="/topics/{{.TopicID}}/events" method="POST">
     <table>
         <tr>
             <td>Titel</td>
@@ -94,20 +94,22 @@ const eventsCreateHTML = `
 </form>
 `
 
-// Temporary template for 'Scoreboard()'
-const topicsScoreboardHTML = `
-<h1>Scoreboard '{{.TopicName}}'</h1>
+// Temporary template for 'List()'
+const scoresListHTML = `
+<h1>Scores</h1>
 <table>
 	<tr>
 		<th>#</th>
 		<th>Benutzer</th>
+		<th>Thema</th>
 		<th>Datum</th>
 		<th>Punkte</th>
 	</tr>
-	{{range $i, $s := .Scores}}
+	{{range $i, $s := .List}}
 		<tr>
 			<td>{{increment $i}}</td>
-			<td>{{$s.Username}}</td>
+			<td>{{$s.UserID}}</td>
+			<td>{{$s.TopicID}}</td>
 			<td>{{$s.Date}}</td>
 			<td><strong>{{$s.Points}}</strong></td>
 		</tr>
