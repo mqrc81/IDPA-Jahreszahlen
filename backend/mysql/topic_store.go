@@ -1,7 +1,7 @@
 package mysql
 
 /*
- * TODO Header
+ * topic_store.go contains all functions for topics that require database access
  */
 
 import (

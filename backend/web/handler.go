@@ -1,7 +1,7 @@
 package web
 
 /*
- * TODO Header
+ * handler.go contains all HTTP-routes and is the basis for all HTTP-handlers
  */
 
 import (

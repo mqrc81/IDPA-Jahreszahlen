@@ -1,7 +1,7 @@
 package backend
 
 /*
- * TODO Header
+ * global.go contains declaration of all global structs and interfaces to be used throughout the project
  */
 
 /*

@@ -1,7 +1,7 @@
 package mysql
 
 /*
- * TODO Header
+ * score_store.go contains all functions for scores that require database access
  */
 
 import (

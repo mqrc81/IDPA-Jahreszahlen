@@ -1,7 +1,7 @@
 package mysql
 
 /*
- * TODO Header
+ * user_store.go contains all functions for users that require database access
  */
 
 import (

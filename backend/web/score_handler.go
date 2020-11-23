@@ -122,7 +122,8 @@ func (h *ScoreHandler) Store() http.HandlerFunc {
 			Points:  points,
 			Date:    date,
 		}); err != nil {
-
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		http.Redirect(w, r, "/scores?user=me&show=25", http.StatusFound)

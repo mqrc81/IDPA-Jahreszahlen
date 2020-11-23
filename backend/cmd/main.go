@@ -1,7 +1,7 @@
 package main
 
 /*
- * TODO Header
+ * main.go is the main file, which obtains connection to database and server
  */
 
 import (

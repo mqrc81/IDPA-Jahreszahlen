@@ -1,7 +1,7 @@
 package mysql
 
 /*
- * TODO Header
+ * store.go is the basis for all *_store.go files
  */
 
 import (

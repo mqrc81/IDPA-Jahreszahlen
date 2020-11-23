@@ -1,7 +1,7 @@
 package mysql
 
 /*
- * TODO Header
+ * event_store.go contains all functions for events that require database access
  */
 
 import (
