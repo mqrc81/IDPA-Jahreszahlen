@@ -11,7 +11,7 @@ import (
 )
 
 type UserHandler struct {
-	store backend.Store
+	store    backend.Store
 	sessions *scs.SessionManager
 }
 
@@ -25,7 +25,7 @@ func (h *UserHandler) Register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Execute HTML-template
 		if err := tmpl.Execute(w, nil); err != nil {
-		    http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -83,7 +83,7 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 		if err != nil {
 			// TODO username incorrect
 		} else {
-			if err := bcrypt.CompareHashAndPassword([]byte(user.Password),[]byte(r.FormValue("password")));
+			if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(r.FormValue("password")));
 				err != nil {
 				// TODO password incorrect
 			}

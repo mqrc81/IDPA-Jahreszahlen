@@ -16,7 +16,7 @@ import (
 )
 
 /*
- * Main function
+ * main is the main function
  */
 func main() {
 	// Load '.env' file, where global environment variables are stored

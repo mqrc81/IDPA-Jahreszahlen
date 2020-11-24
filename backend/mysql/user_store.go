@@ -19,9 +19,10 @@ type UserStore struct {
 /*
  * User gets user by user ID
  */
-func (s UserStore) User(userID int) (backend.User, error) {
+func (store UserStore) User(userID int) (backend.User, error) {
 	var u backend.User
-	if err := s.Get(&u, `SELECT * FROM users WHERE user_id = ?`, userID); err != nil {
+	query := `SELECT * FROM users WHERE user_id = ?`
+	if err := store.Get(&u, query, userID); err != nil {
 		return backend.User{}, fmt.Errorf("error getting user: %w", err)
 	}
 	return u, nil
@@ -30,22 +31,33 @@ func (s UserStore) User(userID int) (backend.User, error) {
 /*
  * UserByUsername gets user by username
  */
-func (s UserStore) UserByUsername(username string) (backend.User, error) {
+func (store UserStore) UserByUsername(username string) (backend.User, error) {
 	var u backend.User
-	if err := s.Get(&u, `SELECT * FROM users WHERE username = ?`, username); err != nil {
+	query := `SELECT * FROM users WHERE username = ?`
+	if err := store.Get(&u, query, username); err != nil {
 		return backend.User{}, fmt.Errorf("error getting user: %w", err)
 	}
 	return u, nil
 }
 
 /*
+ * Users gets users sorted by admin and user ID
+ */
+func (store UserStore) Users() ([]backend.User, error) {
+	var uu []backend.User
+	query := `SELECT * FROM users ORDER BY admin DESC, user_id` // order by [1.] admin (true -> false), [2.] user_id (101 -> 1)
+	if err := store.Select(&uu, query); err != nil {
+		return []backend.User{}, fmt.Errorf("error getting topics: %w", err)
+	}
+	return uu, nil
+}
+
+/*
  * CreateUser creates user
  */
-func (s UserStore) CreateUser(user *backend.User) error {
-	if _, err := s.Exec(`INSERT INTO users(username, password, admin) VALUES (?, ?, ?)`,
-		user.Username,
-		user.Password,
-		user.Admin); err != nil {
+func (store UserStore) CreateUser(u *backend.User) error {
+	query := `INSERT INTO users(username, password, admin) VALUES (?, ?, ?)`
+	if _, err := store.Exec(query, u.Username, u.Password, u.Admin); err != nil {
 		return fmt.Errorf("error creating user: %w", err)
 	}
 	return nil
@@ -54,10 +66,9 @@ func (s UserStore) CreateUser(user *backend.User) error {
 /*
  * UpdateUser updates user
  */
-func (s UserStore) UpdateUser(user *backend.User) error {
-	if _, err := s.Exec(`UPDATE users SET password = ? WHERE username = ?`,
-		user.Password,
-		user.Username); err != nil {
+func (store UserStore) UpdateUser(u *backend.User) error {
+	query := `UPDATE users SET password = ? WHERE username = ?`
+	if _, err := store.Exec(query, u.Password, u.Username); err != nil {
 		return fmt.Errorf("error updating user: %w", err)
 	}
 	return nil
@@ -66,8 +77,9 @@ func (s UserStore) UpdateUser(user *backend.User) error {
 /*
  * DeleteUser deletes user by username
  */
-func (s UserStore) DeleteUser(userID int) error {
-	if _, err := s.Exec(`DELETE FROM users WHERE user_id = ?`, userID); err != nil {
+func (store UserStore) DeleteUser(userID int) error {
+	query := `DELETE FROM users WHERE user_id = ?`
+	if _, err := store.Exec(query, userID); err != nil {
 		return fmt.Errorf("error deleting user: %w", err)
 	}
 	return nil

@@ -19,9 +19,10 @@ type EventStore struct {
 /*
  * Event gets event by event ID
  */
-func (s *EventStore) Event(eventID int) (backend.Event, error) {
+func (store *EventStore) Event(eventID int) (backend.Event, error) {
 	var e backend.Event
-	if err := s.Get(&e, `SELECT * FROM events WHERE event_id = ?`, eventID); err != nil {
+	query := `SELECT * FROM events WHERE event_id = ?`
+	if err := store.Get(&e, query, eventID); err != nil {
 		return backend.Event{}, fmt.Errorf("error getting event: %w", err)
 	}
 	return e, nil
@@ -30,13 +31,14 @@ func (s *EventStore) Event(eventID int) (backend.Event, error) {
 /*
  * EventsByTopic gets events by topic ID, sorted randomly or by year
  */
-func (s *EventStore) EventsByTopic(topicID int, orderByRand bool) ([]backend.Event, error) {
+func (store *EventStore) EventsByTopic(topicID int, orderByRand bool) ([]backend.Event, error) {
 	var ee []backend.Event
 	order := "year"
 	if orderByRand {
 		order = "RAND()"
 	}
-	if err := s.Select(&ee, `SELECT * FROM events WHERE topic_id = ? ORDER BY ?`, topicID, order); err != nil {
+	query := `SELECT * FROM events WHERE topic_id = ? ORDER BY ?`
+	if err := store.Select(&ee, query, topicID, order); err != nil {
 		return []backend.Event{}, fmt.Errorf("error getting events: %w", err)
 	}
 	return ee, nil
@@ -45,14 +47,13 @@ func (s *EventStore) EventsByTopic(topicID int, orderByRand bool) ([]backend.Eve
 /*
  * CreateEvent creates event
  */
-func (s *EventStore) CreateEvent(event *backend.Event) error {
-	if _, err := s.Exec(`INSERT INTO events(topic_id, title, year) VALUES (?, ?, ?)`,
-		event.TopicID,
-		event.Title,
-		event.Year); err != nil {
+func (store *EventStore) CreateEvent(e *backend.Event) error {
+	query := `INSERT INTO events(topic_id, title, year) VALUES (?, ?, ?)`
+	if _, err := store.Exec(query, e.TopicID, e.Title, e.Year); err != nil {
 		return fmt.Errorf("error creating event: %w", err)
 	}
-	if err := s.Get(event, `SELECT * FROM events WHERE event_id = last_insert_id()`); err != nil {
+	query = `SELECT * FROM events WHERE event_id = last_insert_id()`
+	if err := store.Get(e, query); err != nil {
 		return fmt.Errorf("error getting created event: %w", err)
 	}
 	return nil
@@ -61,14 +62,13 @@ func (s *EventStore) CreateEvent(event *backend.Event) error {
 /*
  * UpdateEvent updates event
  */
-func (s *EventStore) UpdateEvent(event *backend.Event) error {
-	if _, err := s.Exec(`UPDATE events SET title = ?, year = ? WHERE event_id = ?`,
-		event.Title,
-		event.Year,
-		event.EventID); err != nil {
-		return fmt.Errorf("error updating event: %w", err)
+func (store *EventStore) UpdateEvent(e *backend.Event) error {
+	query := `UPDATE events SET title = ?, year = ? WHERE event_id = ?`
+	if _, err := store.Exec(query, e.Title, e.Year, e.EventID); err != nil {
+		return fmt.Errorf("error updating e: %w", err)
 	}
-	if err := s.Get(event, `SELECT * FROM events WHERE event_id = last_insert_id()`); err != nil {
+	query = `SELECT * FROM events WHERE event_id = last_insert_id()`
+	if err := store.Get(e, query); err != nil {
 		return fmt.Errorf("error getting updated event: %w", err)
 	}
 	return nil
@@ -77,8 +77,9 @@ func (s *EventStore) UpdateEvent(event *backend.Event) error {
 /*
  * DeleteEvent deletes event by event ID
  */
-func (s *EventStore) DeleteEvent(eventID int) error {
-	if _, err := s.Exec(`DELETE FROM events WHERE event_id = ?`, eventID); err != nil {
+func (store *EventStore) DeleteEvent(eventID int) error {
+	query := `DELETE FROM events WHERE event_id = ?`
+	if _, err := store.Exec(query, eventID); err != nil {
 		return fmt.Errorf("error deleting event: %w", err)
 	}
 	return nil

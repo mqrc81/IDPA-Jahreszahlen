@@ -12,7 +12,7 @@ import (
 )
 
 type EventHandler struct {
-	store backend.Store
+	store    backend.Store
 	sessions *scs.SessionManager
 }
 
@@ -65,7 +65,7 @@ func (h *EventHandler) Store() http.HandlerFunc {
 		}
 
 		// Redirect to list of topics
-		http.Redirect(w, r, "/topics/" +topicIDstr + "/edit", http.StatusFound)
+		http.Redirect(w, r, "/topics/"+topicIDstr+"/edit", http.StatusFound)
 	}
 }
 
@@ -87,7 +87,6 @@ func (h *EventHandler) Delete() http.HandlerFunc {
 		}
 
 		// Redirect to list of topics
-		http.Redirect(w, r, "/topics/" + topicID + "/edit", http.StatusFound)
+		http.Redirect(w, r, "/topics/"+topicID+"/edit", http.StatusFound)
 	}
 }
-

@@ -12,7 +12,7 @@ import (
 )
 
 type TopicHandler struct {
-	store backend.Store
+	store    backend.Store
 	sessions *scs.SessionManager
 }
 

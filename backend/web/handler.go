@@ -15,6 +15,19 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
+
+var (
+	// Stores functions to use in HTML-template
+	FuncMap = template.FuncMap{
+		"rank": func(num int, page int, limit int) int {
+			return (page-1)*limit + num + 1
+		},
+		"increment": func(num int) int {
+			return num + 1
+		},
+	}
+)
+
 /*
  * NewHandler creates a new handler, including routes and middleware
  */
@@ -77,15 +90,6 @@ type Handler struct {
 	*chi.Mux
 	store    backend.Store
 	sessions *scs.SessionManager
-}
-
-var funcMap = template.FuncMap{
-	"rank": func(num int, page int, limit int) int {
-		return (page-1)*limit + num + 1
-	},
-	"increment": func(num int) int {
-		return num + 1
-	},
 }
 
 /*

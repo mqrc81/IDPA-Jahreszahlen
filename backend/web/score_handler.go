@@ -12,7 +12,7 @@ import (
 )
 
 type ScoreHandler struct {
-	store backend.Store
+	store    backend.Store
 	sessions *scs.SessionManager
 }
 
@@ -26,7 +26,7 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 	}
 
 	// Parse HTML-template
-	tmpl := template.Must(template.New("").Funcs(funcMap).Parse(scoresListHTML))
+	tmpl := template.Must(template.New("").Funcs(FuncMap).Parse(scoresListHTML))
 	return func(w http.ResponseWriter, r *http.Request) {
 		var ss []backend.Score
 

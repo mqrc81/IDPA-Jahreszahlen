@@ -27,7 +27,7 @@ type Event struct {
 }
 
 /*
- * User represents an account created
+ * User (ger. "Benutzer") represents an account created
  */
 type User struct {
 	UserID   int    `db:"user_id"`
@@ -37,7 +37,7 @@ type User struct {
 }
 
 /*
- * Score represents points scored by a user upon finishing a topic
+ * Score (ger. "Resultat") represents points scored by a user upon finishing playing a topic
  */
 type Score struct {
 	ScoreID int    `db:"score_id"`
@@ -75,6 +75,7 @@ type EventStore interface {
 type UserStore interface {
 	User(userID int) (User, error)
 	UserByUsername(username string) (User, error)
+	Users() ([]User, error)
 	CreateUser(u *User) error
 	UpdateUser(u *User) error
 	DeleteUser(userID int) error

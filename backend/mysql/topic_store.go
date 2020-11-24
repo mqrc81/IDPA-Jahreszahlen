@@ -19,9 +19,10 @@ type TopicStore struct {
 /*
  * Topic gets topic by topic ID
  */
-func (s *TopicStore) Topic(topicID int) (backend.Topic, error) {
+func (store *TopicStore) Topic(topicID int) (backend.Topic, error) {
 	var t backend.Topic
-	if err := s.Get(&t, `SELECT * FROM topics WHERE topic_id = ?`, topicID); err != nil {
+	query := `SELECT * FROM topics WHERE topic_id = ?`
+	if err := store.Get(&t, query, topicID); err != nil {
 		return backend.Topic{}, fmt.Errorf("error getting topic: %w", err)
 	}
 	return t, nil
@@ -30,9 +31,10 @@ func (s *TopicStore) Topic(topicID int) (backend.Topic, error) {
 /*
  * Topic gets topics
  */
-func (s *TopicStore) Topics() ([]backend.Topic, error) {
+func (store *TopicStore) Topics() ([]backend.Topic, error) {
 	var tt []backend.Topic
-	if err := s.Select(&tt, `SELECT * FROM topics ORDER BY start_year`); err != nil {
+	query := `SELECT * FROM topics ORDER BY start_year`
+	if err := store.Select(&tt, query); err != nil {
 		return []backend.Topic{}, fmt.Errorf("error getting topics: %w", err)
 	}
 	return tt, nil
@@ -41,16 +43,15 @@ func (s *TopicStore) Topics() ([]backend.Topic, error) {
 /*
  * CreateTopic creates topic
  */
-func (s *TopicStore) CreateTopic(topic *backend.Topic) error {
-	if _, err := s.Exec(`INSERT INTO topics(title, start_year, end_year, description) VALUES (?, ?, ?, ?)`,
-		topic.Title,
-		topic.StartYear,
-		topic.EndYear,
-		topic.Description); err != nil {
-		return fmt.Errorf("error creating topic: %w", err)
+func (store *TopicStore) CreateTopic(t *backend.Topic) error {
+	query := `INSERT INTO topics(title, start_year, end_year, description) VALUES (?, ?, ?, ?)`
+	if _, err := store.Exec(query, t.Title,
+		t.StartYear, t.EndYear, t.Description); err != nil {
+		return fmt.Errorf("error creating t: %w", err)
 	}
-	if err := s.Get(topic, `SELECT * FROM topics WHERE topic_id = last_insert_id()`); err != nil {
-	    return fmt.Errorf("error getting created topic: %w", err)
+	query = `SELECT * FROM topics WHERE topic_id = last_insert_id()`
+	if err := store.Get(t, query); err != nil {
+		return fmt.Errorf("error getting created topic: %w", err)
 	}
 	return nil
 }
@@ -58,16 +59,13 @@ func (s *TopicStore) CreateTopic(topic *backend.Topic) error {
 /*
  * UpdateTopic updates topic
  */
-func (s *TopicStore) UpdateTopic(topic *backend.Topic) error {
-	if _, err := s.Exec(`UPDATE topics SET title = ?, start_year = ?, end_year = ?, description = ? WHERE topic_id = ?`,
-		topic.Title,
-		topic.StartYear,
-		topic.EndYear,
-		topic.Description,
-		topic.TopicID); err != nil {
-		return fmt.Errorf("error updating topic: %w", err)
+func (store *TopicStore) UpdateTopic(t *backend.Topic) error {
+	query := `UPDATE topics SET title = ?, start_year = ?, end_year = ?, description = ? WHERE topic_id = ?`
+	if _, err := store.Exec(query, t.Title, t.StartYear, t.EndYear, t.Description, t.TopicID); err != nil {
+		return fmt.Errorf("error updating t: %w", err)
 	}
-	if err := s.Get(topic, `SELECT * FROM topics WHERE topic_id = last_insert_id()`); err != nil {
+	query = `SELECT * FROM topics WHERE topic_id = last_insert_id()`
+	if err := store.Get(t, query); err != nil {
 		return fmt.Errorf("error getting updated topic: %w", err)
 	}
 	return nil
@@ -76,8 +74,9 @@ func (s *TopicStore) UpdateTopic(topic *backend.Topic) error {
 /*
  * DeleteTopic deletes topic by topic ID
  */
-func (s *TopicStore) DeleteTopic(topicID int) error {
-	if _, err := s.Exec(`DELETE FROM topics WHERE topic_id = ?`, topicID); err != nil {
+func (store *TopicStore) DeleteTopic(topicID int) error {
+	query := `DELETE FROM topics WHERE topic_id = ?`
+	if _, err := store.Exec(query, topicID); err != nil {
 		return fmt.Errorf("error deleting topic: %w", err)
 	}
 	return nil
