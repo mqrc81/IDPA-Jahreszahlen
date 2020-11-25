@@ -27,33 +27,33 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 
 	// Parse HTML-template
 	tmpl := template.Must(template.New("").Funcs(FuncMap).Parse(scoresListHTML))
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
 		var ss []backend.Score
 
 		// Retrieve topic from URL parameters
 		topicID := -1
-		topic := r.URL.Query().Get("topic")
+		topic := req.URL.Query().Get("topic")
 		if len(topic) != 0 {
 			topicID, _ = strconv.Atoi(topic)
 		}
 
 		// Retrieve topic from URL parameters
 		userID := -1
-		user := r.URL.Query().Get("topic")
+		user := req.URL.Query().Get("topic")
 		if len(user) != 0 {
 			userID, _ = strconv.Atoi(topic)
 		}
 
 		// Retrieve limit from URL parameters
 		limit := 25
-		show := r.URL.Query().Get("show")
+		show := req.URL.Query().Get("show")
 		if len(show) != 0 {
 			limit, _ = strconv.Atoi(show)
 		}
 
 		// Retrieve offset from URL parameters
 		offset := 0
-		page := r.URL.Query().Get("page")
+		page := req.URL.Query().Get("page")
 		if len(page) != 0 {
 			offset, _ = strconv.Atoi(page)
 			offset = (offset - 1) * limit
@@ -64,7 +64,7 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 				// Execute SQL statement and return scores
 				scores, err := h.store.ScoresByTopicAndUser(topicID, userID, limit, offset)
 				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
+					http.Error(res, err.Error(), http.StatusInternalServerError)
 					return
 				}
 				ss = scores
@@ -72,7 +72,7 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 				// Execute SQL statement and return scores
 				scores, err := h.store.ScoresByTopic(topicID, limit, offset)
 				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
+					http.Error(res, err.Error(), http.StatusInternalServerError)
 					return
 				}
 				ss = scores
@@ -81,7 +81,7 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 			// Execute SQL statement and return scores
 			scores, err := h.store.ScoresByUser(userID, limit, offset)
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				http.Error(res, err.Error(), http.StatusInternalServerError)
 				return
 			}
 			ss = scores
@@ -89,15 +89,15 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 			// Execute SQL statement and return scores
 			scores, err := h.store.Scores(limit, offset)
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				http.Error(res, err.Error(), http.StatusInternalServerError)
 				return
 			}
 			ss = scores
 		}
 
 		// Execute HTML-template
-		if err := tmpl.Execute(w, data{Scores: ss}); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if err := tmpl.Execute(res, data{Scores: ss}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -107,11 +107,11 @@ func (h *ScoreHandler) List() http.HandlerFunc {
  * Store is a POST method that stores new score created
  */
 func (h *ScoreHandler) Store() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from form
-		topicID, _ := strconv.Atoi(r.FormValue("topic_id"))
-		userID, _ := strconv.Atoi(r.FormValue("user_id"))
-		points, _ := strconv.Atoi(r.FormValue("points"))
+		topicID, _ := strconv.Atoi(req.URL.Query().Get("topic_id"))
+		userID, _ := strconv.Atoi(req.URL.Query().Get("user_id"))
+		points, _ := strconv.Atoi(req.URL.Query().Get("points"))
 		date := time.Now().Format("2006-01-02")
 
 		// Execute SQL statement
@@ -122,10 +122,8 @@ func (h *ScoreHandler) Store() http.HandlerFunc {
 			Points:  points,
 			Date:    date,
 		}); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
-		http.Redirect(w, r, "/scores?user=me&show=25", http.StatusFound)
 	}
 }

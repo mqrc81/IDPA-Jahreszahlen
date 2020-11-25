@@ -28,13 +28,13 @@ func (h *EventHandler) Create() http.HandlerFunc {
 	// Parse HTML-template
 	tmpl := template.Must(template.New("").Parse(eventsCreateHTML))
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve topic ID from URL
-		topicID, _ := strconv.Atoi(chi.URLParam(r, "topicID"))
+		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
 		// Execute HTML-template
-		if err := tmpl.Execute(w, data{topicID}); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if err := tmpl.Execute(res, data{topicID}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -44,14 +44,14 @@ func (h *EventHandler) Create() http.HandlerFunc {
  * Store is a POST method that stores event created
  */
 func (h *EventHandler) Store() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve topic ID from URL
-		topicIDstr := chi.URLParam(r, "topicID")
+		topicIDstr := chi.URLParam(req, "topicID")
 		topicID, _ := strconv.Atoi(topicIDstr)
 
 		// Retrieve variables from form (Create)
-		title := r.FormValue("title")
-		year, _ := strconv.Atoi(r.FormValue("year"))
+		title := req.FormValue("title")
+		year, _ := strconv.Atoi(req.FormValue("year"))
 
 		// Execute SQL statement
 		if err := h.store.CreateEvent(&backend.Event{
@@ -60,12 +60,12 @@ func (h *EventHandler) Store() http.HandlerFunc {
 			Title:   title,
 			Year:    year,
 		}); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Redirect to list of topics
-		http.Redirect(w, r, "/topics/"+topicIDstr+"/edit", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicIDstr+"/edit", http.StatusFound)
 	}
 }
 
@@ -73,20 +73,20 @@ func (h *EventHandler) Store() http.HandlerFunc {
  * Delete is a POST method that deletes an event
  */
 func (h *EventHandler) Delete() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve event ID from URL
-		topicID := chi.URLParam(r, "topicID")
+		topicID := chi.URLParam(req, "topicID")
 
 		// Retrieve event ID from URL
-		eventID, _ := strconv.Atoi(chi.URLParam(r, "eventID"))
+		eventID, _ := strconv.Atoi(chi.URLParam(req, "eventID"))
 
 		// Execute SQL statement
 		if err := h.store.DeleteEvent(eventID); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Redirect to list of topics
-		http.Redirect(w, r, "/topics/"+topicID+"/edit", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicID+"/edit", http.StatusFound)
 	}
 }

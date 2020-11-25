@@ -28,17 +28,17 @@ func (h *TopicHandler) List() http.HandlerFunc {
 	// Parse HTML-template
 	tmpl := template.Must(template.New("").Parse(topicsListHTML))
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute SQL statement and return slice of topics
 		tt, err := h.store.Topics()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Execute HTML-template
-		if err := tmpl.Execute(w, data{Topics: tt}); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if err := tmpl.Execute(res, data{Topics: tt}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -51,10 +51,10 @@ func (h *TopicHandler) Create() http.HandlerFunc {
 	// Parse HTML-template
 	tmpl := template.Must(template.New("").Parse(topicsCreateHTML))
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute HTML-template
-		if err := tmpl.Execute(w, nil); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if err := tmpl.Execute(res, nil); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -64,12 +64,12 @@ func (h *TopicHandler) Create() http.HandlerFunc {
  * Store is a POST method that stores topic created
  */
 func (h *TopicHandler) Store() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve variables from form (Create)
-		title := r.FormValue("title")
-		startYear, _ := strconv.Atoi(r.FormValue("start_year"))
-		endYear, _ := strconv.Atoi(r.FormValue("end_year"))
-		description := r.FormValue("description")
+		title := req.FormValue("title")
+		startYear, _ := strconv.Atoi(req.FormValue("start_year"))
+		endYear, _ := strconv.Atoi(req.FormValue("end_year"))
+		description := req.FormValue("description")
 
 		// Execute SQL statement
 		if err := h.store.CreateTopic(&backend.Topic{
@@ -80,12 +80,12 @@ func (h *TopicHandler) Store() http.HandlerFunc {
 			Description: description,
 			PlayCount:   0,
 		}); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Redirect to list of topics
-		http.Redirect(w, r, "/topics", http.StatusFound)
+		http.Redirect(res, req, "/topics", http.StatusFound)
 	}
 }
 
@@ -93,18 +93,18 @@ func (h *TopicHandler) Store() http.HandlerFunc {
  * Delete is a POST method that deletes a topic
  */
 func (h *TopicHandler) Delete() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve TopicID from URL
-		topicID, _ := strconv.Atoi(chi.URLParam(r, "topicID"))
+		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
 		// Execute SQL statement
 		if err := h.store.DeleteTopic(topicID); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Redirect to list of topics
-		http.Redirect(w, r, "/topics", http.StatusFound)
+		http.Redirect(res, req, "/topics", http.StatusFound)
 	}
 }
 
@@ -121,27 +121,27 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 	// Parse HTML-template
 	tmpl := template.Must(template.New("").Parse(topicsEditHTML))
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve topic ID from URL
-		topicID, _ := strconv.Atoi(chi.URLParam(r, "topicID"))
+		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
 		// Execute SQL statement and return topic
 		t, err := h.store.Topic(topicID)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Execute SQL statement and return events
 		ee, err := h.store.EventsByTopic(topicID, false)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Execute HTML-template
-		if err := tmpl.Execute(w, data{Topic: t, Events: ee}); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if err := tmpl.Execute(res, data{Topic: t, Events: ee}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -159,60 +159,20 @@ func (h *TopicHandler) Show() http.HandlerFunc {
 	// Parse HTML-template
 	tmpl := template.Must(template.New("").Parse(topicsShowHTML))
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve TopicID from URL
-		topicID, _ := strconv.Atoi(chi.URLParam(r, "topicID"))
+		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
 		// Execute SQL statement and return topic
 		t, err := h.store.Topic(topicID)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Execute HTML-template
-		if err := tmpl.Execute(w, data{Topic: t}); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-}
-
-/*
- * Play is a GET method that goes through the 3 phases of the quiz and stores the user's score TODO
- */
-func (h *TopicHandler) Play() http.HandlerFunc {
-	// Data to pass to HTML-template
-	type data struct {
-		Topic       backend.Topic
-		Events      []backend.Event
-		EventsCount int
-	}
-
-	// Parse HTML-template
-	tmpl := template.Must(template.New("").Parse(`<h1>TODO</h1>`)) // TODO
-
-	return func(w http.ResponseWriter, r *http.Request) {
-		// Retrieve topic ID from URL
-		topicID, _ := strconv.Atoi(chi.URLParam(r, "topicID"))
-
-		// Execute SQL statement and return topic
-		t, err := h.store.Topic(topicID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Execute SQL statement and return events
-		ee, err := h.store.EventsByTopic(topicID, true)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Execute HTML-template
-		if err := tmpl.Execute(w, data{Topic: t, Events: ee, EventsCount: len(ee)}); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if err := tmpl.Execute(res, data{Topic: t}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}

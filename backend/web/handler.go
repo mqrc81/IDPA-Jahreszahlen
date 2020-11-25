@@ -17,7 +17,7 @@ import (
 
 
 var (
-	// Stores functions to use in HTML-template
+	// FuncMap stores functions to use in HTML-template
 	FuncMap = template.FuncMap{
 		"rank": func(num int, page int, limit int) int {
 			return (page-1)*limit + num + 1
@@ -41,6 +41,7 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 	topics := TopicHandler{store: store, sessions: sessions}
 	events := EventHandler{store: store, sessions: sessions}
 	scores := ScoreHandler{store: store, sessions: sessions}
+	play := PlayHandler{store: store, sessions: sessions}
 	users := UserHandler{store: store, sessions: sessions}
 
 	h.Use(middleware.Logger)
@@ -49,6 +50,7 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 	h.Get("/", h.Home())
 	h.Get("/about", h.About())
 
+	// Topics
 	h.Route("/topics", func(r chi.Router) {
 		r.Get("/", topics.List())
 		r.Get("/new", topics.Create())
@@ -56,20 +58,32 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		r.Post("/{topicID}/delete", topics.Delete())
 		r.Get("/{topicID}/edit", topics.Edit())
 		r.Get("/{topicID}", topics.Show())
-		r.Get("/{topicID}/play", topics.Play())
 	})
 
+	// Events
 	h.Route("/topics/{topicID}/events", func(r chi.Router) {
 		r.Get("/new", events.Create())
 		r.Post("/", events.Store())
 		r.Post("/{eventID}/delete", events.Delete())
 	})
 
+	// Play
+	h.Route("/topics/{topicID}/play", func(r chi.Router) {
+		r.Get("/1", play.Phase1())
+		r.Post("/1", play.Phase1Submit())
+		r.Get("/2", play.Phase2())
+		r.Post("/2", play.Phase2Submit())
+		r.Get("/3", play.Phase3())
+		r.Post("/3", play.Phase3Submit())
+	})
+
+	// Scores
 	h.Route("/scores", func(r chi.Router) {
 		h.Get("/", scores.List())
 		h.Post("/", scores.Store())
 	})
 
+	// Users
 	h.Route("/users", func(r chi.Router) {
 		r.Get("/register", users.Register())
 		r.Post("/register", users.RegisterSubmit())
@@ -99,10 +113,10 @@ func (h *Handler) Home() http.HandlerFunc {
 	// Parse HTML-template
 	tmpl := template.Must(template.New("").Parse(homeHTML))
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute HTML-template
-		if err := tmpl.Execute(w, nil); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if err := tmpl.Execute(res, nil); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -115,10 +129,10 @@ func (h *Handler) About() http.HandlerFunc {
 	// Parse HTML-template
 	tmpl := template.Must(template.New("").Parse(aboutHTML))
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute HTML-template
-		if err := tmpl.Execute(w, nil); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if err := tmpl.Execute(res, nil); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
