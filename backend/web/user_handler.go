@@ -1,5 +1,9 @@
 package web
 
+/*
+ * user_handler.go contains HTTP-handler functions for users
+ */
+
 import (
 	"html/template"
 	"net/http"

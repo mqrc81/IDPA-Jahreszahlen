@@ -1,5 +1,9 @@
 package web
 
+/*
+ * topic_handler.go contains HTTP-handler functions for topics
+ */
+
 import (
 	"html/template"
 	"net/http"

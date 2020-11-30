@@ -1,5 +1,9 @@
 package web
 
+/*
+ * sessions.go adds sessions-management
+ */
+
 import (
 	"database/sql"
 

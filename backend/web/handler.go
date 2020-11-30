@@ -70,11 +70,10 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 	// Play
 	h.Route("/topics/{topicID}/play", func(r chi.Router) {
 		r.Get("/1", play.Phase1())
-		r.Post("/1", play.Phase1Submit())
 		r.Get("/2", play.Phase2())
-		r.Post("/2", play.Phase2Submit())
 		r.Get("/3", play.Phase3())
-		r.Post("/3", play.Phase3Submit())
+		r.Post("/3", play.Submit())
+		r.Get("/review", play.Review())
 	})
 
 	// Scores
@@ -90,7 +89,8 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		r.Get("/login", users.Login())
 		r.Post("/login", users.LoginSubmit())
 		r.Post("/logout", users.Logout())
-		//r.Get("/{userID}", users.Profile())
+		//r.Get("/", users.List())
+		//r.Post("/{userID}/delete", users.Delete())
 		//r.Get("/{userID}/edit", users.Edit())
 	})
 

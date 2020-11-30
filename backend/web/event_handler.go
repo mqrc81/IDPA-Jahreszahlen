@@ -1,5 +1,9 @@
 package web
 
+/*
+ * event_handler.go contains HTTP-handler functions for events
+ */
+
 import (
 	"html/template"
 	"net/http"

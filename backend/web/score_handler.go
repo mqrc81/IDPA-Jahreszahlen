@@ -1,5 +1,9 @@
 package web
 
+/*
+ * score_handler.go contains HTTP-handler functions for scores
+ */
+
 import (
 	"html/template"
 	"net/http"
