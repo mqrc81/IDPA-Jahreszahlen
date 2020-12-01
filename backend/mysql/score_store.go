@@ -12,6 +12,9 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
+/*
+ * ScoreStore implements database access
+ */
 type ScoreStore struct {
 	*sqlx.DB
 }
@@ -67,6 +70,18 @@ func (store ScoreStore) ScoresByTopicAndUser(topicID int, userID int, limit int,
 		return []backend.Score{}, fmt.Errorf("error getting scores: %w", err)
 	}
 	return ss, nil
+}
+
+/*
+ * ScoresCount gets number of scores
+ */
+func (store *ScoreStore) ScoresCount() (int, error) {
+	var sCount int
+	query := `SELECT COUNT(*) FROM scores`
+	if err := store.Get(&sCount, query); err != nil {
+		return 0, fmt.Errorf("error getting number of scores: %w", err)
+	}
+	return sCount, nil
 }
 
 /*

@@ -12,6 +12,9 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
+/*
+ * EventStore implements database access
+ */
 type EventStore struct {
 	*sqlx.DB
 }

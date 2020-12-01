@@ -15,6 +15,9 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
+/*
+ * PlayHandler handles sessions, CSRF-protection and database-access for game phases
+ */
 type PlayHandler struct {
 	store    backend.Store
 	sessions *scs.SessionManager
@@ -94,7 +97,7 @@ func (h *PlayHandler) Phase2() http.HandlerFunc {
 
 		points := 0
 		for x := 1; x <= 3; x++ {
-			guess, _ := strconv.Atoi(req.FormValue("q"+strconv.Itoa(x)))
+			guess, _ := strconv.Atoi(req.FormValue("q" + strconv.Itoa(x)))
 			if guess == ee[x].Year {
 				points += 3
 			}
@@ -102,7 +105,7 @@ func (h *PlayHandler) Phase2() http.HandlerFunc {
 		if err := tmpl.Execute(res, data{
 			Events: ee,
 		}); err != nil {
-		    http.Error(res, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -122,11 +125,11 @@ func (h *PlayHandler) Phase3() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from session
 		var ee []backend.Event // ee := session.Pop(ctx, "events")
-		var points int // points := session.PopInt(ctx, "points")
+		var points int         // points := session.PopInt(ctx, "points")
 
 		for x := 1; x <= 5; x++ {
-			guess, _ := strconv.Atoi(req.FormValue("q"+strconv.Itoa(x))) // The user's answer
-			yr := ee[x+3].Year // The actual answer
+			guess, _ := strconv.Atoi(req.FormValue("q" + strconv.Itoa(x))) // The user's answer
+			yr := ee[x+3].Year                                             // The actual answer
 
 			// If answer is correct, user gets 7 points
 			if guess == yr {
@@ -205,7 +208,7 @@ func (h *PlayHandler) Submit() http.HandlerFunc {
 func (h *PlayHandler) Review() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
-		
+		// TODO
 	}
 	return func(res http.ResponseWriter, req *http.Request) {
 

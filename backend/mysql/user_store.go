@@ -12,6 +12,9 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
+/*
+ * UserStore implements database access
+ */
 type UserStore struct {
 	*sqlx.DB
 }

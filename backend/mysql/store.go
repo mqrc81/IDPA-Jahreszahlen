@@ -29,6 +29,9 @@ func NewStore(dsn string) (*Store, error) {
 	}, nil
 }
 
+/*
+ * Store implements all stores
+ */
 type Store struct {
 	*TopicStore
 	*EventStore

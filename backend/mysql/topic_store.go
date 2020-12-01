@@ -12,6 +12,9 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
+/*
+ * TopicStore implements database access
+ */
 type TopicStore struct {
 	*sqlx.DB
 }

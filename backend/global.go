@@ -1,7 +1,7 @@
 package backend
 
 /*
- * global.go contains declaration of all global structs and interfaces to be used throughout the project
+ * global.go contains declaration of all global structs and interfaces to be used throughout the backend
  */
 
 /*
@@ -48,7 +48,7 @@ type Score struct {
 }
 
 /*
- * TopicStore stores functions for Topic to inherit
+ * TopicStore stores functions for Topic to implement
  */
 type TopicStore interface {
 	Topic(topicID int) (Topic, error)
@@ -60,7 +60,7 @@ type TopicStore interface {
 }
 
 /*
- * EventStore stores functions for Event to inherit
+ * EventStore stores functions for Event to implement
  */
 type EventStore interface {
 	Event(eventID int) (Event, error)
@@ -72,7 +72,7 @@ type EventStore interface {
 }
 
 /*
- * UserStore stores functions for User to inherit
+ * UserStore stores functions for User to implement
  */
 type UserStore interface {
 	User(userID int) (User, error)
@@ -85,18 +85,19 @@ type UserStore interface {
 }
 
 /*
- * ScoreStore stores functions for Score to inherit
+ * ScoreStore stores functions for Score to implement
  */
 type ScoreStore interface {
 	Scores(limit int, offset int) ([]Score, error)
 	ScoresByTopic(topicID int, limit int, offset int) ([]Score, error)
 	ScoresByUser(userID int, limit int, offset int) ([]Score, error)
 	ScoresByTopicAndUser(topicID int, userID int, limit int, offset int) ([]Score, error)
+	ScoresCount() (int, error)
 	CreateScore(s *Score) error
 }
 
 /*
- * Store inherits TopicStore, EventStore, UserStore and ScoreStore
+ * Store implements TopicStore, EventStore, UserStore and ScoreStore
  */
 type Store interface {
 	TopicStore

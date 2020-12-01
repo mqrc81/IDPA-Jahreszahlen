@@ -15,6 +15,9 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
+/*
+ * EventHandler handles sessions, CSRF-protection and database access for events
+ */
 type EventHandler struct {
 	store    backend.Store
 	sessions *scs.SessionManager

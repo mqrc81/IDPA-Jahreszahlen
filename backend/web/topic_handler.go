@@ -15,6 +15,9 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
+/*
+ * TopicHandler handles sessions, CSRF-protection and database access for topics
+ */
 type TopicHandler struct {
 	store    backend.Store
 	sessions *scs.SessionManager

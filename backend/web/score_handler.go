@@ -15,6 +15,9 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
+/*
+ * ScoreHandler handles sessions, CSRF-protection and database access for scores
+ */
 type ScoreHandler struct {
 	store    backend.Store
 	sessions *scs.SessionManager

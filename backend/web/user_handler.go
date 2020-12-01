@@ -14,6 +14,9 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
+/*
+ * UserHandler handles sessions, CSRF-protection and database access for users
+ */
 type UserHandler struct {
 	store    backend.Store
 	sessions *scs.SessionManager
@@ -87,8 +90,7 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 		if err != nil {
 			// TODO username incorrect
 		} else {
-			if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.FormValue("password")));
-				err != nil {
+			if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.FormValue("password"))); err != nil {
 				// TODO password incorrect
 			}
 		}

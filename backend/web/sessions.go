@@ -11,6 +11,9 @@ import (
 	"github.com/alexedwards/scs/v2"
 )
 
+/*
+ * NewSessionManager creates new session
+ */
 func NewSessionManager(dataSourceName string) (*scs.SessionManager, error) {
 	db, err := sql.Open("mysql", dataSourceName)
 	if err != nil {
