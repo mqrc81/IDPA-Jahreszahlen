@@ -53,6 +53,18 @@ func (store UserStore) Users() ([]backend.User, error) {
 }
 
 /*
+ * UsersCount gets number of users
+ */
+func (store *UserStore) UsersCount() (int, error) {
+	var uCount int
+	query := `SELECT COUNT(*) FROM users`
+	if err := store.Get(&uCount, query); err != nil {
+		return 0, fmt.Errorf("error getting number of users: %w", err)
+	}
+	return uCount, nil
+}
+
+/*
  * CreateUser creates user
  */
 func (store UserStore) CreateUser(u *backend.User) error {

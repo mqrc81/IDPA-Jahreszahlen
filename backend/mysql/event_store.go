@@ -33,15 +33,26 @@ func (store *EventStore) Event(eventID int) (backend.Event, error) {
  */
 func (store *EventStore) EventsByTopic(topicID int, orderByRand bool) ([]backend.Event, error) {
 	var ee []backend.Event
-	order := "year"
+	query := `SELECT * FROM events WHERE topic_id = ? ORDER BY year`
 	if orderByRand {
-		order = "RAND()"
+		query = `SELECT * FROM events WHERE topic_id = ? ORDER BY RAND()`
 	}
-	query := `SELECT * FROM events WHERE topic_id = ? ORDER BY ?`
-	if err := store.Select(&ee, query, topicID, order); err != nil {
+	if err := store.Select(&ee, query, topicID); err != nil {
 		return []backend.Event{}, fmt.Errorf("error getting events: %w", err)
 	}
 	return ee, nil
+}
+
+/*
+ * EventsCount gets number of events
+ */
+func (store *EventStore) EventsCount() (int, error) {
+	var eCount int
+	query := `SELECT COUNT(*) FROM events`
+	if err := store.Get(&eCount, query); err != nil {
+		return 0, fmt.Errorf("error getting number of events: %w", err)
+	}
+	return eCount, nil
 }
 
 /*

@@ -3,7 +3,28 @@ package web
 // Temporary template for 'Home()'
 const homeHTML = `
 <h1>Home</h1>
-<a href="/topics">Themen</a>
+<p>
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore 
+magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd 
+gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing 
+elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos 
+et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor 
+sit amet.
+</p>
+<h2>
+Facts:
+<table>
+<tr>
+<td>Anzahl <a href="/topics">Themen</a>:</td><td>{{.TopicsCount}}</td>
+</tr>
+<tr>
+<td>Anzahl Ereignisse:</td><td>{{.EventsCount}}</td>
+</tr>
+<tr>
+<td>Anzahl aktiver Benutzer:</td><td>{{.UsersCount}}</td>
+</tr>
+</table>
+</h2>
 `
 
 // Temporary template for 'List()'

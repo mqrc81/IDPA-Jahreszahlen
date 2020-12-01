@@ -15,7 +15,6 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
-
 var (
 	// FuncMap stores functions to use in HTML-template
 	FuncMap = template.FuncMap{
@@ -78,8 +77,8 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 
 	// Scores
 	h.Route("/scores", func(r chi.Router) {
-		h.Get("/", scores.List())
-		h.Post("/", scores.Store())
+		r.Get("/", scores.List())
+		r.Post("/", scores.Store())
 	})
 
 	// Users
@@ -110,12 +109,58 @@ type Handler struct {
  * Home is a GET method that shows Homepage
  */
 func (h *Handler) Home() http.HandlerFunc {
+	// Data to pass to HTML-template
+	type data struct {
+		Topics      []backend.Topic
+		Scores      []backend.Score
+		TopicsCount int
+		EventsCount int
+		UsersCount  int
+	}
+
 	// Parse HTML-template
 	tmpl := template.Must(template.New("").Parse(homeHTML))
 
 	return func(res http.ResponseWriter, req *http.Request) {
+		// Execute SQL statement and return topics
+		tt, err := h.store.Topics()
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Execute SQL statement and return scores
+		ss, err := h.store.Scores(5, 0)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Execute SQL statements and return number of topics, events and users
+		tCount, err := h.store.TopicsCount()
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		eCount, err := h.store.EventsCount()
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		uCount, err := h.store.UsersCount()
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		// Execute HTML-template
-		if err := tmpl.Execute(res, nil); err != nil {
+		if err := tmpl.Execute(res, data{
+			Topics:      tt,
+			Scores:      ss,
+			TopicsCount: tCount,
+			EventsCount: eCount,
+			UsersCount:  uCount,
+		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}

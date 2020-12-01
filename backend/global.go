@@ -53,6 +53,7 @@ type Score struct {
 type TopicStore interface {
 	Topic(topicID int) (Topic, error)
 	Topics() ([]Topic, error)
+	TopicsCount() (int, error)
 	CreateTopic(t *Topic) error
 	UpdateTopic(t *Topic) error
 	DeleteTopic(topicID int) error
@@ -64,6 +65,7 @@ type TopicStore interface {
 type EventStore interface {
 	Event(eventID int) (Event, error)
 	EventsByTopic(topicID int, orderByRand bool) ([]Event, error)
+	EventsCount() (int, error)
 	CreateEvent(e *Event) error
 	UpdateEvent(e *Event) error
 	DeleteEvent(eventID int) error
@@ -76,6 +78,7 @@ type UserStore interface {
 	User(userID int) (User, error)
 	UserByUsername(username string) (User, error)
 	Users() ([]User, error)
+	UsersCount() (int, error)
 	CreateUser(u *User) error
 	UpdateUser(u *User) error
 	DeleteUser(userID int) error

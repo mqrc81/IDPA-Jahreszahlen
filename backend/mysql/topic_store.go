@@ -29,7 +29,7 @@ func (store *TopicStore) Topic(topicID int) (backend.Topic, error) {
 }
 
 /*
- * Topic gets topics
+ * Topics gets topics
  */
 func (store *TopicStore) Topics() ([]backend.Topic, error) {
 	var tt []backend.Topic
@@ -38,6 +38,18 @@ func (store *TopicStore) Topics() ([]backend.Topic, error) {
 		return []backend.Topic{}, fmt.Errorf("error getting topics: %w", err)
 	}
 	return tt, nil
+}
+
+/*
+ * TopicsCount gets number of events
+ */
+func (store *EventStore) TopicsCount() (int, error) {
+	var tCount int
+	query := `SELECT COUNT(*) FROM topics`
+	if err := store.Get(&tCount, query); err != nil {
+		return 0, fmt.Errorf("error getting number of topics: %w", err)
+	}
+	return tCount, nil
 }
 
 /*
