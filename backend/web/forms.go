@@ -3,6 +3,8 @@ package web
 import (
 	"encoding/gob"
 	"fmt"
+	"log"
+	"regexp"
 	"time"
 )
 
@@ -12,6 +14,7 @@ import (
 func init() {
 	gob.Register(CreateTopicForm{})
 	gob.Register(CreateEventForm{})
+	gob.Register(RegisterForm{})
 	gob.Register(FormErrors{})
 }
 
@@ -29,7 +32,7 @@ type CreateTopicForm struct {
 }
 
 /*
- * Validate validates form
+ * Validate validates topic form
  */
 func (f *CreateTopicForm) Validate() bool {
 	f.Errors = FormErrors{}
@@ -63,7 +66,7 @@ func (f *CreateTopicForm) Validate() bool {
 		f.Errors["Description"] = "Beschreibung darf nicht leer sein."
 	}
 
-	fmt.Print(f.Errors)
+	fmt.Println(string("\033[32m"), f.Errors, "\033[0m")
 	return len(f.Errors) == 0
 }
 
@@ -75,6 +78,9 @@ type CreateEventForm struct {
 	Errors FormErrors
 }
 
+/*
+ * Validate validates event form
+ */
 func (f *CreateEventForm) Validate() bool {
 	f.Errors = FormErrors{}
 
@@ -94,6 +100,55 @@ func (f *CreateEventForm) Validate() bool {
 		f.Errors["Year"] = "Wird hier die Zukunft vorausgesagt?"
 	}
 
-	fmt.Print(f.Errors)
+	fmt.Println(string("\033[32m"), f.Errors, "\033[0m")
+	return len(f.Errors) == 0
+}
+
+// RegisterForm holds values of form when registering a user
+type RegisterForm struct {
+	Username      string
+	Password      string
+	UsernameTaken bool
+
+	Errors FormErrors
+}
+
+func Regex(str string, regex string) bool {
+	match, err := regexp.MatchString(regex, str)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return match
+}
+
+/*
+ * Validate validates form
+ */
+func (f *RegisterForm) Validate() bool {
+	f.Errors = FormErrors{}
+
+	// Validate username
+	switch {
+	case f.UsernameTaken:
+		f.Errors["Username"] = "Benutzername ist bereits vergeben."
+	case len(f.Username) < 3:
+		f.Errors["Username"] = "Benutzername muss mindestens 3 Zeichen lang sein."
+	case len(f.Username) > 20:
+		f.Errors["Username"] = "Benutzername darf 20 Zeichen nicht überschreiten."
+	case !Regex(f.Username, "^[a-zA-Z0-9._]*$"):
+		f.Errors["Username"] = "Benutzername darf nur Buchstaben, Zahlen, '.' und '_' enthalten."
+	case !Regex(f.Username, "\\D"):
+		f.Errors["Username"] = "Benutzername muss mindestens 1 Buchstaben enthalten."
+	case Regex(f.Username, "^[._]"):
+		f.Errors["Username"] = "Benutzername darf nicht mit '.' oder '_' beginnen."
+	case Regex(f.Username, "[._]$"):
+		f.Errors["Username"] = "Benutzername darf nicht mit '.' oder '_' enden."
+	case Regex(f.Username, "[_.]{2}"):
+		f.Errors["Username"] = "Benutzername darf '.' und '_' nicht aufeinanderfolgend haben."
+	}
+
+	// Validate password TODO
+
+	fmt.Println(string("\033[32m"), f.Errors, "\033[0m")
 	return len(f.Errors) == 0
 }

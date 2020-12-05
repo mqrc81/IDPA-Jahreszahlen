@@ -24,6 +24,8 @@ Facts:
 <td>Anzahl aktiver Benutzer:</td><td>{{.UsersCount}}</td>
 </tr>
 </table>
+<p><a href="/users/register">Register</a></p>
+<p><a href="/users/login">Login</a></p>
 </h2>
 `
 
@@ -158,7 +160,7 @@ const usersRegisterHTML = `
 
 // Temporary template for 'Login()'
 const usersLoginHTML = `
-<h1>Register</h1>
+<h1>Login</h1>
 <form action="/users/login" method="POST">
 	<table>
         <tr>

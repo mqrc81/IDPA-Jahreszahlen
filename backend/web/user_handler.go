@@ -26,12 +26,19 @@ type UserHandler struct {
  * Register is a GET method with form to register new user
  */
 func (h *UserHandler) Register() http.HandlerFunc {
+	// Data to pass to HTML-template
+	type data struct {
+		SessionData
+	}
+
 	// Parse HTML-template
 	tmpl := template.Must(template.New("").Parse(usersRegisterHTML))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute HTML-template
-		if err := tmpl.Execute(res, nil); err != nil {
+		if err := tmpl.Execute(res, data{
+			SessionData: GetSessionData(h.sessions, req.Context()),
+		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -43,8 +50,24 @@ func (h *UserHandler) Register() http.HandlerFunc {
  */
 func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
+		// Retrieve values from form (Register)
+		form := RegisterForm{
+			Username:      req.FormValue("username"),
+			Password:      req.FormValue("password"),
+			UsernameTaken: false,
+		}
+
+		// Validate form
+		if _, err := h.store.UserByUsername(form.Username); err == nil { // If error is nil, user was found
+			form.UsernameTaken = true // If user was found, username is already taken
+		}
+		if !form.Validate() {
+			h.sessions.Put(req.Context(), "form", form)
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
 		// Hash password
-		password, err := bcrypt.GenerateFromPassword([]byte(req.FormValue("password")), bcrypt.DefaultCost)
+		password, err := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.DefaultCost)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -53,13 +76,17 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 		// Execute SQL statement
 		if err := h.store.CreateUser(&backend.User{
 			UserID:   0,
-			Username: req.FormValue("username"),
+			Username: form.Username,
 			Password: string(password),
 			Admin:    false,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		// Add flash message
+		h.sessions.Put(req.Context(), "flash", "Registrierung war erfolgreich. Bitte loggen Sie sich ein.")
+
 		http.Redirect(res, req, "/users/login", http.StatusFound)
 	}
 }
@@ -68,12 +95,19 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
  * Login is a GET method with form to login
  */
 func (h *UserHandler) Login() http.HandlerFunc {
+	// Data to pass to HTML-template
+	type data struct {
+		SessionData
+	}
+
 	// Parse HTML-template
 	tmpl := template.Must(template.New("").Parse(usersLoginHTML))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute HTML-template
-		if err := tmpl.Execute(res, nil); err != nil {
+		if err := tmpl.Execute(res, data{
+			SessionData: GetSessionData(h.sessions, req.Context()),
+		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -105,6 +139,6 @@ func (h *UserHandler) Logout() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// TODO log out
 
-		http.Redirect(res, req, "/", http.StatusFound)
+		http.Redirect(res, req, "/users/login", http.StatusFound)
 	}
 }
