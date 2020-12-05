@@ -19,11 +19,11 @@ import (
  * main is the initial starting point of the program
  */
 func main() {
-	// Load '.env' file, where global environment variables are stored
+	// Access global environment variables
 	if err := godotenv.Load("backend/.env"); err != nil {
 		log.Fatal(err)
 	}
-	dsn := os.Getenv("DB_DSN")
+	dsn := os.Getenv("DB_DSN") // data source name
 
 	// Establish database connection
 	store, err := mysql.NewStore(dsn)

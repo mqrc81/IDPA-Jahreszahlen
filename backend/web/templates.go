@@ -126,7 +126,7 @@ const scoresListHTML = `
 		<th>Datum</th>
 		<th>Punkte</th>
 	</tr>
-	{{range $i, $s := .List}}
+	{{range $i, $s := .Scores}}
 		<tr>
 			<td>{{increment $i}}</td>
 			<td>{{$s.UserID}}</td>

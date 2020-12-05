@@ -29,6 +29,8 @@ type ScoreHandler struct {
 func (h *ScoreHandler) List() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
+		SessionData
+
 		Scores []backend.Score
 	}
 
@@ -103,7 +105,10 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 		}
 
 		// Execute HTML-template
-		if err := tmpl.Execute(res, data{Scores: ss}); err != nil {
+		if err := tmpl.Execute(res, data{
+			SessionData: GetSessionData(h.sessions, req.Context()),
+			Scores:      ss,
+		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}

@@ -71,7 +71,7 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		r.Get("/1", play.Phase1())
 		r.Get("/2", play.Phase2())
 		r.Get("/3", play.Phase3())
-		r.Post("/3", play.Submit())
+		r.Post("/3", play.Store())
 		r.Get("/review", play.Review())
 	})
 
@@ -88,9 +88,10 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		r.Get("/login", users.Login())
 		r.Post("/login", users.LoginSubmit())
 		r.Post("/logout", users.Logout())
-		//r.Get("/", users.List())
-		//r.Post("/{userID}/delete", users.Delete())
-		//r.Get("/{userID}/edit", users.Edit())
+		// r.Get("/profile", users.Profile())
+		// r.Get("/", users.List())
+		// r.Post("/{userID}/delete", users.Delete())
+		// r.Get("/{userID}/edit", users.Edit())
 	})
 
 	return h
@@ -111,6 +112,8 @@ type Handler struct {
 func (h *Handler) Home() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
+		SessionData
+
 		Topics      []backend.Topic
 		Scores      []backend.Score
 		TopicsCount int
@@ -155,11 +158,12 @@ func (h *Handler) Home() http.HandlerFunc {
 
 		// Execute HTML-template
 		if err := tmpl.Execute(res, data{
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			Topics:      tt,
 			Scores:      ss,
-			TopicsCount: tCount,
-			EventsCount: eCount,
-			UsersCount:  uCount,
+			TopicsCount: tCount, // TEMP
+			EventsCount: eCount, // TEMP
+			UsersCount:  uCount, // TEMP
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -168,15 +172,21 @@ func (h *Handler) Home() http.HandlerFunc {
 }
 
 /*
- * Home is a GET method that shows information about this project
+ * About is a GET method that shows information about this project
  */
 func (h *Handler) About() http.HandlerFunc {
+	// Data to pass to HTML-template
+	type data struct {
+		SessionData
+	}
 	// Parse HTML-template
 	tmpl := template.Must(template.New("").Parse(aboutHTML))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute HTML-template
-		if err := tmpl.Execute(res, nil); err != nil {
+		if err := tmpl.Execute(res, data{
+			SessionData: GetSessionData(h.sessions, req.Context()),
+		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}

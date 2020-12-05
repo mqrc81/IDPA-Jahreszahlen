@@ -5,6 +5,7 @@ package web
  */
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/alexedwards/scs/mysqlstore"
@@ -23,4 +24,24 @@ func NewSessionManager(dataSourceName string) (*scs.SessionManager, error) {
 	sessions := scs.New()
 	sessions.Store = mysqlstore.New(db)
 	return sessions, nil
+}
+
+/*
+ * SessionData hold session data
+ */
+type SessionData struct {
+	FlashMessage string
+	User         int
+}
+
+/*
+ * GetSessionData gets session data
+ */
+func GetSessionData(session *scs.SessionManager, ctx context.Context) SessionData {
+	var data SessionData
+
+	//data.FlashMessage = session.PopString(ctx, "flash")
+	//data.User = session.PopInt(ctx, "user")
+
+	return data
 }

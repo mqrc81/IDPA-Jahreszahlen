@@ -29,6 +29,8 @@ type PlayHandler struct {
 func (h *PlayHandler) Phase1() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
+		SessionData
+
 		Events []backend.Event
 	}
 
@@ -56,7 +58,8 @@ func (h *PlayHandler) Phase1() http.HandlerFunc {
 
 		// Execute HTML-template
 		if err := tmpl.Execute(res, data{
-			Events: ee,
+			SessionData: GetSessionData(h.sessions, req.Context()),
+			Events:      ee,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -70,6 +73,8 @@ func (h *PlayHandler) Phase1() http.HandlerFunc {
 func (h *PlayHandler) Phase2() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
+		SessionData
+
 		Events []backend.Event
 	}
 
@@ -93,7 +98,7 @@ func (h *PlayHandler) Phase2() http.HandlerFunc {
 		//}
 
 		// TODO Retrieve events array from sessions
-		var ee []backend.Event // Temporary
+		var ee []backend.Event // TEMP
 
 		points := 0
 		for x := 1; x <= 3; x++ {
@@ -103,7 +108,8 @@ func (h *PlayHandler) Phase2() http.HandlerFunc {
 			}
 		}
 		if err := tmpl.Execute(res, data{
-			Events: ee,
+			SessionData: GetSessionData(h.sessions, req.Context()),
+			Events:      ee,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -117,10 +123,12 @@ func (h *PlayHandler) Phase2() http.HandlerFunc {
 func (h *PlayHandler) Phase3() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
+		SessionData
+
 		Events []backend.Event
 	}
 
-	//Parse HTML-templat
+	//Parse HTML-template
 	tmpl := template.Must(template.New("").Parse(`TODO`)) // TODO
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from session
@@ -163,7 +171,8 @@ func (h *PlayHandler) Phase3() http.HandlerFunc {
 
 		// Execute HTML-template
 		if err := tmpl.Execute(res, data{
-			Events: ee,
+			SessionData: GetSessionData(h.sessions, req.Context()),
+			Events:      ee,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -172,9 +181,9 @@ func (h *PlayHandler) Phase3() http.HandlerFunc {
 }
 
 /*
- * Submit is a POST-method that stores topic, user, points and date in database
+ * Store is a POST-method that stores topic, user, points and date in database
  */
-func (h *PlayHandler) Submit() http.HandlerFunc {
+func (h *PlayHandler) Store() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve topic ID from URL
 		topicIDstr := chi.URLParam(req, "topicID")
@@ -198,6 +207,8 @@ func (h *PlayHandler) Submit() http.HandlerFunc {
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 		}
+
+		// Redirects to review of the user's score
 		http.Redirect(res, req, "/topics/"+topicIDstr+"/play/review", http.StatusFound)
 	}
 }
@@ -208,11 +219,19 @@ func (h *PlayHandler) Submit() http.HandlerFunc {
 func (h *PlayHandler) Review() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
+		SessionData
 		// TODO
 	}
+
+	// Parse HTML-template
+	tmpl := template.Must(template.New("").Parse(`TODO`)) // TODO
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// TODO
+		if err := tmpl.Execute(res, data{
+			SessionData: GetSessionData(h.sessions, req.Context()),
+		}); err != nil {
 
+		}
 	}
 }

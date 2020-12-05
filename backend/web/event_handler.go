@@ -29,6 +29,8 @@ type EventHandler struct {
 func (h *EventHandler) Create() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
+		SessionData
+
 		TopicID int
 	}
 
@@ -40,7 +42,10 @@ func (h *EventHandler) Create() http.HandlerFunc {
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
 		// Execute HTML-template
-		if err := tmpl.Execute(res, data{topicID}); err != nil {
+		if err := tmpl.Execute(res, data{
+			SessionData: GetSessionData(h.sessions, req.Context()),
+			TopicID:     topicID,
+		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -70,6 +75,9 @@ func (h *EventHandler) Store() http.HandlerFunc {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		// Adds flash message
+		h.sessions.Put(req.Context(), "flash", "Ereignis wurde erfolgreich erstellt.")
 
 		// Redirect to list of topics
 		http.Redirect(res, req, "/topics/"+topicIDstr+"/edit", http.StatusFound)

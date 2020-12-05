@@ -29,6 +29,8 @@ type TopicHandler struct {
 func (h *TopicHandler) List() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
+		SessionData
+
 		Topics []backend.Topic
 	}
 
@@ -44,7 +46,10 @@ func (h *TopicHandler) List() http.HandlerFunc {
 		}
 
 		// Execute HTML-template
-		if err := tmpl.Execute(res, data{Topics: tt}); err != nil {
+		if err := tmpl.Execute(res, data{
+			SessionData: GetSessionData(h.sessions, req.Context()),
+			Topics:      tt,
+		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -55,12 +60,18 @@ func (h *TopicHandler) List() http.HandlerFunc {
  * Create is a GET method for a form to create a new topic
  */
 func (h *TopicHandler) Create() http.HandlerFunc {
+	// Data to pass to HTML-template
+	type data struct {
+		SessionData
+	}
 	// Parse HTML-template
 	tmpl := template.Must(template.New("").Parse(topicsCreateHTML))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute HTML-template
-		if err := tmpl.Execute(res, nil); err != nil {
+		if err := tmpl.Execute(res, data{
+			SessionData: GetSessionData(h.sessions, req.Context()),
+		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -73,25 +84,39 @@ func (h *TopicHandler) Create() http.HandlerFunc {
 func (h *TopicHandler) Store() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve variables from form (Create)
-		title := req.FormValue("title")
 		startYear, _ := strconv.Atoi(req.FormValue("start_year"))
 		endYear, _ := strconv.Atoi(req.FormValue("end_year"))
-		description := req.FormValue("description")
+		form := CreateTopicForm{
+			Title:       req.FormValue("title"),
+			StartYear:   startYear,
+			EndYear:     endYear,
+			Description: req.FormValue("description"),
+		}
+
+		// Validate form
+		if !form.Validate() {
+			h.sessions.Put(req.Context(), "form", form)
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
 
 		// Execute SQL statement
 		if err := h.store.CreateTopic(&backend.Topic{
 			TopicID:     0,
-			Title:       title,
-			StartYear:   startYear,
-			EndYear:     endYear,
-			Description: description,
+			Title:       form.Title,
+			StartYear:   form.StartYear,
+			EndYear:     form.EndYear,
+			Description: form.Description,
 			PlayCount:   0,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// Redirect to list of topics
+		// Adds flash message
+		h.sessions.Put(req.Context(), "flash", "Thema wurde erfolgreich erstellt.")
+
+		// Redirects to list of topics
 		http.Redirect(res, req, "/topics", http.StatusFound)
 	}
 }
@@ -121,6 +146,8 @@ func (h *TopicHandler) Delete() http.HandlerFunc {
 func (h *TopicHandler) Edit() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
+		SessionData
+
 		Topic  backend.Topic
 		Events []backend.Event
 	}
@@ -147,7 +174,11 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 		}
 
 		// Execute HTML-template
-		if err := tmpl.Execute(res, data{Topic: t, Events: ee}); err != nil {
+		if err := tmpl.Execute(res, data{
+			SessionData: GetSessionData(h.sessions, req.Context()),
+			Topic:       t,
+			Events:      ee,
+		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -160,6 +191,8 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 func (h *TopicHandler) Show() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
+		SessionData
+
 		Topic backend.Topic
 	}
 
@@ -178,7 +211,10 @@ func (h *TopicHandler) Show() http.HandlerFunc {
 		}
 
 		// Execute HTML-template
-		if err := tmpl.Execute(res, data{Topic: t}); err != nil {
+		if err := tmpl.Execute(res, data{
+			SessionData: GetSessionData(h.sessions, req.Context()),
+			Topic:       t,
+		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
