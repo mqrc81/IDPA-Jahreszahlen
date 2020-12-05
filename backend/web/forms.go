@@ -134,7 +134,7 @@ func (f *RegisterForm) Validate() bool {
 	case len(f.Username) < 3:
 		f.Errors["Username"] = "Benutzername muss mindestens 3 Zeichen lang sein."
 	case len(f.Username) > 20:
-		f.Errors["Username"] = "Benutzername darf 20 Zeichen nicht überschreiten."
+		f.Errors["Username"] = "Benutzername darf höchstens 20 Zeichen lang sein."
 	case !Regex(f.Username, "^[a-zA-Z0-9._]*$"):
 		f.Errors["Username"] = "Benutzername darf nur Buchstaben, Zahlen, '.' und '_' enthalten."
 	case !Regex(f.Username, "\\D"):
@@ -147,7 +147,19 @@ func (f *RegisterForm) Validate() bool {
 		f.Errors["Username"] = "Benutzername darf '.' und '_' nicht aufeinanderfolgend haben."
 	}
 
-	// Validate password TODO
+	// Validate password
+	switch {
+	case len(f.Password) < 8:
+		f.Errors["Password"] = "Passwort muss mindestens 8 Zeichen lang sein."
+	case !Regex(f.Password, "[!@#$%^&*]"):
+		f.Errors["Password"] = "Passwort muss ein Sonderzeichen enthalten (!@#$%^&*)."
+	case !Regex(f.Password, "[a-z]"):
+		f.Errors["Password"] = "Passwort muss mindestens ein Kleinbuchstaben enthalten."
+	case !Regex(f.Password, "[A-Z]"):
+		f.Errors["Password"] = "Passwort muss mindestens ein Grossbuchstaben enthalten."
+	case !Regex(f.Password, "\\d"):
+		f.Errors["Password"] = "Passwort muss mindestens eine Zahl enthalten."
+	}
 
 	fmt.Println(string("\033[32m"), f.Errors, "\033[0m")
 	return len(f.Errors) == 0
