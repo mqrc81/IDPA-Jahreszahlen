@@ -15,6 +15,7 @@ func init() {
 	gob.Register(CreateTopicForm{})
 	gob.Register(CreateEventForm{})
 	gob.Register(RegisterForm{})
+	gob.Register(LoginForm{})
 	gob.Register(FormErrors{})
 }
 
@@ -66,7 +67,7 @@ func (f *CreateTopicForm) Validate() bool {
 		f.Errors["Description"] = "Beschreibung darf nicht leer sein."
 	}
 
-	fmt.Println(string("\033[32m"), f.Errors, "\033[0m")
+	fmt.Println(string("\033[32m"), f.Errors, "\033[0m") // TEMP
 	return len(f.Errors) == 0
 }
 
@@ -100,7 +101,7 @@ func (f *CreateEventForm) Validate() bool {
 		f.Errors["Year"] = "Wird hier die Zukunft vorausgesagt?"
 	}
 
-	fmt.Println(string("\033[32m"), f.Errors, "\033[0m")
+	fmt.Println(string("\033[32m"), f.Errors, "\033[0m") // TEMP
 	return len(f.Errors) == 0
 }
 
@@ -161,6 +162,36 @@ func (f *RegisterForm) Validate() bool {
 		f.Errors["Password"] = "Passwort muss mindestens eine Zahl enthalten."
 	}
 
-	fmt.Println(string("\033[32m"), f.Errors, "\033[0m")
+	fmt.Println(string("\033[32m"), f.Errors, "\033[0m") // TEMP
+	return len(f.Errors) == 0
+}
+
+// LoginForm holds values of form when registering a user
+type LoginForm struct {
+	Username             string
+	Password             string
+	IncorrectCredentials bool
+
+	Errors FormErrors
+}
+
+func (f *LoginForm) Validate() bool {
+	f.Errors = FormErrors{}
+
+	// Validate username
+	switch {
+	case f.Username == "":
+		f.Errors["Username"] = "Bitte Benutzernamen eingeben."
+	case f.IncorrectCredentials:
+		f.Errors["Username"] = "Benutzername oder Passwort ist falsch."
+	}
+	switch {
+	case f.Password == "":
+		f.Errors["Password"] = "Bitte Passwort eingeben."
+	case f.IncorrectCredentials:
+		f.Errors["Username"] = " "
+	}
+
+	fmt.Println(string("\033[32m"), f.Errors, "\033[0m") // TEMP
 	return len(f.Errors) == 0
 }

@@ -5,6 +5,7 @@ package web
  */
 
 import (
+	"context"
 	"html/template"
 	"net/http"
 
@@ -45,6 +46,7 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 
 	h.Use(middleware.Logger)
 	h.Use(sessions.LoadAndSave)
+	h.Use(h.withUser)
 
 	h.Get("/", h.Home())
 	h.Get("/about", h.About())
@@ -191,4 +193,25 @@ func (h *Handler) About() http.HandlerFunc {
 			return
 		}
 	}
+}
+
+func (h *Handler) withUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		// Retrieve user ID from session
+		var userID int
+		userIDinf := h.sessions.Get(req.Context(), "user_id")
+		if userIDinf != nil {
+			userID = userIDinf.(int)
+		}
+
+		// Execute SQL statement
+		user, err := h.store.User(userID)
+		if err != nil {
+			next.ServeHTTP(res, req)
+			return
+		}
+
+		ctx := context.WithValue(req.Context(), "user", user)
+		next.ServeHTTP(res, req.WithContext(ctx))
+	})
 }

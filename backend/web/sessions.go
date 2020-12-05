@@ -10,6 +10,8 @@ import (
 
 	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/v2"
+
+	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
 /*
@@ -31,8 +33,10 @@ func NewSessionManager(dataSourceName string) (*scs.SessionManager, error) {
  */
 type SessionData struct {
 	FlashMessage string
-	User         int
 	Form         interface{}
+	User         backend.User
+	LoggedIn     bool
+	Admin        bool
 }
 
 /*
@@ -41,12 +45,26 @@ type SessionData struct {
 func GetSessionData(session *scs.SessionManager, ctx context.Context) SessionData {
 	var data SessionData
 
-	//data.FlashMessage = session.PopString(ctx, "flash")
-	//data.User = session.PopInt(ctx, "user")
+	// Retrieve flash message from session
+	data.FlashMessage = session.PopString(ctx, "flash")
+
+	// Retrieve form from session
 	data.Form = session.PopInt(ctx, "form")
 	if data.Form == nil {
 		data.Form = map[string]string{}
 	}
+
+	// Retrieve user from session
+	userInf := ctx.Value("user")
+	if userInf != nil {
+		data.User = userInf.(backend.User)
+		data.LoggedIn = false
+	} else {
+		data.User = backend.User{}
+		data.LoggedIn = true
+	}
+
+	data.Admin = data.User.Admin
 
 	return data
 }

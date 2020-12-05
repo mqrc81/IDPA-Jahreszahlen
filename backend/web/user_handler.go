@@ -119,15 +119,35 @@ func (h *UserHandler) Login() http.HandlerFunc {
  */
 func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Execute SQL statement
-		user, err := h.store.UserByUsername(req.FormValue("username"))
-		if err != nil {
-			// TODO username incorrect
-		} else {
-			if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.FormValue("password"))); err != nil {
-				// TODO password incorrect
-			}
+		// Retrieve values from form
+		form := LoginForm{
+			Username:             req.FormValue("username"),
+			Password:             req.FormValue("password"),
+			IncorrectCredentials: false,
 		}
+
+		user, err := h.store.UserByUsername(form.Username)
+		if err != nil {
+			form.IncorrectCredentials = true
+		} else {
+			err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password))
+			form.IncorrectCredentials = err != nil
+		}
+
+		// Validate form
+		if !form.Validate() {
+			h.sessions.Put(req.Context(), "form", form)
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+
+		// Store user ID in session
+		h.sessions.Put(req.Context(), "user_id", user.UserID)
+
+		// Add flash message to session
+		h.sessions.Put(req.Context(), "flash", "Login war erfolgreich.")
+
+		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)
 	}
 }
@@ -137,8 +157,13 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
  */
 func (h *UserHandler) Logout() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		// TODO log out
+		// Remove user ID from session
+		h.sessions.Remove(req.Context(), "user_id")
 
-		http.Redirect(res, req, "/users/login", http.StatusFound)
+		// Add flash message to session
+		h.sessions.Put(req.Context(), "flash", "Logout war erfolgreich.")
+
+		// Redirect to Home
+		http.Redirect(res, req, "/", http.StatusFound)
 	}
 }

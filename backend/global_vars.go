@@ -1,7 +1,7 @@
 package backend
 
 /*
- * global.go contains declaration of all global structs and interfaces to be used throughout the backend
+ * global_vars.go contains declaration of all global structs and interfaces to be used throughout the backend
  */
 
 /*
