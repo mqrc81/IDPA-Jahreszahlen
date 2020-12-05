@@ -2,7 +2,6 @@ package web
 
 import (
 	"encoding/gob"
-	"fmt"
 	"log"
 	"regexp"
 	"time"
@@ -67,7 +66,6 @@ func (f *CreateTopicForm) Validate() bool {
 		f.Errors["Description"] = "Beschreibung darf nicht leer sein."
 	}
 
-	fmt.Println(string("\033[32m"), f.Errors, "\033[0m") // TEMP
 	return len(f.Errors) == 0
 }
 
@@ -101,7 +99,6 @@ func (f *CreateEventForm) Validate() bool {
 		f.Errors["Year"] = "Wird hier die Zukunft vorausgesagt?"
 	}
 
-	fmt.Println(string("\033[32m"), f.Errors, "\033[0m") // TEMP
 	return len(f.Errors) == 0
 }
 
@@ -162,7 +159,6 @@ func (f *RegisterForm) Validate() bool {
 		f.Errors["Password"] = "Passwort muss mindestens eine Zahl enthalten."
 	}
 
-	fmt.Println(string("\033[32m"), f.Errors, "\033[0m") // TEMP
 	return len(f.Errors) == 0
 }
 
@@ -192,6 +188,5 @@ func (f *LoginForm) Validate() bool {
 		f.Errors["Username"] = " "
 	}
 
-	fmt.Println(string("\033[32m"), f.Errors, "\033[0m") // TEMP
 	return len(f.Errors) == 0
 }

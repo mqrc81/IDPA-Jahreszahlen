@@ -58,9 +58,11 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 		}
 
 		// Validate form
-		if _, err := h.store.UserByUsername(form.Username); err == nil { // If error is nil, user was found
+		user, err := h.store.UserByUsername(form.Username)
+		if err == nil { // If error is nil, user was found
 			form.UsernameTaken = true // If user was found, username is already taken
 		}
+
 		if !form.Validate() {
 			h.sessions.Put(req.Context(), "form", form)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
@@ -84,10 +86,13 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 			return
 		}
 
-		// Add flash message
-		h.sessions.Put(req.Context(), "flash", "Registrierung war erfolgreich. Bitte loggen Sie sich ein.")
+		// Store user ID in session (= login)
+		h.sessions.Put(req.Context(), "user_id", user.UserID)
 
-		http.Redirect(res, req, "/users/login", http.StatusFound)
+		// Add flash message
+		h.sessions.Put(req.Context(), "flash", "Registrierung war erfolgreich. Sie sind nun eingeloggt.")
+
+		http.Redirect(res, req, "/", http.StatusFound)
 	}
 }
 
