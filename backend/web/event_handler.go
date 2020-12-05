@@ -62,15 +62,25 @@ func (h *EventHandler) Store() http.HandlerFunc {
 		topicID, _ := strconv.Atoi(topicIDstr)
 
 		// Retrieve variables from form (Create)
-		title := req.FormValue("title")
 		year, _ := strconv.Atoi(req.FormValue("year"))
+		form := CreateEventForm{
+			Title: req.FormValue("title"),
+			Year:  year,
+		}
+
+		// Validate form
+		if !form.Validate() {
+			h.sessions.Put(req.Context(), "form", form)
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
 
 		// Execute SQL statement
 		if err := h.store.CreateEvent(&backend.Event{
 			EventID: 0,
 			TopicID: topicID,
-			Title:   title,
-			Year:    year,
+			Title:   form.Title,
+			Year:    form.Year,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
