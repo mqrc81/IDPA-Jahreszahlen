@@ -111,6 +111,25 @@ type RegisterForm struct {
 	Errors FormErrors
 }
 
+/*
+ * ValidatePassword validates a user's password
+ */
+func ValidatePassword(password string, errors FormErrors, errorName string) FormErrors {
+	switch {
+	case len(password) < 8:
+		errors[errorName] = "Passwort muss mindestens 8 Zeichen lang sein."
+	case !Regex(password, "[!@#$%^&*]"):
+		errors[errorName] = "Passwort muss ein Sonderzeichen enthalten (!@#$%^&*)."
+	case !Regex(password, "[a-z]"):
+		errors[errorName] = "Passwort muss mindestens ein Kleinbuchstaben enthalten."
+	case !Regex(password, "[A-Z]"):
+		errors[errorName] = "Passwort muss mindestens ein Grossbuchstaben enthalten."
+	case !Regex(password, "\\d"):
+		errors[errorName] = "Passwort muss mindestens eine Zahl enthalten."
+	}
+	return errors
+}
+
 func Regex(str string, regex string) bool {
 	match, err := regexp.MatchString(regex, str)
 	if err != nil {
@@ -146,18 +165,7 @@ func (f *RegisterForm) Validate() bool {
 	}
 
 	// Validate password
-	switch {
-	case len(f.Password) < 8:
-		f.Errors["Password"] = "Passwort muss mindestens 8 Zeichen lang sein."
-	case !Regex(f.Password, "[!@#$%^&*]"):
-		f.Errors["Password"] = "Passwort muss ein Sonderzeichen enthalten (!@#$%^&*)."
-	case !Regex(f.Password, "[a-z]"):
-		f.Errors["Password"] = "Passwort muss mindestens ein Kleinbuchstaben enthalten."
-	case !Regex(f.Password, "[A-Z]"):
-		f.Errors["Password"] = "Passwort muss mindestens ein Grossbuchstaben enthalten."
-	case !Regex(f.Password, "\\d"):
-		f.Errors["Password"] = "Passwort muss mindestens eine Zahl enthalten."
-	}
+	f.Errors = ValidatePassword(f.Password, f.Errors, "Password")
 
 	return len(f.Errors) == 0
 }
@@ -171,6 +179,9 @@ type LoginForm struct {
 	Errors FormErrors
 }
 
+/*
+ * Validate validates form
+ */
 func (f *LoginForm) Validate() bool {
 	f.Errors = FormErrors{}
 
@@ -187,6 +198,32 @@ func (f *LoginForm) Validate() bool {
 	case f.IncorrectCredentials:
 		f.Errors["Username"] = " "
 	}
+
+	return len(f.Errors) == 0
+}
+
+// PasswordForm holds values of form when editing a user's password
+type PasswordForm struct {
+	Password1            string
+	Password2            string
+	IncorrectOldPassword bool
+
+	Errors FormErrors
+}
+
+/*
+ * Validate validates form
+ */
+func (f *PasswordForm) Validate() bool {
+	f.Errors = FormErrors{}
+
+	switch {
+	case f.IncorrectOldPassword:
+		f.Errors["OldPassword"] = "Altes Passwort ist inkorrekt."
+	}
+
+	f.Errors = ValidatePassword(f.Password1, f.Errors, "Password1")
+	f.Errors = ValidatePassword(f.Password2, f.Errors, "Password2")
 
 	return len(f.Errors) == 0
 }

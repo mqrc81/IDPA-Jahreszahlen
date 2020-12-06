@@ -172,3 +172,35 @@ func (h *UserHandler) Logout() http.HandlerFunc {
 		http.Redirect(res, req, "/", http.StatusFound)
 	}
 }
+
+/*
+ * EditPassword is a GET method that edits a user's password
+ */
+func (h *UserHandler) EditPassword() http.HandlerFunc {
+	// Data to pass to HTML-template
+	type data struct {
+		SessionData
+	}
+
+	// Parse HTML-template
+	tmpl := template.Must(template.New("").Parse(`TODO`)) // TODO
+	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Execute HTML-template
+		if err := tmpl.Execute(res, data{
+			SessionData: GetSessionData(h.sessions, req.Context()),
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+/*
+ * PasswordForm
+ */
+func (h *UserHandler) EditPasswordStore() http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+
+	}
+}
