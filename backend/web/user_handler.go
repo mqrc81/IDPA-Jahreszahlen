@@ -86,7 +86,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 			return
 		}
 
-		// CreateStore user ID in session (= login)
+		// Store user ID in session (= login)
 		h.sessions.Put(req.Context(), "user_id", user.UserID)
 
 		// Add flash message
@@ -146,7 +146,7 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 			return
 		}
 
-		// CreateStore user ID in session
+		// Store user ID in session
 		h.sessions.Put(req.Context(), "user_id", user.UserID)
 
 		// Add flash message to session
@@ -197,10 +197,50 @@ func (h *UserHandler) EditPassword() http.HandlerFunc {
 }
 
 /*
- * PasswordForm
+ * EditPasswordStore is a POST method that stores password edited
  */
 func (h *UserHandler) EditPasswordStore() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
+		// Retrieve values from form
+		oldPassword := req.FormValue("old_password")
+		form := PasswordForm{
+			Password1:            req.FormValue("password1"),
+			Password2:            req.FormValue("password2"),
+			IncorrectOldPassword: false,
+		}
 
+		// Retrieve user from session
+		var userID int
+		userIDinf := h.sessions.Get(req.Context(), "user_id")
+		if userIDinf != nil {
+			userID = userIDinf.(int)
+		}
+		user, err := h.store.User(userID)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Compare user's password with "old password" from form
+		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword)); err != nil {
+			form.IncorrectOldPassword = true
+		}
+
+		// Validate form
+		if !form.Validate() {
+			h.sessions.Put(req.Context(), "form", form)
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+
+		// Execute SQL statement
+		if err := h.store.UpdateUser(&backend.User{
+			UserID:   userID,
+			Username: user.Username,
+			Password: form.Password1,
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }

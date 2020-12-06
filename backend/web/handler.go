@@ -195,6 +195,9 @@ func (h *Handler) About() http.HandlerFunc {
 	}
 }
 
+/*
+ * withUser is a middleware that handles current user
+ */
 func (h *Handler) withUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve user ID from session

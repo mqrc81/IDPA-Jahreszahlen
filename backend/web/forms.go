@@ -15,6 +15,7 @@ func init() {
 	gob.Register(CreateEventForm{})
 	gob.Register(RegisterForm{})
 	gob.Register(LoginForm{})
+	gob.Register(PasswordForm{})
 	gob.Register(FormErrors{})
 }
 
@@ -38,31 +39,28 @@ func (f *TopicForm) Validate() bool {
 	f.Errors = FormErrors{}
 
 	// Validate title
-	switch {
-	case f.Title == "":
+	if f.Title == "" {
 		f.Errors["Title"] = "Titel darf nicht leer sein."
-	case len(f.Title) > 50:
+	} else if len(f.Title) > 50 {
 		f.Errors["Title"] = "Titel darf 50 Zeichen nicht überschreiten."
 	}
 
 	// Validate start- and end-year
 	current := time.Now().Year()
-	switch {
-	case f.StartYear <= 0:
+	if f.StartYear <= 0 {
 		f.Errors["Year"] = "Start-Jahr muss positiv sein."
-	case f.EndYear <= 0:
+	} else if f.EndYear <= 0 {
 		f.Errors["Year"] = "End-Jahr muss positiv sein."
-	case f.StartYear > current:
+	} else if f.StartYear > current {
 		f.Errors["Year"] = "Start-Jahr darf nicht in der Zukunft sein."
-	case f.EndYear > current:
+	} else if f.EndYear > current {
 		f.Errors["Year"] = "End-Jahr darf nicht in der Zukunft sein."
-	case f.EndYear < f.StartYear:
+	} else if f.EndYear < f.StartYear {
 		f.Errors["Year"] = "Da wurden wohl Start- und End-Jahr vertauscht."
 	}
 
 	// Validate description
-	switch {
-	case len(f.Description) > 500:
+	if len(f.Description) > 500 {
 		f.Errors["Description"] = "Beschreibung darf nicht leer sein."
 	}
 
@@ -84,18 +82,16 @@ func (f *CreateEventForm) Validate() bool {
 	f.Errors = FormErrors{}
 
 	// Validate title
-	switch {
-	case f.Title == "":
+	if f.Title == "" {
 		f.Errors["Title"] = "Titel darf nicht leer sein."
-	case len(f.Title) > 110:
+	} else if len(f.Title) > 110 {
 		f.Errors["Title"] = "Titel darf 110 Zeichen nicht überschreiten."
 	}
 
 	// Validate year
-	switch {
-	case f.Year <= 0:
+	if f.Year <= 0 {
 		f.Errors["Year"] = "Jahr muss positiv sein."
-	case f.Year > time.Now().Year():
+	} else if f.Year > time.Now().Year() {
 		f.Errors["Year"] = "Wird hier die Zukunft vorausgesagt?"
 	}
 
@@ -115,18 +111,18 @@ type RegisterForm struct {
  * ValidatePassword validates a user's password
  */
 func ValidatePassword(password string, errors FormErrors, errorName string) FormErrors {
-	switch {
-	case len(password) < 8:
+	if len(password) < 8 {
 		errors[errorName] = "Passwort muss mindestens 8 Zeichen lang sein."
-	case !Regex(password, "[!@#$%^&*]"):
+	} else if !Regex(password, "[!@#$%^&*]") {
 		errors[errorName] = "Passwort muss ein Sonderzeichen enthalten (!@#$%^&*)."
-	case !Regex(password, "[a-z]"):
+	} else if !Regex(password, "[a-z]") {
 		errors[errorName] = "Passwort muss mindestens ein Kleinbuchstaben enthalten."
-	case !Regex(password, "[A-Z]"):
+	} else if !Regex(password, "[A-Z]") {
 		errors[errorName] = "Passwort muss mindestens ein Grossbuchstaben enthalten."
-	case !Regex(password, "\\d"):
+	} else if !Regex(password, "\\d") {
 		errors[errorName] = "Passwort muss mindestens eine Zahl enthalten."
 	}
+
 	return errors
 }
 
@@ -145,22 +141,21 @@ func (f *RegisterForm) Validate() bool {
 	f.Errors = FormErrors{}
 
 	// Validate username
-	switch {
-	case f.UsernameTaken:
+	if f.UsernameTaken {
 		f.Errors["Username"] = "Benutzername ist bereits vergeben."
-	case len(f.Username) < 3:
+	} else if len(f.Username) < 3 {
 		f.Errors["Username"] = "Benutzername muss mindestens 3 Zeichen lang sein."
-	case len(f.Username) > 20:
+	} else if len(f.Username) > 20 {
 		f.Errors["Username"] = "Benutzername darf höchstens 20 Zeichen lang sein."
-	case !Regex(f.Username, "^[a-zA-Z0-9._]*$"):
+	} else if !Regex(f.Username, "^[a-zA-Z0-9._]*$") {
 		f.Errors["Username"] = "Benutzername darf nur Buchstaben, Zahlen, '.' und '_' enthalten."
-	case !Regex(f.Username, "\\D"):
+	} else if !Regex(f.Username, "\\D") {
 		f.Errors["Username"] = "Benutzername muss mindestens 1 Buchstaben enthalten."
-	case Regex(f.Username, "^[._]"):
+	} else if Regex(f.Username, "^[._]") {
 		f.Errors["Username"] = "Benutzername darf nicht mit '.' oder '_' beginnen."
-	case Regex(f.Username, "[._]$"):
+	} else if Regex(f.Username, "[._]$") {
 		f.Errors["Username"] = "Benutzername darf nicht mit '.' oder '_' enden."
-	case Regex(f.Username, "[_.]{2}"):
+	} else if Regex(f.Username, "[_.]{2}") {
 		f.Errors["Username"] = "Benutzername darf '.' und '_' nicht aufeinanderfolgend haben."
 	}
 
@@ -186,16 +181,16 @@ func (f *LoginForm) Validate() bool {
 	f.Errors = FormErrors{}
 
 	// Validate username
-	switch {
-	case f.Username == "":
+	if f.Username == "" {
 		f.Errors["Username"] = "Bitte Benutzernamen eingeben."
-	case f.IncorrectCredentials:
+	} else if f.IncorrectCredentials {
 		f.Errors["Username"] = "Benutzername oder Passwort ist falsch."
 	}
-	switch {
-	case f.Password == "":
+
+	// Validate password
+	if f.Password == "" {
 		f.Errors["Password"] = "Bitte Passwort eingeben."
-	case f.IncorrectCredentials:
+	} else if f.IncorrectCredentials {
 		f.Errors["Username"] = " "
 	}
 
@@ -217,12 +212,15 @@ type PasswordForm struct {
 func (f *PasswordForm) Validate() bool {
 	f.Errors = FormErrors{}
 
-	switch {
-	case f.IncorrectOldPassword:
+	// Validate old password
+	if f.IncorrectOldPassword {
 		f.Errors["OldPassword"] = "Altes Passwort ist inkorrekt."
 	}
 
+	// Validate new password
 	f.Errors = ValidatePassword(f.Password1, f.Errors, "Password1")
+
+	// Validate new password confirmed
 	f.Errors = ValidatePassword(f.Password2, f.Errors, "Password2")
 
 	return len(f.Errors) == 0
