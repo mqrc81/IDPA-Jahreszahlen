@@ -86,7 +86,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 			return
 		}
 
-		// Store user ID in session (= login)
+		// CreateStore user ID in session (= login)
 		h.sessions.Put(req.Context(), "user_id", user.UserID)
 
 		// Add flash message
@@ -146,7 +146,7 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 			return
 		}
 
-		// Store user ID in session
+		// CreateStore user ID in session
 		h.sessions.Put(req.Context(), "user_id", user.UserID)
 
 		// Add flash message to session

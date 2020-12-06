@@ -11,7 +11,7 @@ import (
  * init gets called the first time this file is initialized
  */
 func init() {
-	gob.Register(CreateTopicForm{})
+	gob.Register(TopicForm{})
 	gob.Register(CreateEventForm{})
 	gob.Register(RegisterForm{})
 	gob.Register(LoginForm{})
@@ -21,8 +21,8 @@ func init() {
 // FormErrors is a map that holds the errors
 type FormErrors map[string]string
 
-// CreateTopicForm holds values of form when creating a topic
-type CreateTopicForm struct {
+// TopicForm holds values of form when creating a topic
+type TopicForm struct {
 	Title       string
 	StartYear   int
 	EndYear     int
@@ -34,7 +34,7 @@ type CreateTopicForm struct {
 /*
  * Validate validates topic form
  */
-func (f *CreateTopicForm) Validate() bool {
+func (f *TopicForm) Validate() bool {
 	f.Errors = FormErrors{}
 
 	// Validate title

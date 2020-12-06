@@ -55,7 +55,7 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 	h.Route("/topics", func(r chi.Router) {
 		r.Get("/", topics.List())
 		r.Get("/new", topics.Create())
-		r.Post("/", topics.Store())
+		r.Post("/", topics.CreateStore())
 		r.Post("/{topicID}/delete", topics.Delete())
 		r.Get("/{topicID}/edit", topics.Edit())
 		r.Get("/{topicID}", topics.Show())

@@ -79,14 +79,14 @@ func (h *TopicHandler) Create() http.HandlerFunc {
 }
 
 /*
- * Store is a POST method that stores topic created
+ * CreateStore is a POST method that stores topic created
  */
-func (h *TopicHandler) Store() http.HandlerFunc {
+func (h *TopicHandler) CreateStore() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve variables from form (Create)
 		startYear, _ := strconv.Atoi(req.FormValue("start_year"))
 		endYear, _ := strconv.Atoi(req.FormValue("end_year"))
-		form := CreateTopicForm{
+		form := TopicForm{
 			Title:       req.FormValue("title"),
 			StartYear:   startYear,
 			EndYear:     endYear,
@@ -102,12 +102,10 @@ func (h *TopicHandler) Store() http.HandlerFunc {
 
 		// Execute SQL statement
 		if err := h.store.CreateTopic(&backend.Topic{
-			TopicID:     0,
 			Title:       form.Title,
 			StartYear:   form.StartYear,
 			EndYear:     form.EndYear,
 			Description: form.Description,
-			PlayCount:   0,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -134,6 +132,8 @@ func (h *TopicHandler) Delete() http.HandlerFunc {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		// Add flash message
+		h.sessions.Put(req.Context(), "flash", "Thema wurde erfolgreich gelöscht.")
 
 		// Redirect to list of topics
 		http.Redirect(res, req, "/topics", http.StatusFound)
@@ -182,6 +182,52 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+/*
+ * EditStore is a POST method that stores topic edited
+ */
+func (h *TopicHandler) EditStore() http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		// Retrieve topic ID from URL
+		topicIDstr := req.URL.Query().Get("topicID")
+		topicID, _ := strconv.Atoi(topicIDstr)
+
+		// Retrieve values from form (Edit)
+		startYear, _ := strconv.Atoi(req.FormValue("start_year"))
+		endYear, _ := strconv.Atoi(req.FormValue("end_year"))
+		form := TopicForm{
+			Title:       req.FormValue("title"),
+			StartYear:   startYear,
+			EndYear:     endYear,
+			Description: req.FormValue("description"),
+		}
+
+		// Validate form
+		if !form.Validate() {
+			h.sessions.Put(req.Context(), "form", form)
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+
+		// Execute SQL statement
+		if err := h.store.UpdateTopic(&backend.Topic{
+			TopicID:     topicID,
+			Title:       form.Title,
+			StartYear:   form.StartYear,
+			EndYear:     form.EndYear,
+			Description: form.Description,
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Add flash message
+		h.sessions.Put(req.Context(), "flash", "Thema wurde erfolgreich bearbeitet.")
+
+		// Redirect to topic Show
+		http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 	}
 }
 

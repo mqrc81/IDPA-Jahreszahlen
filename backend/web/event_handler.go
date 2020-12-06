@@ -77,7 +77,6 @@ func (h *EventHandler) Store() http.HandlerFunc {
 
 		// Execute SQL statement
 		if err := h.store.CreateEvent(&backend.Event{
-			EventID: 0,
 			TopicID: topicID,
 			Title:   form.Title,
 			Year:    form.Year,
