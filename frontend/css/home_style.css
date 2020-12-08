@@ -1,0 +1,63 @@
+
+body{
+    padding-top: 1% !important;
+    background-color:#d5efca !important;
+    width: 100% !important;
+
+}
+header{
+    padding-left: 1% !important;
+    background-color:#4f9ee6;
+    color: aliceblue;
+    width: 100% !important;
+}
+main{
+    padding: 1% !important;
+}
+
+.list-unstyled, .container{
+    background-color: white !important;
+    color: black !important;
+    width: 70% !important;
+    border: solid black 2px !important;
+    text-align: center !important;
+}
+#ranking,h5{
+    background-color: #4f9ee6;
+    border-bottom: solid black 2px !important;
+    color: white;
+    width: 100% !important;
+}
+table{
+    margin-top: 10% !important;
+    font-size: 70%!important;
+}
+button{
+    color:black!important;
+    background-color: #4f9ee6!important;
+    border: solid black 2px !important;
+    border-radius: 15%;
+    width: 70%;
+    margin-top: 17% !important;
+}
+/* NAVIGATION: */
+nav{
+    background-color: white !important;
+    color: black !important;
+    width: 60% !important;
+    border: solid black 2px !important;
+    text-align: center !important;
+}
+.nav-item{
+    color: black!important;
+}
+.nav-item:hover	{
+    background-color: #4f9ee6;
+    color: white !important;
+
+}
+/* active link*/
+#active	{
+    color: black !important;
+}
+/* END OF NAVIGATION: */
