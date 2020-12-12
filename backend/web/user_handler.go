@@ -32,7 +32,9 @@ func (h *UserHandler) Register() http.HandlerFunc {
 	}
 
 	// Parse HTML-template
-	tmpl := template.Must(template.New("").Parse(usersRegisterHTML))
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/users_register.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute HTML-template
@@ -106,7 +108,9 @@ func (h *UserHandler) Login() http.HandlerFunc {
 	}
 
 	// Parse HTML-template
-	tmpl := template.Must(template.New("").Parse(usersLoginHTML))
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/users_login.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute HTML-template
@@ -183,7 +187,9 @@ func (h *UserHandler) EditPassword() http.HandlerFunc {
 	}
 
 	// Parse HTML-template
-	tmpl := template.Must(template.New("").Parse(`TODO`)) // TODO
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/users_edit_password.html"))
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Execute HTML-template

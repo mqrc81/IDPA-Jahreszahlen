@@ -23,7 +23,9 @@ func main() {
 	if err := godotenv.Load("backend/.env"); err != nil {
 		log.Fatal(err)
 	}
-	dsn := os.Getenv("DB_DSN") // data source name
+
+	// Get data-source name from environment variables
+	dsn := os.Getenv("DB_DSN")
 
 	// Establish database connection
 	store, err := mysql.NewStore(dsn)
@@ -37,7 +39,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Host website
+	// Serve website
 	handler := web.NewHandler(store, sessions)
 	if err := http.ListenAndServe(":3000", handler); err != nil {
 		log.Fatal(err)

@@ -35,7 +35,9 @@ func (h *PlayHandler) Phase1() http.HandlerFunc {
 	}
 
 	// Parse HTML-template
-	tmpl := template.Must(template.New("").Parse(`TODO`)) // TODO
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/play_phase1.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from URL parameters
@@ -79,7 +81,10 @@ func (h *PlayHandler) Phase2() http.HandlerFunc {
 	}
 
 	//Parse HTML-template
-	tmpl := template.Must(template.New("").Parse(`TODO`)) // TODO
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/play_phase2.html"))
+
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Retrieve values from URL parameters
@@ -129,7 +134,10 @@ func (h *PlayHandler) Phase3() http.HandlerFunc {
 	}
 
 	//Parse HTML-template
-	tmpl := template.Must(template.New("").Parse(`TODO`)) // TODO
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/play_phase3.html"))
+
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from session
 		var ee []backend.Event // ee := session.Pop(ctx, "events")
@@ -224,10 +232,15 @@ func (h *PlayHandler) Review() http.HandlerFunc {
 	}
 
 	// Parse HTML-template
-	tmpl := template.Must(template.New("").Parse(`TODO`)) // TODO
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/play_review.html"))
+
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// TODO
+
+		// Execute HTML-template
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 		}); err != nil {

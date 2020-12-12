@@ -35,7 +35,10 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 	}
 
 	// Parse HTML-template
-	tmpl := template.Must(template.New("").Funcs(FuncMap).Parse(scoresListHTML))
+	tmpl := template.Must(template.New("").Funcs(FuncMap).ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/scores_list.html"))
+
 	return func(res http.ResponseWriter, req *http.Request) {
 		var ss []backend.Score
 

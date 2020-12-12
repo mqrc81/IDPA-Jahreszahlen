@@ -34,8 +34,10 @@ func (h *TopicHandler) List() http.HandlerFunc {
 		Topics []backend.Topic
 	}
 
-	// Parse HTML-template
-	tmpl := template.Must(template.New("").Parse(topicsListHTML))
+	// Parse HTML-templates
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/topics_list.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute SQL statement and return slice of topics
@@ -65,7 +67,9 @@ func (h *TopicHandler) Create() http.HandlerFunc {
 		SessionData
 	}
 	// Parse HTML-template
-	tmpl := template.Must(template.New("").Parse(topicsCreateHTML))
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/topics_create.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute HTML-template
@@ -153,7 +157,9 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 	}
 
 	// Parse HTML-template
-	tmpl := template.Must(template.New("").Parse(topicsEditHTML))
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/topics_edit.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve topic ID from URL
@@ -243,7 +249,9 @@ func (h *TopicHandler) Show() http.HandlerFunc {
 	}
 
 	// Parse HTML-template
-	tmpl := template.Must(template.New("").Parse(topicsShowHTML))
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/topics_show.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve TopicID from URL

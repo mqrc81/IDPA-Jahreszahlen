@@ -35,7 +35,9 @@ func (h *EventHandler) Create() http.HandlerFunc {
 	}
 
 	// Parse HTML-template
-	tmpl := template.Must(template.New("").Parse(eventsCreateHTML))
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/events_create.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve topic ID from URL

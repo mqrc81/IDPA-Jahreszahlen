@@ -66,6 +66,11 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		r.Get("/new", events.Create())
 		r.Post("/", events.Store())
 		r.Post("/{eventID}/delete", events.Delete())
+
+		// TODO
+		// r.Get("/edit", events.Edit())
+		// r.Post("/edit", events.EditStore())
+		// r.Get("/", events.List())
 	})
 
 	// Play
@@ -90,10 +95,15 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		r.Get("/login", users.Login())
 		r.Post("/login", users.LoginSubmit())
 		r.Post("/logout", users.Logout())
+		r.Get("/{userID}/edit/password", users.EditPassword())
+		r.Post("/{userID}", users.EditPasswordStore())
+
+		// TODO
 		// r.Get("/profile", users.Profile())
 		// r.Get("/", users.List())
+		// r.Get("/{userID}/edit", users.EditUsername())
+		// r.Post("/{userID}", users.EditUsernameStore())
 		// r.Post("/{userID}/delete", users.Delete())
-		// r.Get("/{userID}/edit", users.Edit())
 	})
 
 	return h
@@ -124,7 +134,9 @@ func (h *Handler) Home() http.HandlerFunc {
 	}
 
 	// Parse HTML-template
-	tmpl := template.Must(template.New("").Parse(homeHTML))
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/home.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute SQL statement and return topics
@@ -182,7 +194,9 @@ func (h *Handler) About() http.HandlerFunc {
 		SessionData
 	}
 	// Parse HTML-template
-	tmpl := template.Must(template.New("").Parse(aboutHTML))
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/about.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute HTML-template
