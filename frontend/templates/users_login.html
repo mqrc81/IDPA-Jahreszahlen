@@ -1,15 +1,52 @@
 {{define "title"}}
-    <title>Title</title>
+    <title>Login - Jahreszahlen</title>
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Header</h1>
+    <h1 class="mb-0">Login</h1>
 {{end}}
 
 {{define "content"}}
+    <form action="/users/login" method="POST" class="form">
+        <label>Username*</label>
+        <div class="form-group">
+            <input type="text" name="username"
+                   class="form-control {{with .Form.Errors.Username}}is-invalid{{end}}"
+                   placeholder="Benutzername"
+                   value="{{with .Form.Username}}{{.}}{{end}}">
+        </div>
 
+        {{with .Form.Errors.Username}}
+            <div style="color:#dc3545">{{.}}</div>
+        {{end}}
+
+        <h5><br></h5>
+
+        <label>Passwort*</label>
+        <div class="form-group">
+            <input type="password" name="password"
+                   class="form-control {{with .Form.Errors.Password}}is-invalid{{end}}"
+                   placeholder="Passwort"
+                   value="{{with .Form.Password}}{{.}}{{end}}">
+        </div>
+
+        {{with .Form.Errors.Password}}
+            <div style="color:#dc3545">{{.}}</div>
+        {{end}}
+
+        <h5><br></h5>
+        <button type="submit" class="btn btn-primary">Einloggen</button>
+    </form>
 {{end}}
 
 {{define "sidebar"}}
-
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Ich habe noch kein Account!</h5>
+            <p class="card-text">
+                Falls Sie noch kein Account haben, registrieren Sie sich hier.
+            </p>
+            <a href="/users/register" class="btn btn-primary btn-block">Zur Registrierung</a>
+        </div>
+    </div>
 {{end}}

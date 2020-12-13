@@ -38,3 +38,15 @@
         <button type="submit" class="btn btn-primary">Registrieren</button>
     </form>
 {{end}}
+
+{{define "sidebar"}}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Ich habe bereits ein Account!</h5>
+            <p class="card-text">
+                Falls Sie schon ein Account haben, loggen Sie sich hier ein.
+            </p>
+            <a href="/users/login" class="btn btn-primary btn-block">Zum Login</a>
+        </div>
+    </div>
+{{end}}
