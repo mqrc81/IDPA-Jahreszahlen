@@ -7,25 +7,25 @@
 {{end}}
 
 {{define "content"}}
-    <form action="/topics" method="POST" class="from">
-        <label>Titel</label>
-        <div class="form-row">
+    <form action="/topics" method="POST" class="form">
+        <label>Titel*</label>
+        <div class="form-group">
             <input type="text" name="title" class="form-control"
                    placeholder="Titel des Themas">
         </div><br>
-        <label>Zeitspanne</label>
-        <div class="form-row">
+        <label>Zeitspanne*</label>
+        <div class="row">
             <div class="col">
             <input type="number" name="start_year" class="form-control"
                    placeholder="Von">
-            </div>
+            </div>  _
             <div class="col">
             <input type="number" name="end_year" class="form-control"
                    placeholder="Bis">
             </div>
         </div><br>
         <label>Beschreibung</label>
-        <div class="form-row">
+        <div class="form-group">
             <textarea name="description" class="form-control" rows="3"
                       placeholder="Optionale Beschreibung des Themas"></textarea>
         </div><br>
