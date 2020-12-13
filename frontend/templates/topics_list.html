@@ -25,13 +25,15 @@
 {{end}}
 
 {{define "sidebar"}}
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Neues Thema erstellen</h5>
-            <p class="card-text">
-                Erstellen Sie ein neues Thema mitsamt allen Ereignissen.
-            </p>
-            <a href="/topics/new" class="btn btn-primary btn-block">Neues Thema</a>
+    {{if .User.Admin}}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Neues Thema erstellen</h5>
+                <p class="card-text">
+                    Erstellen Sie ein neues Thema mitsamt ihren Ereignissen.
+                </p>
+                <a href="/topics/new" class="btn btn-primary btn-block">Neues Thema</a>
+            </div>
         </div>
-    </div>
+    {{end}}
 {{end}}

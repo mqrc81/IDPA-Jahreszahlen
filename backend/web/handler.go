@@ -126,11 +126,8 @@ func (h *Handler) Home() http.HandlerFunc {
 	type data struct {
 		SessionData
 
-		Topics      []backend.Topic
-		Scores      []backend.Score
-		TopicsCount int
-		EventsCount int
-		UsersCount  int
+		Topics []backend.Topic
+		Scores []backend.Score
 	}
 
 	// Parse HTML-template
@@ -153,31 +150,11 @@ func (h *Handler) Home() http.HandlerFunc {
 			return
 		}
 
-		// Execute SQL statements and return number of topics, events and users
-		tCount, err := h.store.TopicsCount()
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		eCount, err := h.store.EventsCount()
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		uCount, err := h.store.UsersCount()
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
 		// Execute HTML-template
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			Topics:      tt,
 			Scores:      ss,
-			TopicsCount: tCount, // TEMP
-			EventsCount: eCount, // TEMP
-			UsersCount:  uCount, // TEMP
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return

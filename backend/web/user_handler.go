@@ -98,7 +98,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 
 		// Add flash message
 		h.sessions.Put(req.Context(), "flash", "Willkommen "+form.Username+"! Ihre Registrierung war erfolgreich. "+
-			"Sie sind nun eingeloggt.")
+			"Loggen Sie sich bitte ein.")
 
 		http.Redirect(res, req, "/", http.StatusFound)
 	}

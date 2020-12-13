@@ -73,9 +73,9 @@ func (store ScoreStore) ScoresByTopicAndUser(topicID int, userID int, limit int,
 }
 
 /*
- * ScoresCount gets number of scores
+ * CountScores gets number of scores
  */
-func (store *ScoreStore) ScoresCount() (int, error) {
+func (store *ScoreStore) CountScores() (int, error) {
 	var sCount int
 	query := `SELECT COUNT(*) FROM scores`
 	if err := store.Get(&sCount, query); err != nil {

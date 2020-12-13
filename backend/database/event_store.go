@@ -47,12 +47,24 @@ func (store *EventStore) EventsByTopic(topicID int, orderByRand bool) ([]backend
 }
 
 /*
- * EventsCount gets number of events
+ * CountEvents gets number of events
  */
-func (store *EventStore) EventsCount() (int, error) {
+func (store *EventStore) CountEvents() (int, error) {
 	var eCount int
 	query := `SELECT COUNT(*) FROM events`
 	if err := store.Get(&eCount, query); err != nil {
+		return 0, fmt.Errorf("error getting number of events: %w", err)
+	}
+	return eCount, nil
+}
+
+/*
+ * CountEventsByTopic gets number of events
+ */
+func (store *EventStore) CountEventsByTopic(topicID int) (int, error) {
+	var eCount int
+	query := `SELECT COUNT(*) FROM events WHERE topic_id = ?`
+	if err := store.Get(&eCount, query, topicID); err != nil {
 		return 0, fmt.Errorf("error getting number of events: %w", err)
 	}
 	return eCount, nil

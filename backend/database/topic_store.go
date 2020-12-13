@@ -44,9 +44,9 @@ func (store *TopicStore) Topics() ([]backend.Topic, error) {
 }
 
 /*
- * TopicsCount gets number of events
+ * CountTopics gets number of events
  */
-func (store *EventStore) TopicsCount() (int, error) {
+func (store *EventStore) CountTopics() (int, error) {
 	var tCount int
 	query := `SELECT COUNT(*) FROM topics`
 	if err := store.Get(&tCount, query); err != nil {

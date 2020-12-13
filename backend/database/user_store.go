@@ -56,9 +56,9 @@ func (store UserStore) Users() ([]backend.User, error) {
 }
 
 /*
- * UsersCount gets number of users
+ * CountUsers gets number of users
  */
-func (store *UserStore) UsersCount() (int, error) {
+func (store *UserStore) CountUsers() (int, error) {
 	var uCount int
 	query := `SELECT COUNT(*) FROM users`
 	if err := store.Get(&uCount, query); err != nil {
