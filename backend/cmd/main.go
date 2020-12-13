@@ -11,7 +11,7 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/mysql"
+	"github.com/mqrc81/IDPA-Jahreszahlen/backend/database"
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/web"
 )
 
@@ -28,7 +28,7 @@ func main() {
 	dsn := os.Getenv("DB_DSN")
 
 	// Establish database connection
-	store, err := mysql.NewStore(dsn)
+	store, err := database.NewStore(dsn)
 	if err != nil {
 		log.Fatal(err)
 	}

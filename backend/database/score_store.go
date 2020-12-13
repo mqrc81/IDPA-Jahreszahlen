@@ -1,4 +1,4 @@
-package mysql
+package database
 
 /*
  * score_store.go contains all functions for scores that require database access

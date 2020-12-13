@@ -22,6 +22,11 @@ type UserHandler struct {
 	sessions *scs.SessionManager
 }
 
+// TODO
+// Profile()
+// EditUsername()
+// EditUsernameStore()
+
 /*
  * Register is a GET method with form to register new user
  */
@@ -59,17 +64,19 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 			UsernameTaken: false,
 		}
 
-		// Validate form
+		// Check if username is taken
 		user, err := h.store.UserByUsername(form.Username)
 		if err == nil { // If error is nil, user was found
 			form.UsernameTaken = true // If user was found, username is already taken
 		}
 
+		// Validate form
 		if !form.Validate() {
 			h.sessions.Put(req.Context(), "form", form)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
+
 		// Hash password
 		password, err := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.DefaultCost)
 		if err != nil {
@@ -79,10 +86,8 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 
 		// Execute SQL statement
 		if err := h.store.CreateUser(&backend.User{
-			UserID:   0,
 			Username: form.Username,
 			Password: string(password),
-			Admin:    false,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -92,7 +97,8 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "user_id", user.UserID)
 
 		// Add flash message
-		h.sessions.Put(req.Context(), "flash", "Registrierung war erfolgreich. Sie sind nun eingeloggt.")
+		h.sessions.Put(req.Context(), "flash", "Willkommen "+form.Username+"! Ihre Registrierung war erfolgreich. "+
+			"Sie sind nun eingeloggt.")
 
 		http.Redirect(res, req, "/", http.StatusFound)
 	}
@@ -154,7 +160,7 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "user_id", user.UserID)
 
 		// Add flash message to session
-		h.sessions.Put(req.Context(), "flash", "Login war erfolgreich.")
+		h.sessions.Put(req.Context(), "flash", "Willkommen zurück "+form.Username+"! Sie sind nun eingeloggt.")
 
 		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)
@@ -170,7 +176,7 @@ func (h *UserHandler) Logout() http.HandlerFunc {
 		h.sessions.Remove(req.Context(), "user_id")
 
 		// Add flash message to session
-		h.sessions.Put(req.Context(), "flash", "Logout war erfolgreich.")
+		h.sessions.Put(req.Context(), "flash", "Sie wurden erfolgreich ausgeloggt.")
 
 		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)

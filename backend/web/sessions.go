@@ -36,7 +36,6 @@ type SessionData struct {
 	Form         interface{}
 	User         backend.User
 	LoggedIn     bool
-	Admin        bool
 }
 
 /*
@@ -58,13 +57,11 @@ func GetSessionData(session *scs.SessionManager, ctx context.Context) SessionDat
 	userInf := ctx.Value("user")
 	if userInf != nil {
 		data.User = userInf.(backend.User)
-		data.LoggedIn = false
+		data.LoggedIn = true
 	} else {
 		data.User = backend.User{}
-		data.LoggedIn = true
+		data.LoggedIn = false
 	}
-
-	data.Admin = data.User.Admin
 
 	return data
 }

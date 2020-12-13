@@ -1,4 +1,4 @@
-package mysql
+package database
 
 /*
  * topic_store.go contains all functions for topics that require database access

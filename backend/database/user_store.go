@@ -1,4 +1,4 @@
-package mysql
+package database
 
 /*
  * user_store.go contains all functions for users that require database access

@@ -1,4 +1,4 @@
-package mysql
+package database
 
 /*
  * store.go is the basis for all *_store.go files

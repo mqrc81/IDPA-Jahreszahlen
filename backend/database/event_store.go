@@ -1,4 +1,4 @@
-package mysql
+package database
 
 /*
  * event_store.go contains all functions for events that require database access

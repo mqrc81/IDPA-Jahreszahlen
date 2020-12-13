@@ -216,7 +216,7 @@ func (h *Handler) withUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve user ID from session
 		var userID int
-		userIDinf := h.sessions.Get(req.Context(), "user_id")
+		userIDinf := h.sessions.Get(req.Context(), "user_id") // user ID as interface{}
 		if userIDinf != nil {
 			userID = userIDinf.(int)
 		}
@@ -228,7 +228,10 @@ func (h *Handler) withUser(next http.Handler) http.Handler {
 			return
 		}
 
+		// Add user logged in to session
 		ctx := context.WithValue(req.Context(), "user", user)
+
+		// Serve HTTP with response-writer and request
 		next.ServeHTTP(res, req.WithContext(ctx))
 	})
 }
