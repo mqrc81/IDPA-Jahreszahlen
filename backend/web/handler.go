@@ -94,7 +94,7 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		r.Post("/register", users.RegisterSubmit())
 		r.Get("/login", users.Login())
 		r.Post("/login", users.LoginSubmit())
-		r.Post("/logout", users.Logout())
+		r.Get("/logout", users.Logout())
 		r.Get("/{userID}/edit/password", users.EditPassword())
 		r.Post("/{userID}", users.EditPasswordStore())
 

@@ -164,7 +164,7 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "user_id", user.UserID)
 
 		// Add flash message to session
-		h.sessions.Put(req.Context(), "flash", "Hallo "+form.Username+"! Bitte loggen Sie sich ein.")
+		h.sessions.Put(req.Context(), "flash", "Hallo "+form.Username+"! Sie sind nun eingeloggt.")
 
 		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)
