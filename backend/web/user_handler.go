@@ -136,17 +136,21 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from form
 		form := LoginForm{
-			Username:             req.FormValue("username"),
-			Password:             req.FormValue("password"),
-			IncorrectCredentials: false,
+			Username:          req.FormValue("username"),
+			Password:          req.FormValue("password"),
+			IncorrectUsername: false,
+			IncorrectPassword: false,
 		}
 
+		// Execute SQL statement
 		user, err := h.store.UserByUsername(form.Username)
 		if err != nil {
-			form.IncorrectCredentials = true
+			// In case of an error, the username doesn't exist
+			form.IncorrectUsername = true
 		} else {
+			// Else, check if username and password match
 			err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password))
-			form.IncorrectCredentials = err != nil
+			form.IncorrectPassword = err != nil
 		}
 
 		// Validate form
@@ -160,7 +164,7 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "user_id", user.UserID)
 
 		// Add flash message to session
-		h.sessions.Put(req.Context(), "flash", "Willkommen zurück "+form.Username+"! Sie sind nun eingeloggt.")
+		h.sessions.Put(req.Context(), "flash", "Hallo "+form.Username+"! Bitte loggen Sie sich ein.")
 
 		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)

@@ -55,7 +55,7 @@ func GetSessionData(session *scs.SessionManager, ctx context.Context) SessionDat
 
 	// Retrieve user from session
 	userInf := ctx.Value("user")
-	if userInf != nil {
+	if userInf != nil { // 'If there is a user in the session'
 		data.User = userInf.(backend.User)
 		data.LoggedIn = true
 	} else {

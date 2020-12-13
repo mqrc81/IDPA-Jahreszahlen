@@ -170,9 +170,10 @@ func (f *RegisterForm) Validate() bool {
 
 // LoginForm holds values of form when registering a user
 type LoginForm struct {
-	Username             string
-	Password             string
-	IncorrectCredentials bool
+	Username          string
+	Password          string
+	IncorrectUsername bool
+	IncorrectPassword bool
 
 	Errors FormErrors
 }
@@ -186,15 +187,15 @@ func (f *LoginForm) Validate() bool {
 	// Validate username
 	if f.Username == "" {
 		f.Errors["Username"] = "Bitte Benutzernamen eingeben."
-	} else if f.IncorrectCredentials {
-		f.Errors["Username"] = "Benutzername oder Passwort ist falsch."
+	} else if f.IncorrectUsername {
+		f.Errors["Username"] = "Benutzername ist falsch."
 	}
 
 	// Validate password
 	if f.Password == "" {
 		f.Errors["Password"] = "Bitte Passwort eingeben."
-	} else if f.IncorrectCredentials {
-		f.Errors["Username"] = " "
+	} else if f.IncorrectPassword {
+		f.Errors["Password"] = "Passwort ist falsch."
 	}
 
 	return len(f.Errors) == 0
