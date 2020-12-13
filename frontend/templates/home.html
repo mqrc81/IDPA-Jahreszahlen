@@ -8,9 +8,9 @@
 
 {{define "content"}}
     <h5>Wollen Sie sich auf die nächste Geschichtsprüfung vorbereiten oder sich einen besseren Überblick von allen
-        Ereignissen einer Zeitepoche beschaffen und sich dabei mit Ihren Klassenkameraden messen?  – Dann sind Sie hier
+        Ereignissen einer Zeitepoche beschaffen und sich dabei mit Ihren Klassenkameraden messen? – Dann sind Sie hier
         genau richtig!</h5>
-        <hr><br>
+    <hr><br>
     {{range .Topics}}
         <div class="card mb-4">
             <div class="card-body">
@@ -45,6 +45,17 @@
             <a href="/scores" class="btn btn-primary btn-block">Zum Leaderboard</a>
         </div>
     </div>
+    {{if .User.Admin}}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Alle Benutzer</h5>
+                <p class="card-text">
+                    Sehen Sie alle Benutzer, welche sich bisher registriert haben.
+                </p>
+                <a href="/users/list" class="btn btn-primary btn-block">Zu den Benutzern</a>
+            </div>
+        </div>
+    {{end}}
     <div class="card mb-4">
         <div class="card-body">
             <h5 class="card-title">Über Jahreszahlen</h5>
