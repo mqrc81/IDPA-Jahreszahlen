@@ -49,7 +49,7 @@ func GetSessionData(session *scs.SessionManager, ctx context.Context) SessionDat
 	data.FlashMessage = session.PopString(ctx, "flash")
 
 	// Retrieve form from session
-	data.Form = session.PopInt(ctx, "form")
+	data.Form = session.Pop(ctx, "form")
 	if data.Form == nil {
 		data.Form = map[string]string{}
 	}

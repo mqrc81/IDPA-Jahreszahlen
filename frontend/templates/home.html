@@ -1,15 +1,58 @@
 {{define "title"}}
-  <title>Title</title>
+    <title>Home - Jahreszahlen</title>
 {{end}}
 
 {{define "header"}}
-  <h1 class="mb-0">Willkommen bei Jahreszahlen!</h1>
+    <h1 class="mb-0">Willkommen bei Jahreszahlen!</h1>
 {{end}}
 
 {{define "content"}}
-
+    <h5>Wollen Sie sich auf die nächste Geschichtsprüfung vorbereiten oder sich einen besseren Überblick von allen
+        Ereignissen einer Zeitepoche beschaffen und sich dabei mit Ihren Klassenkameraden messen?  – Dann sind Sie hier
+        genau richtig!</h5>
+        <hr><br>
+    {{range .Topics}}
+        <div class="card mb-4">
+            <div class="card-body">
+                <p>
+                    <a href="#" class="d-block card-title text-body mt-1 h5">
+                        {{.Title}} ({{.StartYear}} - {{.EndYear}})
+                    </a>
+                </p>
+                <p class="card-text">{{.PlayCount}}x gespielt</p>
+                <a href="/topics/{{.TopicID}}" class="btn btn-primary">Thema anschauen</a>
+            </div>
+        </div>
+    {{end}}
 {{end}}
 
 {{define "sidebar"}}
-
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Themen</h5>
+            <p class="card-text">
+                Schauen Sie alle Themen an, zum Lernen ihrer Jahreszahlen.
+            </p>
+            <a href="/topics" class="btn btn-primary btn-block">Zu den Themen</a>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Leaderboard</h5>
+            <p class="card-text">
+                Schauen Sie das Leaderboard mit allen Spielresultaten an und filtern Sie nach Benutzer und Thema.
+            </p>
+            <a href="/scores" class="btn btn-primary btn-block">Zum Leaderboard</a>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Über Jahreszahlen</h5>
+            <p class="card-text">
+                Erfahren Sie mehr über die Hintergründe dieses Projekts und wie es Ihnen beim Lernen der Jahreszahlen
+                von historischen Ereignissen helfen kann.
+            </p>
+            <a href="/about" class="btn btn-primary btn-block">Mehr erfahren</a>
+        </div>
+    </div>
 {{end}}

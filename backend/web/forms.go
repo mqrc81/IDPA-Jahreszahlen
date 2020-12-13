@@ -108,6 +108,17 @@ type RegisterForm struct {
 }
 
 /*
+ * Regex checks if the regular expression matches the string
+ */
+func Regex(str string, regex string) bool {
+	match, err := regexp.MatchString(regex, str)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return match
+}
+
+/*
  * ValidatePassword validates a user's password
  */
 func ValidatePassword(password string, errors FormErrors, errorName string) FormErrors {
@@ -124,14 +135,6 @@ func ValidatePassword(password string, errors FormErrors, errorName string) Form
 	}
 
 	return errors
-}
-
-func Regex(str string, regex string) bool {
-	match, err := regexp.MatchString(regex, str)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return match
 }
 
 /*

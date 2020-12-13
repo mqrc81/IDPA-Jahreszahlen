@@ -1,34 +1,62 @@
 {{define "title"}}
-    <title>Title</title>
+    <title>Themen - Jahreszahlen</title>
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Header</h1>
+    <h1 class="mb-0">Thema erstellen</h1>
 {{end}}
 
 {{define "content"}}
     <form action="/topics" method="POST" class="form">
         <label>Titel*</label>
         <div class="form-group">
-            <input type="text" name="title" class="form-control"
-                   placeholder="Titel des Themas">
-        </div><br>
+            <input type="text" name="title"
+                   class="form-control {{with .Form.Errors.Title}}is-invalid{{end}}"
+                   placeholder="Titel des Themas"
+                   value="{{with .Form.Title}}{{.}}{{end}}">
+        </div>
+
+        {{with .Form.Errors.Title}}
+            <div style="color:#dc3545">{{.}}</div>
+        {{end}}
+
+        <h5><br></h5>
         <label>Zeitspanne*</label>
         <div class="row">
             <div class="col">
-            <input type="number" name="start_year" class="form-control"
-                   placeholder="Von">
-            </div>  _
-            <div class="col">
-            <input type="number" name="end_year" class="form-control"
-                   placeholder="Bis">
+                <input type="number" name="start_year"
+                       class="form-control {{with .Form.Errors.Year}}is-invalid{{end}}"
+                       placeholder="Von"
+                       value="{{with .Form.StartYear}}{{.}}{{end}}">
             </div>
-        </div><br>
+            _
+            <div class="col">
+                <input type="number" name="end_year"
+                       class="form-control {{with .Form.Errors.Year}}is-invalid{{end}}"
+                       placeholder="Bis"
+                       value="{{with .Form.EndYear}}{{.}}{{end}}">
+            </div>
+        </div>
+
+        {{with .Form.Errors.Year}}
+            <div style="color:#dc3545">{{.}}</div>
+        {{end}}
+
+        <h5><br></h5>
         <label>Beschreibung</label>
         <div class="form-group">
-            <textarea name="description" class="form-control" rows="3"
-                      placeholder="Optionale Beschreibung des Themas"></textarea>
-        </div><br>
+            <textarea name="description" rows="3"
+                      class="form-control {{with .Form.Errors.Description}}is-invalid{{end}}"
+                      placeholder="Optionale Beschreibung des Themas">
+                {{- with .Form.Description}}{{.}}{{end -}}
+            </textarea>
+        </div>
+
+        {{with .Form.Errors.Description}}
+            <div style="color:#dc3545">{{.}}</div>
+        {{end}}
+
+        <h5><br></h5>
         <button type="submit" class="btn btn-primary">Thema erstellen</button>
     </form>
 {{end}}
