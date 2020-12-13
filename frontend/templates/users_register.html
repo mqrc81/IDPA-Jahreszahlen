@@ -11,21 +11,30 @@
         <label>Username*</label>
         <div class="form-group">
             <input type="text" name="username"
-                   class="form-control"
-                   placeholder="Benutzername">
+                   class="form-control {{with .Form.Errors.Username}}is-invalid{{end}}"
+                   placeholder="Benutzername"
+                   value="{{with .Form.Username}}{{.}}{{end}}">
         </div>
+
+        {{with .Form.Errors.Username}}
+            <div style="color:#dc3545">{{.}}</div>
+        {{end}}
 
         <h5><br></h5>
 
         <label>Passwort*</label>
         <div class="form-group">
             <input type="password" name="password"
-                   class="form-control"
-                   placeholder="Passwort">
+                   class="form-control {{with .Form.Errors.Password}}is-invalid{{end}}"
+                   placeholder="Passwort"
+                   value="{{with .Form.Password}}{{.}}{{end}}">
         </div>
 
-        <h5><br></h5>
+        {{with .Form.Errors.Password}}
+            <div style="color:#dc3545">{{.}}</div>
+        {{end}}
 
+        <h5><br></h5>
         <button type="submit" class="btn btn-primary">Registrieren</button>
     </form>
 {{end}}
