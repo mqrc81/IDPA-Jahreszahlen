@@ -1,12 +1,12 @@
 package backend
 
-/*
- * global_vars.go contains declaration of all global structs and interfaces to be used throughout the backend
- */
+// global_vars.go
+// Contains all global variables and their functions, to be accessed throughout
+// the project.
 
-/*
- * Topic (ger. "Thema") represents a historical segment consisting of multiple events (e.g. World War 1)
- */
+// Topic
+// Ger.: "Thema". Represents a historical segment consisting of multiple events
+// (e.g. World War 1).
 type Topic struct {
 	TopicID     int    `db:"topic_id"`
 	Title       string `db:"title"`
@@ -16,9 +16,9 @@ type Topic struct {
 	PlayCount   int    `db:"playcount"`
 }
 
-/*
- * Event (ger. "Ereignis") represents a historical event associated with a specific year (e.g. Battle of Britain)
- */
+// Event
+// Ger.: "Ereignis". Represents a historical event associated with a specific
+// year (e.g. Battle of Britain).
 type Event struct {
 	EventID int    `db:"event_id"`
 	TopicID int    `db:"topic_id"`
@@ -26,9 +26,8 @@ type Event struct {
 	Year    int    `db:"year"`
 }
 
-/*
- * User (ger. "Benutzer") represents an account created
- */
+// User
+// Ger.: "Benutzer". Represents a person's account.
 type User struct {
 	UserID   int    `db:"user_id"`
 	Username string `db:"username"`
@@ -36,9 +35,9 @@ type User struct {
 	Admin    bool   `db:"admin"`
 }
 
-/*
- * Score (ger. "Resultat") represents points scored by a user upon finishing playing a topic
- */
+// Score
+// Ger.: "Resultat". Represents points scored by a user upon having successfully
+// finished playing a game.
 type Score struct {
 	ScoreID int    `db:"score_id"`
 	TopicID int    `db:"topic_id"`
@@ -47,9 +46,8 @@ type Score struct {
 	Date    string `db:"date"`
 }
 
-/*
- * TopicStore stores functions for Topic to implement
- */
+// TopicStore
+// Stores functions using topics for the database-layer.
 type TopicStore interface {
 	Topic(topicID int) (Topic, error)
 	Topics() ([]Topic, error)
@@ -59,9 +57,8 @@ type TopicStore interface {
 	DeleteTopic(topicID int) error
 }
 
-/*
- * EventStore stores functions for Event to implement
- */
+// EventStore
+// Stores functions using events for the database-layer.
 type EventStore interface {
 	Event(eventID int) (Event, error)
 	EventsByTopic(topicID int, orderByRand bool) ([]Event, error)
@@ -72,9 +69,8 @@ type EventStore interface {
 	DeleteEvent(eventID int) error
 }
 
-/*
- * UserStore stores functions for User to implement
- */
+// UserStore
+// Stores functions using users for the database-layer.
 type UserStore interface {
 	User(userID int) (User, error)
 	UserByUsername(username string) (User, error)
@@ -85,9 +81,8 @@ type UserStore interface {
 	DeleteUser(userID int) error
 }
 
-/*
- * ScoreStore stores functions for Score to implement
- */
+// ScoreStore
+// Stores functions using scores for the database-layer.
 type ScoreStore interface {
 	Scores(limit int, offset int) ([]Score, error)
 	ScoresByTopic(topicID int, limit int, offset int) ([]Score, error)
@@ -97,9 +92,8 @@ type ScoreStore interface {
 	CreateScore(s *Score) error
 }
 
-/*
- * Store implements TopicStore, EventStore, UserStore and ScoreStore
- */
+// Store
+// Holds functions of TopicStore, EventStore, UserStore and ScoreStore.
 type Store interface {
 	TopicStore
 	EventStore

@@ -40,7 +40,7 @@ func (h *TopicHandler) List() http.HandlerFunc {
 		"frontend/templates/topics_list.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Execute SQL statement and return slice of topics
+		// Execute SQL statement to get topics
 		tt, err := h.store.Topics()
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -66,7 +66,7 @@ func (h *TopicHandler) Create() http.HandlerFunc {
 	type data struct {
 		SessionData
 	}
-	// Parse HTML-template
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/templates/layout.html",
 		"frontend/templates/topics_create.html"))
@@ -104,7 +104,7 @@ func (h *TopicHandler) CreateStore() http.HandlerFunc {
 			return
 		}
 
-		// Execute SQL statement
+		// Execute SQL statement to create a topic
 		if err := h.store.CreateTopic(&backend.Topic{
 			Title:       form.Title,
 			StartYear:   form.StartYear,
@@ -131,7 +131,7 @@ func (h *TopicHandler) Delete() http.HandlerFunc {
 		// Retrieve TopicID from URL
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
-		// Execute SQL statement
+		// Execute SQL statement to delete a topic
 		if err := h.store.DeleteTopic(topicID); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -156,7 +156,7 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 		Events []backend.Event
 	}
 
-	// Parse HTML-template
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/templates/layout.html",
 		"frontend/templates/topics_edit.html"))
@@ -165,14 +165,14 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 		// Retrieve topic ID from URL
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
-		// Execute SQL statement and return topic
+		// Execute SQL statement to get a topic
 		t, err := h.store.Topic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// Execute SQL statement and return events
+		// Execute SQL statement to get events
 		ee, err := h.store.EventsByTopic(topicID, false)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -217,7 +217,7 @@ func (h *TopicHandler) EditStore() http.HandlerFunc {
 			return
 		}
 
-		// Execute SQL statement
+		// Execute SQL statement to update a topic
 		if err := h.store.UpdateTopic(&backend.Topic{
 			TopicID:     topicID,
 			Title:       form.Title,
@@ -248,7 +248,7 @@ func (h *TopicHandler) Show() http.HandlerFunc {
 		Topic backend.Topic
 	}
 
-	// Parse HTML-template
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/templates/layout.html",
 		"frontend/templates/topics_show.html"))
@@ -257,7 +257,7 @@ func (h *TopicHandler) Show() http.HandlerFunc {
 		// Retrieve TopicID from URL
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
-		// Execute SQL statement and return topic
+		// Execute SQL statement to get a topic
 		t, err := h.store.Topic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)

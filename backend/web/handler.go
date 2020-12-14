@@ -1,8 +1,7 @@
 package web
 
-/*
- * handler.go contains all HTTP-routes and is the basis for all HTTP-handlers
- */
+// handler.go
+// Contains HTTP-router and all HTTP-handlers
 
 import (
 	"context"
@@ -17,20 +16,22 @@ import (
 )
 
 var (
-	// FuncMap stores functions to use in HTML-template
+	// FuncMap
+	// A map that stores functions to use in HTML-template
 	FuncMap = template.FuncMap{
+		// ranks scores
 		"rank": func(num int, page int, limit int) int {
 			return (page-1)*limit + num + 1
 		},
+		// increments number by 1
 		"increment": func(num int) int {
 			return num + 1
 		},
 	}
 )
 
-/*
- * NewHandler creates a new handler, including routes and middleware
- */
+// NewHandler
+// Initializes HTTP-handlers, including router and middleware
 func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 	h := &Handler{
 		Mux:      chi.NewMux(),
@@ -44,10 +45,12 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 	play := PlayHandler{store: store, sessions: sessions}
 	users := UserHandler{store: store, sessions: sessions}
 
+	// Use middleware
 	h.Use(middleware.Logger)
 	h.Use(sessions.LoadAndSave)
 	h.Use(h.withUser)
 
+	// Home
 	h.Get("/", h.Home())
 	h.Get("/about", h.About())
 
@@ -109,18 +112,16 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 	return h
 }
 
-/*
- * Handler consists of the chi-multiplexer and a store
- */
+// Handler
+// Consists of the chi-multiplexer, a store interface and sessions
 type Handler struct {
 	*chi.Mux
 	store    backend.Store
 	sessions *scs.SessionManager
 }
 
-/*
- * Home is a GET method that shows Homepage
- */
+// Home
+// A GET-method. Renders the home-page.
 func (h *Handler) Home() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
@@ -130,20 +131,20 @@ func (h *Handler) Home() http.HandlerFunc {
 		Scores []backend.Score
 	}
 
-	// Parse HTML-template
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/templates/layout.html",
 		"frontend/templates/home.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Execute SQL statement and return topics
+		// Execute SQL statement to get topics
 		tt, err := h.store.Topics()
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// Execute SQL statement and return scores
+		// Execute SQL statement to get scores
 		ss, err := h.store.Scores(5, 0)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -162,15 +163,14 @@ func (h *Handler) Home() http.HandlerFunc {
 	}
 }
 
-/*
- * About is a GET method that shows information about this project
- */
+// About
+// A GET-method. Renders the about-page.
 func (h *Handler) About() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
 		SessionData
 	}
-	// Parse HTML-template
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/templates/layout.html",
 		"frontend/templates/about.html"))
@@ -186,9 +186,8 @@ func (h *Handler) About() http.HandlerFunc {
 	}
 }
 
-/*
- * withUser is a middleware that handles current user
- */
+// withUser
+// A middleware that replaces the potential user ID with a user object.
 func (h *Handler) withUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve user ID from session
@@ -198,14 +197,14 @@ func (h *Handler) withUser(next http.Handler) http.Handler {
 			userID = userIDinf.(int)
 		}
 
-		// Execute SQL statement
+		// Execute SQL statement to get user
 		user, err := h.store.User(userID)
 		if err != nil {
 			next.ServeHTTP(res, req)
 			return
 		}
 
-		// Add user logged in to session
+		// Add the user logged in to the session
 		ctx := context.WithValue(req.Context(), "user", user)
 
 		// Serve HTTP with response-writer and request

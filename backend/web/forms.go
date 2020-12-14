@@ -1,5 +1,8 @@
 package web
 
+// forms.go
+// Contains form validation for all necessary HTTP-handlers.
+
 import (
 	"encoding/gob"
 	"log"
@@ -7,22 +10,26 @@ import (
 	"time"
 )
 
-/*
- * init gets called the first time this file is initialized
- */
+// init
+// Gets initialized with the package. Registers certain types to the session,
+// because by default the session can only contain basic data types (int, bool,
+// String, etc.).
 func init() {
 	gob.Register(TopicForm{})
-	gob.Register(CreateEventForm{})
+	gob.Register(EventForm{})
 	gob.Register(RegisterForm{})
 	gob.Register(LoginForm{})
 	gob.Register(PasswordForm{})
 	gob.Register(FormErrors{})
 }
 
-// FormErrors is a map that holds the errors
+// FormErrors
+// A map that holds the error messages.
 type FormErrors map[string]string
 
-// TopicForm holds values of form when creating a topic
+// TopicForm
+// Holds values of the form input when creating or editing a
+// topic.
 type TopicForm struct {
 	Title       string
 	StartYear   int
@@ -32,9 +39,8 @@ type TopicForm struct {
 	Errors FormErrors
 }
 
-/*
- * Validate validates topic form
- */
+// Validate
+// Validates the form input when creating or editing a topic.
 func (f *TopicForm) Validate() bool {
 	f.Errors = FormErrors{}
 
@@ -67,18 +73,19 @@ func (f *TopicForm) Validate() bool {
 	return len(f.Errors) == 0
 }
 
-// CreateEventForm holds values of form when creating a event
-type CreateEventForm struct {
+// EventForm
+// Holds values of the form input when creating or editing an
+// event.
+type EventForm struct {
 	Title string
 	Year  int
 
 	Errors FormErrors
 }
 
-/*
- * Validate validates event form
- */
-func (f *CreateEventForm) Validate() bool {
+// Validate
+// Validates the form input when creating or editing an event.
+func (f *EventForm) Validate() bool {
 	f.Errors = FormErrors{}
 
 	// Validate title
@@ -98,7 +105,8 @@ func (f *CreateEventForm) Validate() bool {
 	return len(f.Errors) == 0
 }
 
-// RegisterForm holds values of form when registering a user
+// RegisterForm
+// Holds values of the form input when registering.
 type RegisterForm struct {
 	Username      string
 	Password      string
@@ -107,39 +115,8 @@ type RegisterForm struct {
 	Errors FormErrors
 }
 
-/*
- * Regex checks if the regular expression matches the string
- */
-func Regex(str string, regex string) bool {
-	match, err := regexp.MatchString(regex, str)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return match
-}
-
-/*
- * ValidatePassword validates a user's password
- */
-func ValidatePassword(password string, errors FormErrors, errorName string) FormErrors {
-	if len(password) < 8 {
-		errors[errorName] = "Passwort muss mindestens 8 Zeichen lang sein."
-	} else if !Regex(password, "[!@#$%^&*]") {
-		errors[errorName] = "Passwort muss ein Sonderzeichen enthalten (!@#$%^&*)."
-	} else if !Regex(password, "[a-z]") {
-		errors[errorName] = "Passwort muss mindestens ein Kleinbuchstaben enthalten."
-	} else if !Regex(password, "[A-Z]") {
-		errors[errorName] = "Passwort muss mindestens ein Grossbuchstaben enthalten."
-	} else if !Regex(password, "\\d") {
-		errors[errorName] = "Passwort muss mindestens eine Zahl enthalten."
-	}
-
-	return errors
-}
-
-/*
- * Validate validates form
- */
+// Validate
+// Validates the form input when registering.
 func (f *RegisterForm) Validate() bool {
 	f.Errors = FormErrors{}
 
@@ -168,7 +145,8 @@ func (f *RegisterForm) Validate() bool {
 	return len(f.Errors) == 0
 }
 
-// LoginForm holds values of form when registering a user
+// LoginForm
+// Holds values of the form input when logging in.
 type LoginForm struct {
 	Username          string
 	Password          string
@@ -178,9 +156,8 @@ type LoginForm struct {
 	Errors FormErrors
 }
 
-/*
- * Validate validates form
- */
+// Validate
+// Validates the form input when logging in.
 func (f *LoginForm) Validate() bool {
 	f.Errors = FormErrors{}
 
@@ -188,31 +165,30 @@ func (f *LoginForm) Validate() bool {
 	if f.Username == "" {
 		f.Errors["Username"] = "Bitte Benutzernamen eingeben."
 	} else if f.IncorrectUsername {
-		f.Errors["Username"] = "Benutzername ist falsch."
+		f.Errors["Username"] = "Ungültiger Benutzername."
 	}
 
 	// Validate password
 	if f.Password == "" {
 		f.Errors["Password"] = "Bitte Passwort eingeben."
 	} else if f.IncorrectPassword {
-		f.Errors["Password"] = "Passwort ist falsch."
+		f.Errors["Password"] = "Ungültiges Passwort."
 	}
 
 	return len(f.Errors) == 0
 }
 
-// PasswordForm holds values of form when editing a user's password
+// PasswordForm
+// Holds values of the form input when editing a password.
 type PasswordForm struct {
-	Password1            string
-	Password2            string
+	NewPassword          string
 	IncorrectOldPassword bool
 
 	Errors FormErrors
 }
 
-/*
- * Validate validates form
- */
+// Validate
+// Validates the form input when editing a password.
 func (f *PasswordForm) Validate() bool {
 	f.Errors = FormErrors{}
 
@@ -222,10 +198,35 @@ func (f *PasswordForm) Validate() bool {
 	}
 
 	// Validate new password
-	f.Errors = ValidatePassword(f.Password1, f.Errors, "Password1")
-
-	// Validate new password confirmed
-	f.Errors = ValidatePassword(f.Password2, f.Errors, "Password2")
+	f.Errors = ValidatePassword(f.NewPassword, f.Errors, "NewPassword")
 
 	return len(f.Errors) == 0
+}
+
+// Regex
+// Checks if a certain regular expression matches a certain string
+func Regex(str string, regex string) bool {
+	match, err := regexp.MatchString(regex, str)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return match
+}
+
+// ValidatePassword
+// Validates a password.
+func ValidatePassword(password string, formErrors FormErrors, errorName string) FormErrors {
+	if len(password) < 8 {
+		formErrors[errorName] = "Passwort muss mindestens 8 Zeichen lang sein."
+	} else if !Regex(password, "[!@#$%^&*]") {
+		formErrors[errorName] = "Passwort muss ein Sonderzeichen enthalten (!@#$%^&*)."
+	} else if !Regex(password, "[a-z]") {
+		formErrors[errorName] = "Passwort muss mindestens ein Kleinbuchstaben enthalten."
+	} else if !Regex(password, "[A-Z]") {
+		formErrors[errorName] = "Passwort muss mindestens ein Grossbuchstaben enthalten."
+	} else if !Regex(password, "\\d") {
+		formErrors[errorName] = "Passwort muss mindestens eine Zahl enthalten."
+	}
+
+	return formErrors
 }

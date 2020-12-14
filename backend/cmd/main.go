@@ -1,8 +1,8 @@
 package main
 
-/*
- * main.go is the main file, which obtains connection to database and server
- */
+// main.go
+// The main file, which initializes a connection to the database and the server.
+// It also obtains session management and CSRF-protection.
 
 import (
 	"log"
@@ -15,19 +15,20 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/web"
 )
 
-/*
- * main is the initial starting point of the program
- */
+// main
+// The inital starting point of the program, which initializes a connection to
+// the database and the server. It also obtains session management and CSRF-
+// protection.
 func main() {
 	// Access global environment variables
 	if err := godotenv.Load("backend/.env"); err != nil {
 		log.Fatal(err)
 	}
 
-	// Get data-source name from environment variables
+	// Get data-source-name from environment variables
 	dsn := os.Getenv("DB_DSN")
 
-	// Establish database connection
+	// Establish database connection with the help of the data-source-name
 	store, err := database.NewStore(dsn)
 	if err != nil {
 		log.Fatal(err)
@@ -39,8 +40,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Serve website
+	// Initializes HTTP-handlers, including router and middleware
 	handler := web.NewHandler(store, sessions)
+
+	// Listen on the TCP network address and call Serve with handler to handle
+	// requests on incoming connections.
 	if err := http.ListenAndServe(":3000", handler); err != nil {
 		log.Fatal(err)
 	}

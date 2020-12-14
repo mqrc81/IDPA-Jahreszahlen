@@ -1,8 +1,7 @@
 package web
 
-/*
- * event_handler.go contains HTTP-handler functions for events
- */
+// event_handler.go
+// Contains all HTTP-handlers for pages evolving around events.
 
 import (
 	"html/template"
@@ -15,17 +14,16 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
-/*
- * EventHandler handles sessions, CSRF-protection and database access for events
- */
+// EventHandler
+// Object for handlers to access sessions and database.
 type EventHandler struct {
 	store    backend.Store
 	sessions *scs.SessionManager
 }
 
-/*
- * Create is a GET method for a form to create a new event
- */
+// Create
+// A GET-method that any admin can call. It renders a form, in which values
+// for a new event can be entered.
 func (h *EventHandler) Create() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
@@ -34,7 +32,7 @@ func (h *EventHandler) Create() http.HandlerFunc {
 		TopicID int
 	}
 
-	// Parse HTML-template
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/templates/layout.html",
 		"frontend/templates/events_create.html"))
@@ -54,9 +52,11 @@ func (h *EventHandler) Create() http.HandlerFunc {
 	}
 }
 
-/*
- * Store is a POST method that stores event created
- */
+// Store
+// A POST-method. It validates the form from Create and redirects to Create in
+// case of an invalid input with corresponding error message. In case of valid
+// form, it stores the new event in the database and redirects to the edit-page
+// of the event's topic.
 func (h *EventHandler) Store() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve topic ID from URL
@@ -65,7 +65,7 @@ func (h *EventHandler) Store() http.HandlerFunc {
 
 		// Retrieve variables from form (Create)
 		year, _ := strconv.Atoi(req.FormValue("year"))
-		form := CreateEventForm{
+		form := EventForm{
 			Title: req.FormValue("title"),
 			Year:  year,
 		}
@@ -77,7 +77,7 @@ func (h *EventHandler) Store() http.HandlerFunc {
 			return
 		}
 
-		// Execute SQL statement
+		// Execute SQL statement to create an event
 		if err := h.store.CreateEvent(&backend.Event{
 			TopicID: topicID,
 			Title:   form.Title,
@@ -95,9 +95,9 @@ func (h *EventHandler) Store() http.HandlerFunc {
 	}
 }
 
-/*
- * Delete is a POST method that deletes an event
- */
+// Delete
+// A POST-method. It deletes a certain event and redirects to edit-page of the
+// event's topic.
 func (h *EventHandler) Delete() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve event ID from URL
@@ -106,7 +106,7 @@ func (h *EventHandler) Delete() http.HandlerFunc {
 		// Retrieve event ID from URL
 		eventID, _ := strconv.Atoi(chi.URLParam(req, "eventID"))
 
-		// Execute SQL statement
+		// Execute SQL statement to delete an event
 		if err := h.store.DeleteEvent(eventID); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return

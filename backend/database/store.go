@@ -1,8 +1,7 @@
 package database
 
-/*
- * store.go is the basis for all *_store.go files
- */
+// store.go
+// Pivot of all stores
 
 import (
 	"fmt"
@@ -11,14 +10,18 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-/*
- * Connects to MySQL ClearDB database via Heroku.com
- */
+// NewStore
+// Connects to database and initializes new store objects
 func NewStore(dsn string) (*Store, error) {
-	// Opens and pings database
-	db, err := sqlx.Connect("mysql", dsn)
+	// Opens database connection
+	db, err := sqlx.Open("mysql", dsn)
 	if err != nil {
-		return nil, fmt.Errorf("error opening or pinging database: %w", err)
+		return nil, fmt.Errorf("error opening database: %w", err)
+	}
+
+	// Pings database connection
+	if err := db.Ping(); err != nil {
+		return nil, fmt.Errorf("error pinging database: %w", err)
 	}
 
 	return &Store{
@@ -29,9 +32,8 @@ func NewStore(dsn string) (*Store, error) {
 	}, nil
 }
 
-/*
- * Store implements all stores
- */
+// Store
+// Combines all stores
 type Store struct {
 	*TopicStore
 	*EventStore

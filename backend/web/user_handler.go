@@ -36,7 +36,7 @@ func (h *UserHandler) Register() http.HandlerFunc {
 		SessionData
 	}
 
-	// Parse HTML-template
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/templates/layout.html",
 		"frontend/templates/users_register.html"))
@@ -84,7 +84,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 			return
 		}
 
-		// Execute SQL statement
+		// Execute SQL statement to create a user
 		if err := h.store.CreateUser(&backend.User{
 			Username: form.Username,
 			Password: string(password),
@@ -113,7 +113,7 @@ func (h *UserHandler) Login() http.HandlerFunc {
 		SessionData
 	}
 
-	// Parse HTML-template
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/templates/layout.html",
 		"frontend/templates/users_login.html"))
@@ -142,7 +142,7 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 			IncorrectPassword: false,
 		}
 
-		// Execute SQL statement
+		// Execute SQL statement to get a user
 		user, err := h.store.UserByUsername(form.Username)
 		if err != nil {
 			// In case of an error, the username doesn't exist
@@ -196,7 +196,7 @@ func (h *UserHandler) EditPassword() http.HandlerFunc {
 		SessionData
 	}
 
-	// Parse HTML-template
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/templates/layout.html",
 		"frontend/templates/users_edit_password.html"))
@@ -220,8 +220,7 @@ func (h *UserHandler) EditPasswordStore() http.HandlerFunc {
 		// Retrieve values from form
 		oldPassword := req.FormValue("old_password")
 		form := PasswordForm{
-			Password1:            req.FormValue("password1"),
-			Password2:            req.FormValue("password2"),
+			NewPassword:          req.FormValue("new_password"),
 			IncorrectOldPassword: false,
 		}
 
@@ -249,11 +248,18 @@ func (h *UserHandler) EditPasswordStore() http.HandlerFunc {
 			return
 		}
 
-		// Execute SQL statement
+		// Hash password
+		password, err := bcrypt.GenerateFromPassword([]byte(form.NewPassword), bcrypt.DefaultCost)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Execute SQL statement to update a user
 		if err := h.store.UpdateUser(&backend.User{
 			UserID:   userID,
 			Username: user.Username,
-			Password: form.Password1,
+			Password: string(password),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return

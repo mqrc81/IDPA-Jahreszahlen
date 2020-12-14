@@ -1,8 +1,7 @@
 package web
 
-/*
- * play_handler.go contains HTTP-handler functions for games
- */
+// play_handler.go
+// Contains all HTTP-handlers for pages evolving around playing a game.
 
 import (
 	"html/template"
@@ -15,17 +14,16 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
-/*
- * PlayHandler handles sessions, CSRF-protection and database-access for game phases
- */
+// PlayHandler
+// Object for handlers to access sessions and database.
 type PlayHandler struct {
 	store    backend.Store
 	sessions *scs.SessionManager
 }
 
-/*
- * Phase1 is a GET-method with a form with 3 multiple-choice questions
- */
+// Phase1
+// A GET-method that any user can call. It consists of a form with 3 multiple-
+// choice questions, where the user has to guess the year of a given event.
 func (h *PlayHandler) Phase1() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
@@ -34,7 +32,7 @@ func (h *PlayHandler) Phase1() http.HandlerFunc {
 		Events []backend.Event
 	}
 
-	// Parse HTML-template
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/templates/layout.html",
 		"frontend/templates/play_phase1.html"))
@@ -48,15 +46,14 @@ func (h *PlayHandler) Phase1() http.HandlerFunc {
 			return
 		}
 
-		// Execute SQL statement
+		// Execute SQL statement to get events
 		ee, err := h.store.EventsByTopic(topicID, true)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// Ensure correct play order
-		// session.Put(ctx, "game", "1:"+topicIDstr)
+		// TODO session management to ensure correct play order etc.
 
 		// Execute HTML-template
 		if err := tmpl.Execute(res, data{
@@ -69,9 +66,9 @@ func (h *PlayHandler) Phase1() http.HandlerFunc {
 	}
 }
 
-/*
- * Phase2 is a GET-method with a form with 3 questions
- */
+// Phase2
+// A GET-method that any user can call after having completed Phase1. It consists of a form with 4 questions, where the
+// user has to guess the year of a given event.
 func (h *PlayHandler) Phase2() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
@@ -80,27 +77,28 @@ func (h *PlayHandler) Phase2() http.HandlerFunc {
 		Events []backend.Event
 	}
 
-	//Parse HTML-template
+	// Parse HTML-template
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/templates/layout.html",
 		"frontend/templates/play_phase2.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
+		// TODO
 		// Retrieve values from URL parameters
-		//topicIDstr := chi.URLParam(req, "topicID")
-		//topicID, err := strconv.Atoi(topicIDstr)
-		//if err != nil {
+		// topicIDstr := chi.URLParam(req, "topicID")
+		// topicID, err := strconv.Atoi(topicIDstr)
+		// if err != nil {
 		//	http.Error(res, err.Error(), http.StatusInternalServerError)
 		//	return
-		//}
+		// }
 
 		// Check if game order is legal
 		// check := session.PopString("game")
-		//if check == nil || strings.Split(check, ":")[0] != "1" || strings.Split(check, ":")[1] != topicIDstr {
+		// if check == nil || strings.Split(check, ":")[0] != "1" || strings.Split(check, ":")[1] != topicIDstr {
 		//	http.Error(res, "Illegal game session", http.StatusBadRequest)
 		//	return
-		//}
+		// }
 
 		// TODO Retrieve events array from sessions
 		var ee []backend.Event // TEMP
@@ -122,9 +120,9 @@ func (h *PlayHandler) Phase2() http.HandlerFunc {
 	}
 }
 
-/*
- * Phase3 is a GET-method with a form with timeline questions
- */
+// Phase3
+// A GET-method that any user can call after having completed Phase2. It consists of a form with up to 15 questions,
+// where the user has to match the year to any of the given events.
 func (h *PlayHandler) Phase3() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
@@ -133,7 +131,7 @@ func (h *PlayHandler) Phase3() http.HandlerFunc {
 		Events []backend.Event
 	}
 
-	//Parse HTML-template
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/templates/layout.html",
 		"frontend/templates/play_phase3.html"))
@@ -145,28 +143,30 @@ func (h *PlayHandler) Phase3() http.HandlerFunc {
 
 		for x := 1; x <= 5; x++ {
 			guess, _ := strconv.Atoi(req.FormValue("q" + strconv.Itoa(x))) // The user's answer
-			yr := ee[x+3].Year                                             // The actual answer
+			correctYear := ee[x+3].Year                                    // The correct answer
 
 			// If answer is correct, user gets 7 points
-			if guess == yr {
+			if guess == correctYear {
 				points += 7
 			} else {
 				// If answer is close, he gets partial points
 				diff := 0
-				if guess > yr {
-					diff = guess - yr
-				} else if yr > guess {
-					diff = yr - guess
+				if guess > correctYear {
+					diff = guess - correctYear
+				} else if correctYear > guess {
+					diff = correctYear - guess
 				}
 				points += 4 - diff
 			}
 		}
 
-		// Execute SQL statement
+		// Retrieve topic ID from URL
 		topicID, err := strconv.Atoi(req.URL.Query().Get("topicID"))
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 		}
+
+		// Execute SQL statement to get events
 		ee, err = h.store.EventsByTopic(topicID, true)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -188,9 +188,8 @@ func (h *PlayHandler) Phase3() http.HandlerFunc {
 	}
 }
 
-/*
- * Store is a POST-method that stores topic, user, points and date in database
- */
+// Store
+// A POST-method. It stores score of game played and redirects to Review.
 func (h *PlayHandler) Store() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve topic ID from URL
@@ -199,7 +198,7 @@ func (h *PlayHandler) Store() http.HandlerFunc {
 
 		// TODO Retrieve values from session
 		var userID int // Temporary
-		//var ee []backend.Event // Temporary
+		// var ee []backend.Event // Temporary
 		var points int // Temporary
 
 		for x := 1; x <= 3; x++ {
@@ -221,9 +220,9 @@ func (h *PlayHandler) Store() http.HandlerFunc {
 	}
 }
 
-/*
- * Review tells player his score
- */
+// Review
+// A GET-method that any user can call after having completed Phase3. It
+// summarizes the game played.
 func (h *PlayHandler) Review() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
@@ -231,7 +230,7 @@ func (h *PlayHandler) Review() http.HandlerFunc {
 		// TODO
 	}
 
-	// Parse HTML-template
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/templates/layout.html",
 		"frontend/templates/play_review.html"))

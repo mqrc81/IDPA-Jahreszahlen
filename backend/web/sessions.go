@@ -1,8 +1,7 @@
 package web
 
-/*
- * sessions.go adds sessions-management
- */
+// sessions.go
+// Contains session management.
 
 import (
 	"context"
@@ -14,23 +13,23 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
-/*
- * NewSessionManager creates new session
- */
+// NewSessionManager
+// Initializes new session management.
 func NewSessionManager(dataSourceName string) (*scs.SessionManager, error) {
+	// Opens MySQL connection
 	db, err := sql.Open("mysql", dataSourceName)
 	if err != nil {
 		return nil, err
 	}
 
+	// Creates new sessions
 	sessions := scs.New()
 	sessions.Store = mysqlstore.New(db)
 	return sessions, nil
 }
 
-/*
- * SessionData hold session data
- */
+// SessionData
+// Holds data to be accessed through the session.
 type SessionData struct {
 	FlashMessage string
 	Form         interface{}
@@ -38,9 +37,8 @@ type SessionData struct {
 	LoggedIn     bool
 }
 
-/*
- * GetSessionData gets session data
- */
+// GetSessionData
+// Gets all the data from the session
 func GetSessionData(session *scs.SessionManager, ctx context.Context) SessionData {
 	var data SessionData
 
