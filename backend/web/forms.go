@@ -13,7 +13,7 @@ import (
 // init
 // Gets initialized with the package. Registers certain types to the session,
 // because by default the session can only contain basic data types (int, bool,
-// String, etc.).
+// string, etc.).
 func init() {
 	gob.Register(TopicForm{})
 	gob.Register(EventForm{})
@@ -24,7 +24,9 @@ func init() {
 }
 
 // FormErrors
-// A map that holds the error messages.
+// A map that holds the error messages. The key string contains the name of the
+// form input that is invalid (e.g. "Title"), the value string contains the
+// error message.
 type FormErrors map[string]string
 
 // TopicForm
@@ -122,23 +124,11 @@ type RegisterForm struct {
 func (f *RegisterForm) Validate() bool {
 	f.Errors = FormErrors{}
 
-	// Validate username
+	// Validate new password
 	if f.UsernameTaken {
 		f.Errors["Username"] = "Benutzername ist bereits vergeben."
-	} else if len(f.Username) < 3 {
-		f.Errors["Username"] = "Benutzername muss mindestens 3 Zeichen lang sein."
-	} else if len(f.Username) > 20 {
-		f.Errors["Username"] = "Benutzername darf höchstens 20 Zeichen lang sein."
-	} else if !Regex(f.Username, "^[a-zA-Z0-9._]*$") {
-		f.Errors["Username"] = "Benutzername darf nur Buchstaben, Zahlen, '.' und '_' enthalten."
-	} else if !Regex(f.Username, "\\D") {
-		f.Errors["Username"] = "Benutzername muss mindestens 1 Buchstaben enthalten."
-	} else if Regex(f.Username, "^[._]") {
-		f.Errors["Username"] = "Benutzername darf nicht mit '.' oder '_' beginnen."
-	} else if Regex(f.Username, "[._]$") {
-		f.Errors["Username"] = "Benutzername darf nicht mit '.' oder '_' enden."
-	} else if Regex(f.Username, "[_.]{2}") {
-		f.Errors["Username"] = "Benutzername darf '.' und '_' nicht aufeinanderfolgend haben."
+	} else {
+		f.Errors = ValidateUsername(f.Username, f.Errors)
 	}
 
 	// Validate password
@@ -180,6 +170,36 @@ func (f *LoginForm) Validate() bool {
 	return len(f.Errors) == 0
 }
 
+// UsernameForm
+// Holds values of the form input when editing a password.
+type UsernameForm struct {
+	NewUsername       string
+	UsernameTaken     bool
+	IncorrectPassword bool
+
+	Errors FormErrors
+}
+
+// Validate
+// Validates the form input when editing a password.
+func (f *UsernameForm) Validate() bool {
+	f.Errors = FormErrors{}
+
+	// Validate new username
+	if f.UsernameTaken {
+		f.Errors["Username"] = "Benutzername ist bereits vergeben."
+	} else {
+		f.Errors = ValidateUsername(f.NewUsername, f.Errors)
+	}
+
+	// Validate password
+	if f.IncorrectPassword {
+		f.Errors["OldPassword"] = "Passwort ist inkorrekt."
+	}
+
+	return len(f.Errors) == 0
+}
+
 // PasswordForm
 // Holds values of the form input when editing a password.
 type PasswordForm struct {
@@ -205,30 +225,52 @@ func (f *PasswordForm) Validate() bool {
 	return len(f.Errors) == 0
 }
 
+// ValidateUsername
+// Validates a username.
+func ValidateUsername(username string, errors FormErrors) FormErrors {
+	if len(username) < 3 {
+		errors["Username"] = "Benutzername muss mindestens 3 Zeichen lang sein."
+	} else if len(username) > 20 {
+		errors["Username"] = "Benutzername darf höchstens 20 Zeichen lang sein."
+	} else if !Regex(username, "^[a-zA-Z0-9._]*$") {
+		errors["Username"] = "Benutzername darf nur Buchstaben, Zahlen, '.' und '_' enthalten."
+	} else if !Regex(username, "\\D") {
+		errors["Username"] = "Benutzername muss mindestens 1 Buchstaben enthalten."
+	} else if Regex(username, "^[._]") {
+		errors["Username"] = "Benutzername darf nicht mit '.' oder '_' beginnen."
+	} else if Regex(username, "[._]$") {
+		errors["Username"] = "Benutzername darf nicht mit '.' oder '_' enden."
+	} else if Regex(username, "[_.]{2}") {
+		errors["Username"] = "Benutzername darf '.' und '_' nicht aufeinanderfolgend haben."
+	}
+
+	return errors
+}
+
+// ValidatePassword
+// Validates a password.
+func ValidatePassword(password string, errors FormErrors, errorName string) FormErrors {
+	if len(password) < 8 {
+		errors[errorName] = "Passwort muss mindestens 8 Zeichen lang sein."
+	} else if !Regex(password, "[!@#$%^&*]") {
+		errors[errorName] = "Passwort muss ein Sonderzeichen enthalten (!@#$%^&*)."
+	} else if !Regex(password, "[a-z]") {
+		errors[errorName] = "Passwort muss mindestens ein Kleinbuchstaben enthalten."
+	} else if !Regex(password, "[A-Z]") {
+		errors[errorName] = "Passwort muss mindestens ein Grossbuchstaben enthalten."
+	} else if !Regex(password, "\\d") {
+		errors[errorName] = "Passwort muss mindestens eine Zahl enthalten."
+	}
+
+	return errors
+}
+
 // Regex
-// Checks if a certain regular expression matches a certain string
+// Checks if a certain regular expression matches a certain string.
 func Regex(str string, regex string) bool {
 	match, err := regexp.MatchString(regex, str)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return match
-}
-
-// ValidatePassword
-// Validates a password.
-func ValidatePassword(password string, formErrors FormErrors, errorName string) FormErrors {
-	if len(password) < 8 {
-		formErrors[errorName] = "Passwort muss mindestens 8 Zeichen lang sein."
-	} else if !Regex(password, "[!@#$%^&*]") {
-		formErrors[errorName] = "Passwort muss ein Sonderzeichen enthalten (!@#$%^&*)."
-	} else if !Regex(password, "[a-z]") {
-		formErrors[errorName] = "Passwort muss mindestens ein Kleinbuchstaben enthalten."
-	} else if !Regex(password, "[A-Z]") {
-		formErrors[errorName] = "Passwort muss mindestens ein Grossbuchstaben enthalten."
-	} else if !Regex(password, "\\d") {
-		formErrors[errorName] = "Passwort muss mindestens eine Zahl enthalten."
-	}
-
-	return formErrors
 }
