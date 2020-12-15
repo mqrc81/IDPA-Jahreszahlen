@@ -41,14 +41,14 @@ func (h *EventHandler) List() http.HandlerFunc {
 		// Retrieve topic ID from URL
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
-		// Execute SQL statement and get a topic
+		// Execute SQL statement to get a topic
 		topic, err := h.store.Topic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// Execute SQL statement and get events
+		// Execute SQL statement to get events
 		events, err := h.store.EventsByTopic(topicID, false)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -87,7 +87,7 @@ func (h *EventHandler) Create() http.HandlerFunc {
 		// Retrieve topic ID from URL
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
-		// Execute SQL statement and get a topic
+		// Execute SQL statement to get a topic
 		topic, err := h.store.Topic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)

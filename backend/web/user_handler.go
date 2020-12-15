@@ -1,12 +1,12 @@
 package web
 
-/*
- * user_handler.go contains HTTP-handler functions for users
- */
+// user_handler.go
+// Contains all HTTP-handlers for pages evolving around users.
 
 import (
 	"html/template"
 	"net/http"
+	"strings"
 
 	"github.com/alexedwards/scs/v2"
 	"golang.org/x/crypto/bcrypt"
@@ -14,9 +14,8 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
-/*
- * UserHandler handles sessions, CSRF-protection and database access for users
- */
+// UserHandler
+// Object for handlers to access sessions and database.
 type UserHandler struct {
 	store    backend.Store
 	sessions *scs.SessionManager
@@ -27,9 +26,9 @@ type UserHandler struct {
 // EditUsername()
 // EditUsernameStore()
 
-/*
- * Register is a GET method with form to register new user
- */
+// Register
+// A GET-method. It renders a form, in which values for registering can be
+// entered.
 func (h *UserHandler) Register() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
@@ -52,14 +51,16 @@ func (h *UserHandler) Register() http.HandlerFunc {
 	}
 }
 
-/*
- * RegisterSubmit is a POST method that stores user created
- */
+// RegisterSubmit
+// A POST-method. It validates the form from Register and redirects to Register
+// in case of an invalid input with corresponding error messages. In case of a
+// valid form, it stores the new user in the database and redirects to the home-
+// page.
 func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from form (Register)
 		form := RegisterForm{
-			Username:      req.FormValue("username"),
+			Username:      strings.ToLower(req.FormValue("username")),
 			Password:      req.FormValue("password"),
 			UsernameTaken: false,
 		}
@@ -100,13 +101,14 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "flash", "Willkommen "+form.Username+"! Ihre Registrierung war erfolgreich. "+
 			"Loggen Sie sich bitte ein.")
 
+		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)
 	}
 }
 
-/*
- * Login is a GET method with form to login
- */
+// Login
+// A GET-method. It renders a form in which values for logging in can be
+// entered.
 func (h *UserHandler) Login() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
@@ -129,14 +131,15 @@ func (h *UserHandler) Login() http.HandlerFunc {
 	}
 }
 
-/*
- * LoginSubmit is a POST method that logs in user
- */
+// LoginSubmit
+// A POST-method. It validates the form from Login and redirects to Login
+// in case of an invalid input with corresponding error messages. In case of a
+// valid form, it stores the user in the session and redirects to the home-page.
 func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from form
 		form := LoginForm{
-			Username:          req.FormValue("username"),
+			Username:          strings.ToLower(req.FormValue("username")),
 			Password:          req.FormValue("password"),
 			IncorrectUsername: false,
 			IncorrectPassword: false,
@@ -171,9 +174,8 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 	}
 }
 
-/*
- * Logout is a POST method that logs out user
- */
+// Logout
+// A GET-method that any user can call. It removes user from the session.
 func (h *UserHandler) Logout() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Remove user ID from session
@@ -187,9 +189,9 @@ func (h *UserHandler) Logout() http.HandlerFunc {
 	}
 }
 
-/*
- * EditPassword is a GET method that edits a user's password
- */
+// EditPassword
+// A GET-method that any user can call. It renders a form in which values for
+// updating the current password can be entered.
 func (h *UserHandler) EditPassword() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
@@ -212,9 +214,11 @@ func (h *UserHandler) EditPassword() http.HandlerFunc {
 	}
 }
 
-/*
- * EditPasswordStore is a POST method that stores password edited
- */
+// EditPasswordStore
+// A POST-method. It validates the form from EditPassword and redirects to
+// EditPassword in case of an invalid input with corresponding error messages.
+// In case of a valid form, it stores the user in the database and redirects to
+// the user's profile.
 func (h *UserHandler) EditPasswordStore() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from form
@@ -227,7 +231,7 @@ func (h *UserHandler) EditPasswordStore() http.HandlerFunc {
 		// Retrieve user from session
 		var userID int
 		userIDinf := h.sessions.Get(req.Context(), "user_id")
-		if userIDinf != nil {
+		if userIDinf == nil {
 			userID = userIDinf.(int)
 		}
 		user, err := h.store.User(userID)
@@ -264,5 +268,8 @@ func (h *UserHandler) EditPasswordStore() http.HandlerFunc {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		// Redirect to user's profile
+		http.Redirect(res, req, "/users/profile", http.StatusFound)
 	}
 }
