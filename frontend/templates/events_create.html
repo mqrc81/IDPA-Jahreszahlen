@@ -1,15 +1,44 @@
 {{define "title"}}
-    <title>Title</title>
+    <title>Ereignis erstellen - Jahreszahlen</title>
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Header</h1>
+    <h1 class="mb-0">Ereignis erstellen</h1>
 {{end}}
 
 {{define "content"}}
 
-{{end}}
+    <h5>Ereignis zum Thema '{{.Topic.Title}}'
+        <br><br>
+    </h5>
 
-{{define "sidebar"}}
+    <form action="/topics/{{.Topic.TopicID}}/events" method="POST" class="form">
+        <label>Titel*</label>
+        <div class="form-group">
+            <input type="text" name="title"
+                   class="form-control {{with .Form.Errors.Title}}is-invalid{{end}}"
+                   placeholder="Titel des Ereignisses"
+                   value="{{with .Form.Title}}{{.}}{{end}}">
+        </div>
 
+        {{with .Form.Errors.Title}}
+            <div style="color:#dc3545">{{.}}</div>
+        {{end}}
+
+        <h5><br></h5>
+        <label>Jahr*</label>
+        <div class="form-group">
+            <input type="number" name="year"
+                   class="form-control {{with .Form.Errors.Year}}is-invalid{{end}}"
+                   placeholder="Jahr des Geschehens"
+                   value="{{with .Form.Year}}{{.}}{{end}}">
+        </div>
+
+        {{with .Form.Errors.Year}}
+            <div style="color:#dc3545">{{.}}</div>
+        {{end}}
+
+        <h5><br></h5>
+        <button type="submit" class="btn btn-primary">Ereignis erstellen</button>
+    </form>
 {{end}}
