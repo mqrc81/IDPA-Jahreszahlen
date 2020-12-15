@@ -66,6 +66,7 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 
 	// Events
 	h.Route("/topics/{topicID}/events", func(r chi.Router) {
+		r.Get("/", events.List())
 		r.Get("/new", events.Create())
 		r.Post("/", events.Store())
 		r.Post("/{eventID}/delete", events.Delete())
@@ -73,7 +74,6 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		// TODO
 		// r.Get("/edit", events.Edit())
 		// r.Post("/edit", events.EditStore())
-		// r.Get("/", events.List())
 	})
 
 	// Play

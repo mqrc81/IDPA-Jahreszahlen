@@ -21,6 +21,52 @@ type EventHandler struct {
 	sessions *scs.SessionManager
 }
 
+// List
+// A GET-method that any admin can call. It lists all scores, ranked by points,
+// with the ability to filter scores by topic and/or user.
+func (h *EventHandler) List() http.HandlerFunc {
+	// Data to pass to HTML-template
+	type data struct {
+		SessionData
+
+		Topic  backend.Topic
+		Events []backend.Event
+	}
+
+	// Parse HTML-templates
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/events_list.html"))
+	return func(res http.ResponseWriter, req *http.Request) {
+		// Retrieve topic ID from URL
+		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
+
+		// Execute SQL statement and get a topic
+		topic, err := h.store.Topic(topicID)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Execute SQL statement and get events
+		events, err := h.store.EventsByTopic(topicID, false)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Execute HTML-templates with data
+		if err := tmpl.Execute(res, data{
+			SessionData: GetSessionData(h.sessions, req.Context()),
+			Topic:       topic,
+			Events:      events,
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 // Create
 // A GET-method that any admin can call. It renders a form, in which values
 // for a new event can be entered.
@@ -29,7 +75,7 @@ func (h *EventHandler) Create() http.HandlerFunc {
 	type data struct {
 		SessionData
 
-		TopicID int
+		Topic backend.Topic
 	}
 
 	// Parse HTML-templates
@@ -41,10 +87,17 @@ func (h *EventHandler) Create() http.HandlerFunc {
 		// Retrieve topic ID from URL
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
-		// Execute HTML-template
+		// Execute SQL statement and get a topic
+		topic, err := h.store.Topic(topicID)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
-			TopicID:     topicID,
+			Topic:       topic,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -91,7 +144,7 @@ func (h *EventHandler) Store() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "flash", "Ereignis wurde erfolgreich erstellt.")
 
 		// Redirect to list of topics
-		http.Redirect(res, req, "/topics/"+topicIDstr+"/edit", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicIDstr+"/events", http.StatusFound)
 	}
 }
 

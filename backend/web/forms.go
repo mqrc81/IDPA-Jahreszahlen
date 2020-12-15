@@ -96,7 +96,9 @@ func (f *EventForm) Validate() bool {
 	}
 
 	// Validate year
-	if f.Year <= 0 {
+	if f.Year == 0 {
+		f.Errors["Year"] = "Jahr darf nicht leer sein."
+	} else if f.Year <= 0 {
 		f.Errors["Year"] = "Jahr muss positiv sein."
 	} else if f.Year > time.Now().Year() {
 		f.Errors["Year"] = "Wird hier die Zukunft vorausgesagt?"
