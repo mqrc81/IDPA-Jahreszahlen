@@ -66,6 +66,7 @@ func (h *TopicHandler) Create() http.HandlerFunc {
 	type data struct {
 		SessionData
 	}
+
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/templates/layout.html",

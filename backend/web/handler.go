@@ -71,7 +71,7 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		r.Post("/", events.Store())
 		r.Post("/{eventID}/delete", events.Delete())
 
-		// TODO
+		//TODO
 		// r.Get("/edit", events.Edit())
 		// r.Post("/edit", events.EditStore())
 	})
@@ -98,14 +98,14 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		r.Get("/login", users.Login())
 		r.Post("/login", users.LoginSubmit())
 		r.Get("/logout", users.Logout())
+		r.Get("/{userID}/edit", users.EditUsername())
+		r.Post("/{userID}", users.EditUsernameSubmit())
 		r.Get("/{userID}/edit/password", users.EditPassword())
 		r.Post("/{userID}", users.EditPasswordSubmit())
 
-		// TODO
+		//TODO
 		// r.Get("/profile", users.Profile())
 		// r.Get("/", users.List())
-		// r.Get("/{userID}/edit", users.EditUsername())
-		// r.Post("/{userID}", users.EditUsernameStore())
 		// r.Post("/{userID}/delete", users.Delete())
 	})
 
@@ -192,8 +192,10 @@ func (h *Handler) withUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve user ID from session
 		var userID int
-		userIDinf := h.sessions.Get(req.Context(), "user_id") // user ID as interface{}
+		// User ID as interface
+		userIDinf := h.sessions.Get(req.Context(), "user_id")
 		if userIDinf != nil {
+			// If user ID interface isn't empty, turn it into an integer
 			userID = userIDinf.(int)
 		}
 
