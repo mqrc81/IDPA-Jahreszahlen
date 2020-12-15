@@ -128,11 +128,11 @@ func (f *RegisterForm) Validate() bool {
 	if f.UsernameTaken {
 		f.Errors["Username"] = "Benutzername ist bereits vergeben."
 	} else {
-		f.Errors = ValidateUsername(f.Username, f.Errors)
+		f.Errors = validateUsername(f.Username, f.Errors)
 	}
 
 	// Validate password
-	f.Errors = ValidatePassword(f.Password, f.Errors, "Password")
+	f.Errors = validatePassword(f.Password, f.Errors, "Password")
 
 	return len(f.Errors) == 0
 }
@@ -171,9 +171,10 @@ func (f *LoginForm) Validate() bool {
 }
 
 // UsernameForm
-// Holds values of the form input when editing a password.
+// Holds values of the form input when editing a username.
 type UsernameForm struct {
 	NewUsername       string
+	Password          string
 	UsernameTaken     bool
 	IncorrectPassword bool
 
@@ -189,11 +190,13 @@ func (f *UsernameForm) Validate() bool {
 	if f.UsernameTaken {
 		f.Errors["Username"] = "Benutzername ist bereits vergeben."
 	} else {
-		f.Errors = ValidateUsername(f.NewUsername, f.Errors)
+		f.Errors = validateUsername(f.NewUsername, f.Errors)
 	}
 
 	// Validate password
-	if f.IncorrectPassword {
+	if f.Password == "" {
+		f.Errors["OldPassword"] = "Geben Sie Ihr Passwort ein."
+	} else if f.IncorrectPassword {
 		f.Errors["OldPassword"] = "Passwort ist inkorrekt."
 	}
 
@@ -204,6 +207,7 @@ func (f *UsernameForm) Validate() bool {
 // Holds values of the form input when editing a password.
 type PasswordForm struct {
 	NewPassword          string
+	OldPassword          string
 	IncorrectOldPassword bool
 
 	Errors FormErrors
@@ -215,59 +219,61 @@ func (f *PasswordForm) Validate() bool {
 	f.Errors = FormErrors{}
 
 	// Validate old password
-	if f.IncorrectOldPassword {
+	if f.OldPassword == "" {
+		f.Errors["OldPassword"] = "Geben Sie Ihr altes Passwort ein."
+	} else if f.IncorrectOldPassword {
 		f.Errors["OldPassword"] = "Altes Passwort ist inkorrekt."
 	}
 
 	// Validate new password
-	f.Errors = ValidatePassword(f.NewPassword, f.Errors, "NewPassword")
+	f.Errors = validatePassword(f.NewPassword, f.Errors, "NewPassword")
 
 	return len(f.Errors) == 0
 }
 
-// ValidateUsername
+// validateUsername
 // Validates a username.
-func ValidateUsername(username string, errors FormErrors) FormErrors {
+func validateUsername(username string, errors FormErrors) FormErrors {
 	if len(username) < 3 {
 		errors["Username"] = "Benutzername muss mindestens 3 Zeichen lang sein."
 	} else if len(username) > 20 {
 		errors["Username"] = "Benutzername darf höchstens 20 Zeichen lang sein."
-	} else if !Regex(username, "^[a-zA-Z0-9._]*$") {
+	} else if !regex(username, "^[a-zA-Z0-9._]*$") {
 		errors["Username"] = "Benutzername darf nur Buchstaben, Zahlen, '.' und '_' enthalten."
-	} else if !Regex(username, "\\D") {
+	} else if !regex(username, "\\D") {
 		errors["Username"] = "Benutzername muss mindestens 1 Buchstaben enthalten."
-	} else if Regex(username, "^[._]") {
+	} else if regex(username, "^[._]") {
 		errors["Username"] = "Benutzername darf nicht mit '.' oder '_' beginnen."
-	} else if Regex(username, "[._]$") {
+	} else if regex(username, "[._]$") {
 		errors["Username"] = "Benutzername darf nicht mit '.' oder '_' enden."
-	} else if Regex(username, "[_.]{2}") {
+	} else if regex(username, "[_.]{2}") {
 		errors["Username"] = "Benutzername darf '.' und '_' nicht aufeinanderfolgend haben."
 	}
 
 	return errors
 }
 
-// ValidatePassword
+// validatePassword
 // Validates a password.
-func ValidatePassword(password string, errors FormErrors, errorName string) FormErrors {
+func validatePassword(password string, errors FormErrors, errorName string) FormErrors {
 	if len(password) < 8 {
 		errors[errorName] = "Passwort muss mindestens 8 Zeichen lang sein."
-	} else if !Regex(password, "[!@#$%^&*]") {
+	} else if !regex(password, "[!@#$%^&*]") {
 		errors[errorName] = "Passwort muss ein Sonderzeichen enthalten (!@#$%^&*)."
-	} else if !Regex(password, "[a-z]") {
+	} else if !regex(password, "[a-z]") {
 		errors[errorName] = "Passwort muss mindestens ein Kleinbuchstaben enthalten."
-	} else if !Regex(password, "[A-Z]") {
+	} else if !regex(password, "[A-Z]") {
 		errors[errorName] = "Passwort muss mindestens ein Grossbuchstaben enthalten."
-	} else if !Regex(password, "\\d") {
+	} else if !regex(password, "\\d") {
 		errors[errorName] = "Passwort muss mindestens eine Zahl enthalten."
 	}
 
 	return errors
 }
 
-// Regex
+// regex
 // Checks if a certain regular expression matches a certain string.
-func Regex(str string, regex string) bool {
+func regex(str string, regex string) bool {
 	match, err := regexp.MatchString(regex, str)
 	if err != nil {
 		log.Fatal(err)

@@ -66,9 +66,11 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 		}
 
 		// Check if username is taken
-		user, err := h.store.UserByUsername(form.Username)
-		if err == nil { // If error is nil, user was found
-			form.UsernameTaken = true // If user was found, username is already taken
+		_, err := h.store.UserByUsername(form.Username)
+		if err == nil {
+			// If error is nil, a user with that username was found, which
+			// means the username is already taken
+			form.UsernameTaken = true
 		}
 
 		// Validate form
@@ -93,9 +95,6 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
-		// Store user ID in session (= login)
-		h.sessions.Put(req.Context(), "user_id", user.UserID)
 
 		// Add flash message
 		h.sessions.Put(req.Context(), "flash", "Willkommen "+form.Username+"! Ihre Registrierung war erfolgreich. "+
@@ -151,8 +150,10 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 			// In case of an error, the username doesn't exist
 			form.IncorrectUsername = true
 		} else {
-			// Else, check if username and password match
+			// Else, check if password is correct
 			err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password))
+			// If error is nil, the password matches the hash, which means it
+			// is correct.
 			form.IncorrectPassword = err != nil
 		}
 
@@ -214,6 +215,64 @@ func (h *UserHandler) EditUsername() http.HandlerFunc {
 	}
 }
 
+// EditUsernameSubmit
+// A POST-method. It validates the form from EditUsername and redirects to
+// EditUsername in case of an invalid input with corresponding error messages.
+// In case of a valid form, it stores the user in the database and redirects to
+// the user's profile.
+func (h *UserHandler) EditUsernameSubmit() http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		// Retrieve values from form
+		form := UsernameForm{
+			NewUsername:       strings.ToLower(req.FormValue("username")),
+			Password:          req.FormValue("password"),
+			UsernameTaken:     false,
+			IncorrectPassword: false,
+		}
+
+		// Check if username is taken
+		_, err := h.store.UserByUsername(form.NewUsername)
+		// If error is nil, a user with that username was found, which means
+		// the username is already taken.
+		form.UsernameTaken = err == nil
+
+		// Retrieve user ID from session FIXME
+		var userID int
+		userIDinf := h.sessions.Get(req.Context(), "user_id")
+		if userIDinf == nil {
+			userID = userIDinf.(int)
+		}
+
+		// Execute SQL statement to get user
+		user, err := h.store.User(userID)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Check if password is correct
+		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password))
+		// If error is nil, the password matches the hash, which means it is
+		// correct
+		form.IncorrectPassword = err != nil
+
+		if !form.Validate() {
+			h.sessions.Put(req.Context(), "form", form)
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+
+		// Store user ID in session
+		h.sessions.Put(req.Context(), "user_id", user.UserID)
+
+		// Add flash message to session
+		h.sessions.Put(req.Context(), "flash", "Ihr Benutzername wurde erfolgreich geändert.")
+
+		// Redirect to Home
+		http.Redirect(res, req, "/profile", http.StatusFound)
+	}
+}
+
 // EditPassword
 // A GET-method that any user can call. It renders a form in which values for
 // updating the current password can be entered.
@@ -247,18 +306,20 @@ func (h *UserHandler) EditPassword() http.HandlerFunc {
 func (h *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from form
-		oldPassword := req.FormValue("old_password")
 		form := PasswordForm{
 			NewPassword:          req.FormValue("new_password"),
+			OldPassword:          req.FormValue("old_password"),
 			IncorrectOldPassword: false,
 		}
 
-		// Retrieve user from session
+		// Retrieve user ID from session
 		var userID int
 		userIDinf := h.sessions.Get(req.Context(), "user_id")
 		if userIDinf == nil {
 			userID = userIDinf.(int)
 		}
+
+		// Execute SQL statement to get user
 		user, err := h.store.User(userID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -266,7 +327,7 @@ func (h *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 		}
 
 		// Compare user's password with "old password" from form
-		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword)); err != nil {
+		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.OldPassword)); err != nil {
 			form.IncorrectOldPassword = true
 		}
 
