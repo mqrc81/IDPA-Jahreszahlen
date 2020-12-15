@@ -71,7 +71,7 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		r.Post("/", events.Store())
 		r.Post("/{eventID}/delete", events.Delete())
 
-		// TODO
+		//TODO
 		// r.Get("/edit", events.Edit())
 		// r.Post("/edit", events.EditStore())
 	})
@@ -98,14 +98,14 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		r.Get("/login", users.Login())
 		r.Post("/login", users.LoginSubmit())
 		r.Get("/logout", users.Logout())
+		r.Get("/{userID}/edit", users.EditUsername())
+		r.Post("/{userID}", users.EditUsernameSubmit())
 		r.Get("/{userID}/edit/password", users.EditPassword())
 		r.Post("/{userID}", users.EditPasswordSubmit())
 
-		// TODO
+		//TODO
 		// r.Get("/profile", users.Profile())
 		// r.Get("/", users.List())
-		// r.Get("/{userID}/edit", users.EditUsername())
-		// r.Post("/{userID}", users.EditUsernameStore())
 		// r.Post("/{userID}/delete", users.Delete())
 	})
 

@@ -21,10 +21,8 @@ type UserHandler struct {
 	sessions *scs.SessionManager
 }
 
-// TODO
+//TODO
 // Profile()
-// EditUsername()
-// EditUsernameStore()
 
 // Register
 // A GET-method. It renders a form, in which values for registering can be
@@ -236,18 +234,11 @@ func (h *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 		// the username is already taken.
 		form.UsernameTaken = err == nil
 
-		// Retrieve user ID from session FIXME
-		var userID int
-		userIDinf := h.sessions.Get(req.Context(), "user_id")
-		if userIDinf == nil {
-			userID = userIDinf.(int)
-		}
-
-		// Execute SQL statement to get user
-		user, err := h.store.User(userID)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
+		// Retrieve user from session
+		var user backend.User
+		userInf := h.sessions.Get(req.Context(), "user")
+		if userInf == nil {
+			user = userInf.(backend.User)
 		}
 
 		// Check if password is correct
@@ -312,18 +303,11 @@ func (h *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 			IncorrectOldPassword: false,
 		}
 
-		// Retrieve user ID from session
-		var userID int
-		userIDinf := h.sessions.Get(req.Context(), "user_id")
-		if userIDinf == nil {
-			userID = userIDinf.(int)
-		}
-
-		// Execute SQL statement to get user
-		user, err := h.store.User(userID)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
+		// Retrieve user from session
+		var user backend.User
+		userInf := h.sessions.Get(req.Context(), "user")
+		if userInf == nil {
+			user = userInf.(backend.User)
 		}
 
 		// Compare user's password with "old password" from form
@@ -347,7 +331,7 @@ func (h *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 
 		// Execute SQL statement to update a user
 		if err := h.store.UpdateUser(&backend.User{
-			UserID:   userID,
+			UserID:   user.UserID,
 			Username: user.Username,
 			Password: string(password),
 		}); err != nil {
