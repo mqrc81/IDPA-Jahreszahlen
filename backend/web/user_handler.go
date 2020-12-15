@@ -30,7 +30,7 @@ type UserHandler struct {
 // A GET-method. It renders a form, in which values for registering can be
 // entered.
 func (h *UserHandler) Register() http.HandlerFunc {
-	// Data to pass to HTML-template
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 	}
@@ -41,7 +41,7 @@ func (h *UserHandler) Register() http.HandlerFunc {
 		"frontend/templates/users_register.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Execute HTML-template
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 		}); err != nil {
@@ -110,7 +110,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 // A GET-method. It renders a form in which values for logging in can be
 // entered.
 func (h *UserHandler) Login() http.HandlerFunc {
-	// Data to pass to HTML-template
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 	}
@@ -121,7 +121,7 @@ func (h *UserHandler) Login() http.HandlerFunc {
 		"frontend/templates/users_login.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Execute HTML-template
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 		}); err != nil {
@@ -189,11 +189,11 @@ func (h *UserHandler) Logout() http.HandlerFunc {
 	}
 }
 
-// EditPassword
+// EditUsername
 // A GET-method that any user can call. It renders a form in which values for
-// updating the current password can be entered.
-func (h *UserHandler) EditPassword() http.HandlerFunc {
-	// Data to pass to HTML-template
+// updating the current username can be entered.
+func (h *UserHandler) EditUsername() http.HandlerFunc {
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 	}
@@ -201,10 +201,10 @@ func (h *UserHandler) EditPassword() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/templates/layout.html",
-		"frontend/templates/users_edit_password.html"))
-	return func(res http.ResponseWriter, req *http.Request) {
+		"frontend/templates/users_edit_username.html"))
 
-		// Execute HTML-template
+	return func(res http.ResponseWriter, req *http.Request) {
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 		}); err != nil {
@@ -214,12 +214,37 @@ func (h *UserHandler) EditPassword() http.HandlerFunc {
 	}
 }
 
-// EditPasswordStore
+// EditPassword
+// A GET-method that any user can call. It renders a form in which values for
+// updating the current password can be entered.
+func (h *UserHandler) EditPassword() http.HandlerFunc {
+	// Data to pass to HTML-templates
+	type data struct {
+		SessionData
+	}
+
+	// Parse HTML-templates
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/users_edit_password.html"))
+
+	return func(res http.ResponseWriter, req *http.Request) {
+		// Execute HTML-templates with data
+		if err := tmpl.Execute(res, data{
+			SessionData: GetSessionData(h.sessions, req.Context()),
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+// EditPasswordSubmit
 // A POST-method. It validates the form from EditPassword and redirects to
 // EditPassword in case of an invalid input with corresponding error messages.
 // In case of a valid form, it stores the user in the database and redirects to
 // the user's profile.
-func (h *UserHandler) EditPasswordStore() http.HandlerFunc {
+func (h *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from form
 		oldPassword := req.FormValue("old_password")

@@ -27,7 +27,7 @@ type TopicHandler struct {
  * List is a GET method that lists all topics
  */
 func (h *TopicHandler) List() http.HandlerFunc {
-	// Data to pass to HTML-template
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
@@ -47,7 +47,7 @@ func (h *TopicHandler) List() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-template
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			Topics:      tt,
@@ -62,7 +62,7 @@ func (h *TopicHandler) List() http.HandlerFunc {
  * Create is a GET method for a form to create a new topic
  */
 func (h *TopicHandler) Create() http.HandlerFunc {
-	// Data to pass to HTML-template
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 	}
@@ -72,7 +72,7 @@ func (h *TopicHandler) Create() http.HandlerFunc {
 		"frontend/templates/topics_create.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Execute HTML-template
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 		}); err != nil {
@@ -148,7 +148,7 @@ func (h *TopicHandler) Delete() http.HandlerFunc {
  * Edit is a GET method with the option to edit a specific topic and its events
  */
 func (h *TopicHandler) Edit() http.HandlerFunc {
-	// Data to pass to HTML-template
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
@@ -179,7 +179,7 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-template
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			Topic:       t,
@@ -241,7 +241,7 @@ func (h *TopicHandler) EditStore() http.HandlerFunc {
  * Show is a GET method that shows a specific topic with options to play, see leaderboard, (edit if admin)
  */
 func (h *TopicHandler) Show() http.HandlerFunc {
-	// Data to pass to HTML-template
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
@@ -264,7 +264,7 @@ func (h *TopicHandler) Show() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-template
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			Topic:       t,

@@ -25,7 +25,7 @@ type ScoreHandler struct {
 // A GET-method that any user can call. It lists all scores, ranked by points,
 // with the ability to filter scores by topic and/or user.
 func (h *ScoreHandler) List() http.HandlerFunc {
-	// Data to pass to HTML-template
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
@@ -105,7 +105,7 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 			ss = scores
 		}
 
-		// Execute HTML-template
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			Scores:      ss,

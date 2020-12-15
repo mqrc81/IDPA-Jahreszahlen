@@ -99,7 +99,7 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		r.Post("/login", users.LoginSubmit())
 		r.Get("/logout", users.Logout())
 		r.Get("/{userID}/edit/password", users.EditPassword())
-		r.Post("/{userID}", users.EditPasswordStore())
+		r.Post("/{userID}", users.EditPasswordSubmit())
 
 		// TODO
 		// r.Get("/profile", users.Profile())
@@ -123,7 +123,7 @@ type Handler struct {
 // Home
 // A GET-method. Renders the home-page.
 func (h *Handler) Home() http.HandlerFunc {
-	// Data to pass to HTML-template
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
@@ -151,7 +151,7 @@ func (h *Handler) Home() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-template
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			Topics:      tt,
@@ -166,7 +166,7 @@ func (h *Handler) Home() http.HandlerFunc {
 // About
 // A GET-method. Renders the about-page.
 func (h *Handler) About() http.HandlerFunc {
-	// Data to pass to HTML-template
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 	}
@@ -176,7 +176,7 @@ func (h *Handler) About() http.HandlerFunc {
 		"frontend/templates/about.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Execute HTML-template
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 		}); err != nil {

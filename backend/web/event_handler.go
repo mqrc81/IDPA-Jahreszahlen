@@ -25,7 +25,7 @@ type EventHandler struct {
 // A GET-method that any admin can call. It lists all scores, ranked by points,
 // with the ability to filter scores by topic and/or user.
 func (h *EventHandler) List() http.HandlerFunc {
-	// Data to pass to HTML-template
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
@@ -71,7 +71,7 @@ func (h *EventHandler) List() http.HandlerFunc {
 // A GET-method that any admin can call. It renders a form, in which values
 // for a new event can be entered.
 func (h *EventHandler) Create() http.HandlerFunc {
-	// Data to pass to HTML-template
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
