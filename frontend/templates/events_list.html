@@ -1,15 +1,36 @@
 {{define "title"}}
-    <title>Title</title>
+    <title>Ereignisse - Jahreszahlen</title>
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Header</h1>
+    <h1 class="mb-0">Ereignisse '{{.Topic.Title}}'</h1>
 {{end}}
 
 {{define "content"}}
-
+    {{range .Events}}
+        <div class="card mb-4">
+            <div class="card-body">
+                <p>
+                    <a href="/topic/{{$.Topic.TopicID}}/events/{{.EventID}}" class="d-block card-title text-body mt-1
+                    h5">
+                        {{.Title}} ({{.Year}})
+                    </a>
+                </p>
+            </div>
+        </div>
+    {{end}}
 {{end}}
 
 {{define "sidebar"}}
-
+    {{if .User.Admin}}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Neues Ereignis erstellen</h5>
+                <p class="card-text">
+                    Erstellen Sie ein neues Ereignis.
+                </p>
+                <a href="/topics/{{.Topic.TopicID}}/events/new" class="btn btn-primary btn-block">Neues Ereignis</a>
+            </div>
+        </div>
+    {{end}}
 {{end}}
