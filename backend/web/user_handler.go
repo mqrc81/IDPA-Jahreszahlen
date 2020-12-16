@@ -162,7 +162,7 @@ func (handler *UserHandler) LoginSubmit() http.HandlerFunc {
 			return
 		}
 
-		// Store user ID in session
+		// CreateStore user ID in session
 		handler.sessions.Put(req.Context(), "user_id", user.UserID)
 
 		// Add flash message to session
@@ -249,7 +249,7 @@ func (handler *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 			return
 		}
 
-		// Store user ID in session
+		// CreateStore user ID in session
 		handler.sessions.Put(req.Context(), "user_id", user.UserID)
 
 		// Add flash message to session

@@ -68,12 +68,11 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 	handler.Route("/topics/{topicID}/events", func(router chi.Router) {
 		router.Get("/", events.List())
 		router.Get("/new", events.Create())
-		router.Post("/", events.Store())
+		router.Post("/", events.CreateStore())
 		router.Post("/{eventID}/delete", events.Delete())
 
-		//TODO
-		// router.Get("/edit", events.Edit())
-		// router.Post("/edit", events.EditStore())
+		// TODO router.Get("/edit", events.Edit())
+		// TODO router.Post("/edit", events.EditStore())
 	})
 
 	// Play
@@ -103,11 +102,13 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		router.Get("/{userID}/edit/password", users.EditPassword())
 		router.Post("/{userID}", users.EditPasswordSubmit())
 
-		//TODO
-		// router.Get("/profile", users.Profile())
-		// router.Get("/", users.List())
-		// router.Post("/{userID}/delete", users.Delete())
+		// TODO router.Get("/profile", users.Profile())
+		// TODO router.Get("/", users.List())
+		// TODO router.Post("/{userID}/delete", users.Delete())
 	})
+
+	// Handler for when the user enters a non-existing URL
+	handler.NotFound(handler.NotFound404())
 
 	return handler
 }
@@ -192,10 +193,8 @@ func (handler *Handler) withUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve user ID from session
 		var userID int
-		// User ID as interface
 		userIDinf := handler.sessions.Get(req.Context(), "user_id")
 		if userIDinf != nil {
-			// If user ID interface isn't empty, turn it into an integer
 			userID = userIDinf.(int)
 		}
 
@@ -213,4 +212,26 @@ func (handler *Handler) withUser(next http.Handler) http.Handler {
 		// Serve HTTP with response-writer and request
 		next.ServeHTTP(res, req.WithContext(ctx))
 	})
+}
+
+// NotFound404
+// Gets called when a non-existing URL has been entered.
+func (handler *Handler) NotFound404() http.HandlerFunc {
+	// Data to pass to HTML-templates
+	type data struct {
+		SessionData
+	}
+
+	// Parse HTML-templates
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/http_not_found.html"))
+	return func(res http.ResponseWriter, req *http.Request) {
+		if err := tmpl.Execute(res, data{
+			SessionData: GetSessionData(handler.sessions, req.Context()),
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
 }

@@ -105,12 +105,12 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 	}
 }
 
-// Store
+// CreateStore
 // A POST-method. It validates the form from Create and redirects to Create in
 // case of an invalid input with corresponding error message. In case of valid
 // form, it stores the new event in the database and redirects to the edit-page
 // of the event's topic.
-func (handler *EventHandler) Store() http.HandlerFunc {
+func (handler *EventHandler) CreateStore() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve topic ID from URL
 		topicIDstr := chi.URLParam(req, "topicID")
