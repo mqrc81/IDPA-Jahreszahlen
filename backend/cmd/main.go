@@ -26,16 +26,16 @@ func main() {
 	}
 
 	// Get data-source-name from environment variables
-	dsn := os.Getenv("DB_DSN")
+	dataSourceName := os.Getenv("DB_DSN")
 
 	// Establish database connection with the help of the data-source-name
-	store, err := database.NewStore(dsn)
+	store, err := database.NewStore(dataSourceName)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Initialize session manager
-	sessions, err := web.NewSessionManager(dsn)
+	sessions, err := web.NewSessionManager(dataSourceName)
 	if err != nil {
 		log.Fatal(err)
 	}

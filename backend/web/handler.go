@@ -33,7 +33,7 @@ var (
 // NewHandler
 // Initializes HTTP-handlers, including router and middleware
 func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
-	h := &Handler{
+	handler := &Handler{
 		Mux:      chi.NewMux(),
 		store:    store,
 		sessions: sessions,
@@ -46,16 +46,16 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 	users := UserHandler{store: store, sessions: sessions}
 
 	// Use middleware
-	h.Use(middleware.Logger)
-	h.Use(sessions.LoadAndSave)
-	h.Use(h.withUser)
+	handler.Use(middleware.Logger)
+	handler.Use(sessions.LoadAndSave)
+	handler.Use(handler.withUser)
 
 	// Home
-	h.Get("/", h.Home())
-	h.Get("/about", h.About())
+	handler.Get("/", handler.Home())
+	handler.Get("/about", handler.About())
 
 	// Topics
-	h.Route("/topics", func(r chi.Router) {
+	handler.Route("/topics", func(r chi.Router) {
 		r.Get("/", topics.List())
 		r.Get("/new", topics.Create())
 		r.Post("/", topics.CreateStore())
@@ -65,51 +65,51 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 	})
 
 	// Events
-	h.Route("/topics/{topicID}/events", func(r chi.Router) {
-		r.Get("/", events.List())
-		r.Get("/new", events.Create())
-		r.Post("/", events.Store())
-		r.Post("/{eventID}/delete", events.Delete())
+	handler.Route("/topics/{topicID}/events", func(router chi.Router) {
+		router.Get("/", events.List())
+		router.Get("/new", events.Create())
+		router.Post("/", events.Store())
+		router.Post("/{eventID}/delete", events.Delete())
 
 		//TODO
-		// r.Get("/edit", events.Edit())
-		// r.Post("/edit", events.EditStore())
+		// router.Get("/edit", events.Edit())
+		// router.Post("/edit", events.EditStore())
 	})
 
 	// Play
-	h.Route("/topics/{topicID}/play", func(r chi.Router) {
-		r.Get("/1", play.Phase1())
-		r.Get("/2", play.Phase2())
-		r.Get("/3", play.Phase3())
-		r.Post("/3", play.Store())
-		r.Get("/review", play.Review())
+	handler.Route("/topics/{topicID}/play", func(router chi.Router) {
+		router.Get("/1", play.Phase1())
+		router.Get("/2", play.Phase2())
+		router.Get("/3", play.Phase3())
+		router.Post("/3", play.Store())
+		router.Get("/review", play.Review())
 	})
 
 	// Scores
-	h.Route("/scores", func(r chi.Router) {
-		r.Get("/", scores.List())
-		r.Post("/", scores.Store())
+	handler.Route("/scores", func(router chi.Router) {
+		router.Get("/", scores.List())
+		router.Post("/", scores.Store())
 	})
 
 	// Users
-	h.Route("/users", func(r chi.Router) {
-		r.Get("/register", users.Register())
-		r.Post("/register", users.RegisterSubmit())
-		r.Get("/login", users.Login())
-		r.Post("/login", users.LoginSubmit())
-		r.Get("/logout", users.Logout())
-		r.Get("/{userID}/edit", users.EditUsername())
-		r.Post("/{userID}", users.EditUsernameSubmit())
-		r.Get("/{userID}/edit/password", users.EditPassword())
-		r.Post("/{userID}", users.EditPasswordSubmit())
+	handler.Route("/users", func(router chi.Router) {
+		router.Get("/register", users.Register())
+		router.Post("/register", users.RegisterSubmit())
+		router.Get("/login", users.Login())
+		router.Post("/login", users.LoginSubmit())
+		router.Get("/logout", users.Logout())
+		router.Get("/{userID}/edit", users.EditUsername())
+		router.Post("/{userID}", users.EditUsernameSubmit())
+		router.Get("/{userID}/edit/password", users.EditPassword())
+		router.Post("/{userID}", users.EditPasswordSubmit())
 
 		//TODO
-		// r.Get("/profile", users.Profile())
-		// r.Get("/", users.List())
-		// r.Post("/{userID}/delete", users.Delete())
+		// router.Get("/profile", users.Profile())
+		// router.Get("/", users.List())
+		// router.Post("/{userID}/delete", users.Delete())
 	})
 
-	return h
+	return handler
 }
 
 // Handler
@@ -122,7 +122,7 @@ type Handler struct {
 
 // Home
 // A GET-method. Renders the home-page.
-func (h *Handler) Home() http.HandlerFunc {
+func (handler *Handler) Home() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -138,14 +138,14 @@ func (h *Handler) Home() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute SQL statement to get topics
-		tt, err := h.store.Topics()
+		tt, err := handler.store.Topics()
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Execute SQL statement to get scores
-		ss, err := h.store.Scores(5, 0)
+		ss, err := handler.store.Scores(5, 0)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -153,7 +153,7 @@ func (h *Handler) Home() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topics:      tt,
 			Scores:      ss,
 		}); err != nil {
@@ -165,7 +165,7 @@ func (h *Handler) Home() http.HandlerFunc {
 
 // About
 // A GET-method. Renders the about-page.
-func (h *Handler) About() http.HandlerFunc {
+func (handler *Handler) About() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -178,7 +178,7 @@ func (h *Handler) About() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -188,20 +188,21 @@ func (h *Handler) About() http.HandlerFunc {
 
 // withUser
 // A middleware that replaces the potential user ID with a user object.
-func (h *Handler) withUser(next http.Handler) http.Handler {
+func (handler *Handler) withUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve user ID from session
 		var userID int
 		// User ID as interface
-		userIDinf := h.sessions.Get(req.Context(), "user_id")
+		userIDinf := handler.sessions.Get(req.Context(), "user_id")
 		if userIDinf != nil {
 			// If user ID interface isn't empty, turn it into an integer
 			userID = userIDinf.(int)
 		}
 
 		// Execute SQL statement to get user
-		user, err := h.store.User(userID)
+		user, err := handler.store.User(userID)
 		if err != nil {
+			// No user in session => continue to HTTP-handler
 			next.ServeHTTP(res, req)
 			return
 		}

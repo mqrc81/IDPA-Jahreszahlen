@@ -43,36 +43,36 @@ type TopicForm struct {
 
 // Validate
 // Validates the form input when creating or editing a topic.
-func (f *TopicForm) Validate() bool {
-	f.Errors = FormErrors{}
+func (form *TopicForm) Validate() bool {
+	form.Errors = FormErrors{}
 
 	// Validate title
-	if f.Title == "" {
-		f.Errors["Title"] = "Titel darf nicht leer sein."
-	} else if len(f.Title) > 50 {
-		f.Errors["Title"] = "Titel darf 50 Zeichen nicht überschreiten."
+	if form.Title == "" {
+		form.Errors["Title"] = "Titel darf nicht leer sein."
+	} else if len(form.Title) > 50 {
+		form.Errors["Title"] = "Titel darf 50 Zeichen nicht überschreiten."
 	}
 
 	// Validate start- and end-year
 	current := time.Now().Year()
-	if f.StartYear <= 0 {
-		f.Errors["Year"] = "Start-Jahr muss positiv sein."
-	} else if f.EndYear <= 0 {
-		f.Errors["Year"] = "End-Jahr muss positiv sein."
-	} else if f.StartYear > current {
-		f.Errors["Year"] = "Start-Jahr darf nicht in der Zukunft sein."
-	} else if f.EndYear > current {
-		f.Errors["Year"] = "End-Jahr darf nicht in der Zukunft sein."
-	} else if f.EndYear < f.StartYear {
-		f.Errors["Year"] = "Da wurden wohl Start- und End-Jahr vertauscht."
+	if form.StartYear <= 0 {
+		form.Errors["Year"] = "Start-Jahr muss positiv sein."
+	} else if form.EndYear <= 0 {
+		form.Errors["Year"] = "End-Jahr muss positiv sein."
+	} else if form.StartYear > current {
+		form.Errors["Year"] = "Start-Jahr darf nicht in der Zukunft sein."
+	} else if form.EndYear > current {
+		form.Errors["Year"] = "End-Jahr darf nicht in der Zukunft sein."
+	} else if form.EndYear < form.StartYear {
+		form.Errors["Year"] = "Da wurden wohl Start- und End-Jahr vertauscht."
 	}
 
 	// Validate description
-	if len(f.Description) > 500 {
-		f.Errors["Description"] = "Beschreibung darf nicht leer sein."
+	if len(form.Description) > 500 {
+		form.Errors["Description"] = "Beschreibung darf nicht leer sein."
 	}
 
-	return len(f.Errors) == 0
+	return len(form.Errors) == 0
 }
 
 // EventForm
@@ -87,26 +87,26 @@ type EventForm struct {
 
 // Validate
 // Validates the form input when creating or editing an event.
-func (f *EventForm) Validate() bool {
-	f.Errors = FormErrors{}
+func (form *EventForm) Validate() bool {
+	form.Errors = FormErrors{}
 
 	// Validate title
-	if f.Title == "" {
-		f.Errors["Title"] = "Titel darf nicht leer sein."
-	} else if len(f.Title) > 110 {
-		f.Errors["Title"] = "Titel darf 110 Zeichen nicht überschreiten."
+	if form.Title == "" {
+		form.Errors["Title"] = "Titel darf nicht leer sein."
+	} else if len(form.Title) > 110 {
+		form.Errors["Title"] = "Titel darf 110 Zeichen nicht überschreiten."
 	}
 
 	// Validate year
-	if f.Year == 0 {
-		f.Errors["Year"] = "Jahr darf nicht leer sein."
-	} else if f.Year <= 0 {
-		f.Errors["Year"] = "Jahr muss positiv sein."
-	} else if f.Year > time.Now().Year() {
-		f.Errors["Year"] = "Wird hier die Zukunft vorausgesagt?"
+	if form.Year == 0 {
+		form.Errors["Year"] = "Jahr darf nicht leer sein."
+	} else if form.Year <= 0 {
+		form.Errors["Year"] = "Jahr muss positiv sein."
+	} else if form.Year > time.Now().Year() {
+		form.Errors["Year"] = "Wird hier die Zukunft vorausgesagt?"
 	}
 
-	return len(f.Errors) == 0
+	return len(form.Errors) == 0
 }
 
 // RegisterForm
@@ -121,20 +121,20 @@ type RegisterForm struct {
 
 // Validate
 // Validates the form input when registering.
-func (f *RegisterForm) Validate() bool {
-	f.Errors = FormErrors{}
+func (form *RegisterForm) Validate() bool {
+	form.Errors = FormErrors{}
 
 	// Validate new password
-	if f.UsernameTaken {
-		f.Errors["Username"] = "Benutzername ist bereits vergeben."
+	if form.UsernameTaken {
+		form.Errors["Username"] = "Benutzername ist bereits vergeben."
 	} else {
-		f.Errors = validateUsername(f.Username, f.Errors)
+		form.Errors = validateUsername(form.Username, form.Errors)
 	}
 
 	// Validate password
-	f.Errors = validatePassword(f.Password, f.Errors, "Password")
+	form.Errors = validatePassword(form.Password, form.Errors, "Password")
 
-	return len(f.Errors) == 0
+	return len(form.Errors) == 0
 }
 
 // LoginForm
@@ -150,24 +150,24 @@ type LoginForm struct {
 
 // Validate
 // Validates the form input when logging in.
-func (f *LoginForm) Validate() bool {
-	f.Errors = FormErrors{}
+func (form *LoginForm) Validate() bool {
+	form.Errors = FormErrors{}
 
 	// Validate username
-	if f.Username == "" {
-		f.Errors["Username"] = "Bitte Benutzernamen eingeben."
-	} else if f.IncorrectUsername {
-		f.Errors["Username"] = "Ungültiger Benutzername."
+	if form.Username == "" {
+		form.Errors["Username"] = "Bitte Benutzernamen eingeben."
+	} else if form.IncorrectUsername {
+		form.Errors["Username"] = "Ungültiger Benutzername."
 	}
 
 	// Validate password
-	if f.Password == "" {
-		f.Errors["Password"] = "Bitte Passwort eingeben."
-	} else if f.IncorrectPassword {
-		f.Errors["Password"] = "Ungültiges Passwort."
+	if form.Password == "" {
+		form.Errors["Password"] = "Bitte Passwort eingeben."
+	} else if form.IncorrectPassword {
+		form.Errors["Password"] = "Ungültiges Passwort."
 	}
 
-	return len(f.Errors) == 0
+	return len(form.Errors) == 0
 }
 
 // UsernameForm
@@ -183,24 +183,24 @@ type UsernameForm struct {
 
 // Validate
 // Validates the form input when editing a password.
-func (f *UsernameForm) Validate() bool {
-	f.Errors = FormErrors{}
+func (form *UsernameForm) Validate() bool {
+	form.Errors = FormErrors{}
 
 	// Validate new username
-	if f.UsernameTaken {
-		f.Errors["Username"] = "Benutzername ist bereits vergeben."
+	if form.UsernameTaken {
+		form.Errors["Username"] = "Benutzername ist bereits vergeben."
 	} else {
-		f.Errors = validateUsername(f.NewUsername, f.Errors)
+		form.Errors = validateUsername(form.NewUsername, form.Errors)
 	}
 
 	// Validate password
-	if f.Password == "" {
-		f.Errors["OldPassword"] = "Geben Sie Ihr Passwort ein."
-	} else if f.IncorrectPassword {
-		f.Errors["OldPassword"] = "Passwort ist inkorrekt."
+	if form.Password == "" {
+		form.Errors["OldPassword"] = "Geben Sie Ihr Passwort ein."
+	} else if form.IncorrectPassword {
+		form.Errors["OldPassword"] = "Passwort ist inkorrekt."
 	}
 
-	return len(f.Errors) == 0
+	return len(form.Errors) == 0
 }
 
 // PasswordForm
@@ -215,20 +215,20 @@ type PasswordForm struct {
 
 // Validate
 // Validates the form input when editing a password.
-func (f *PasswordForm) Validate() bool {
-	f.Errors = FormErrors{}
+func (form *PasswordForm) Validate() bool {
+	form.Errors = FormErrors{}
 
 	// Validate old password
-	if f.OldPassword == "" {
-		f.Errors["OldPassword"] = "Geben Sie Ihr altes Passwort ein."
-	} else if f.IncorrectOldPassword {
-		f.Errors["OldPassword"] = "Altes Passwort ist inkorrekt."
+	if form.OldPassword == "" {
+		form.Errors["OldPassword"] = "Geben Sie Ihr altes Passwort ein."
+	} else if form.IncorrectOldPassword {
+		form.Errors["OldPassword"] = "Altes Passwort ist inkorrekt."
 	}
 
 	// Validate new password
-	f.Errors = validatePassword(f.NewPassword, f.Errors, "NewPassword")
+	form.Errors = validatePassword(form.NewPassword, form.Errors, "NewPassword")
 
-	return len(f.Errors) == 0
+	return len(form.Errors) == 0
 }
 
 // validateUsername

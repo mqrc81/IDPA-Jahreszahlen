@@ -24,7 +24,7 @@ type EventHandler struct {
 // List
 // A GET-method that any admin can call. It lists all scores, ranked by points,
 // with the ability to filter scores by topic and/or user.
-func (h *EventHandler) List() http.HandlerFunc {
+func (handler *EventHandler) List() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -42,14 +42,14 @@ func (h *EventHandler) List() http.HandlerFunc {
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
 		// Execute SQL statement to get a topic
-		topic, err := h.store.Topic(topicID)
+		topic, err := handler.store.Topic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Execute SQL statement to get events
-		events, err := h.store.EventsByTopic(topicID, false)
+		events, err := handler.store.EventsByTopic(topicID, false)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -57,7 +57,7 @@ func (h *EventHandler) List() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topic:       topic,
 			Events:      events,
 		}); err != nil {
@@ -70,7 +70,7 @@ func (h *EventHandler) List() http.HandlerFunc {
 // Create
 // A GET-method that any admin can call. It renders a form, in which values
 // for a new event can be entered.
-func (h *EventHandler) Create() http.HandlerFunc {
+func (handler *EventHandler) Create() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -88,7 +88,7 @@ func (h *EventHandler) Create() http.HandlerFunc {
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
 		// Execute SQL statement to get a topic
-		topic, err := h.store.Topic(topicID)
+		topic, err := handler.store.Topic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -96,7 +96,7 @@ func (h *EventHandler) Create() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topic:       topic,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -110,7 +110,7 @@ func (h *EventHandler) Create() http.HandlerFunc {
 // case of an invalid input with corresponding error message. In case of valid
 // form, it stores the new event in the database and redirects to the edit-page
 // of the event's topic.
-func (h *EventHandler) Store() http.HandlerFunc {
+func (handler *EventHandler) Store() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve topic ID from URL
 		topicIDstr := chi.URLParam(req, "topicID")
@@ -125,13 +125,13 @@ func (h *EventHandler) Store() http.HandlerFunc {
 
 		// Validate form
 		if !form.Validate() {
-			h.sessions.Put(req.Context(), "form", form)
+			handler.sessions.Put(req.Context(), "form", form)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
 		// Execute SQL statement to create an event
-		if err := h.store.CreateEvent(&backend.Event{
+		if err := handler.store.CreateEvent(&backend.Event{
 			TopicID: topicID,
 			Title:   form.Title,
 			Year:    form.Year,
@@ -141,7 +141,7 @@ func (h *EventHandler) Store() http.HandlerFunc {
 		}
 
 		// Adds flash message
-		h.sessions.Put(req.Context(), "flash", "Ereignis wurde erfolgreich erstellt.")
+		handler.sessions.Put(req.Context(), "flash", "Ereignis wurde erfolgreich erstellt.")
 
 		// Redirect to list of topics
 		http.Redirect(res, req, "/topics/"+topicIDstr+"/events", http.StatusFound)
@@ -151,7 +151,7 @@ func (h *EventHandler) Store() http.HandlerFunc {
 // Delete
 // A POST-method. It deletes a certain event and redirects to edit-page of the
 // event's topic.
-func (h *EventHandler) Delete() http.HandlerFunc {
+func (handler *EventHandler) Delete() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve event ID from URL
 		topicID := chi.URLParam(req, "topicID")
@@ -160,7 +160,7 @@ func (h *EventHandler) Delete() http.HandlerFunc {
 		eventID, _ := strconv.Atoi(chi.URLParam(req, "eventID"))
 
 		// Execute SQL statement to delete an event
-		if err := h.store.DeleteEvent(eventID); err != nil {
+		if err := handler.store.DeleteEvent(eventID); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}

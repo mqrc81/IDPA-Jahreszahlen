@@ -21,56 +21,59 @@ type TopicStore struct {
 // Topic
 // Gets a topic by ID
 func (store *TopicStore) Topic(topicID int) (backend.Topic, error) {
-	var t backend.Topic
+	var topic backend.Topic
 
 	// Execute prepared statement
 	query := `SELECT * FROM topics WHERE topic_id = ?`
-	if err := store.Get(&t, query, topicID); err != nil {
+	if err := store.Get(&topic, query, topicID); err != nil {
 		return backend.Topic{}, fmt.Errorf("error getting topic: %w", err)
 	}
-	return t, nil
+	return topic, nil
 }
 
 // Topics
 // Gets all topics
 func (store *TopicStore) Topics() ([]backend.Topic, error) {
-	var tt []backend.Topic
+	var topics []backend.Topic
 
 	// Execute prepared statement
 	query := `SELECT * FROM topics ORDER BY start_year`
-	if err := store.Select(&tt, query); err != nil {
+	if err := store.Select(&topics, query); err != nil {
 		return []backend.Topic{}, fmt.Errorf("error getting topics: %w", err)
 	}
-	return tt, nil
+	return topics, nil
 }
 
 // CountTopics
 // Gets amount of topics
 func (store *EventStore) CountTopics() (int, error) {
-	var tCount int
+	var topicCount int
 
 	// Execute prepared statement
 	query := `SELECT COUNT(*) FROM topics`
-	if err := store.Get(&tCount, query); err != nil {
+	if err := store.Get(&topicCount, query); err != nil {
 		return 0, fmt.Errorf("error getting number of topics: %w", err)
 	}
-	return tCount, nil
+	return topicCount, nil
 }
 
 // CreateTopic
 // Creates a new topic
-func (store *TopicStore) CreateTopic(t *backend.Topic) error {
+func (store *TopicStore) CreateTopic(topic *backend.Topic) error {
 
 	// Execute prepared statement
 	query := `INSERT INTO topics(title, start_year, end_year, description) VALUES (?, ?, ?, ?)`
-	if _, err := store.Exec(query, t.Title,
-		t.StartYear, t.EndYear, t.Description); err != nil {
-		return fmt.Errorf("error creating t: %w", err)
+	if _, err := store.Exec(query,
+		topic.Title,
+		topic.StartYear,
+		topic.EndYear,
+		topic.Description); err != nil {
+		return fmt.Errorf("error creating topic: %w", err)
 	}
 
 	// Execute prepared statement
 	query = `SELECT * FROM topics WHERE topic_id = last_insert_id()`
-	if err := store.Get(t, query); err != nil {
+	if err := store.Get(topic, query); err != nil {
 		return fmt.Errorf("error getting created topic: %w", err)
 	}
 	return nil
@@ -78,17 +81,22 @@ func (store *TopicStore) CreateTopic(t *backend.Topic) error {
 
 // UpdateTopic
 // Updates an existing topic
-func (store *TopicStore) UpdateTopic(t *backend.Topic) error {
+func (store *TopicStore) UpdateTopic(topic *backend.Topic) error {
 
 	// Execute prepared statement
 	query := `UPDATE topics SET title = ?, start_year = ?, end_year = ?, description = ? WHERE topic_id = ?`
-	if _, err := store.Exec(query, t.Title, t.StartYear, t.EndYear, t.Description, t.TopicID); err != nil {
-		return fmt.Errorf("error updating t: %w", err)
+	if _, err := store.Exec(query,
+		topic.Title,
+		topic.StartYear,
+		topic.EndYear,
+		topic.Description,
+		topic.TopicID); err != nil {
+		return fmt.Errorf("error updating topic: %w", err)
 	}
 
 	// Execute prepared statement
 	query = `SELECT * FROM topics WHERE topic_id = last_insert_id()`
-	if err := store.Get(t, query); err != nil {
+	if err := store.Get(topic, query); err != nil {
 		return fmt.Errorf("error getting updated topic: %w", err)
 	}
 	return nil

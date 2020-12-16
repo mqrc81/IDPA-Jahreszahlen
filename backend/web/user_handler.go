@@ -27,7 +27,7 @@ type UserHandler struct {
 // Register
 // A GET-method. It renders a form, in which values for registering can be
 // entered.
-func (h *UserHandler) Register() http.HandlerFunc {
+func (handler *UserHandler) Register() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -41,7 +41,7 @@ func (h *UserHandler) Register() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -54,7 +54,7 @@ func (h *UserHandler) Register() http.HandlerFunc {
 // in case of an invalid input with corresponding error messages. In case of a
 // valid form, it stores the new user in the database and redirects to the home-
 // page.
-func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
+func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from form (Register)
 		form := RegisterForm{
@@ -64,7 +64,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 		}
 
 		// Check if username is taken
-		_, err := h.store.UserByUsername(form.Username)
+		_, err := handler.store.UserByUsername(form.Username)
 		if err == nil {
 			// If error is nil, a user with that username was found, which
 			// means the username is already taken
@@ -73,7 +73,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 
 		// Validate form
 		if !form.Validate() {
-			h.sessions.Put(req.Context(), "form", form)
+			handler.sessions.Put(req.Context(), "form", form)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
@@ -86,7 +86,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to create a user
-		if err := h.store.CreateUser(&backend.User{
+		if err := handler.store.CreateUser(&backend.User{
 			Username: form.Username,
 			Password: string(password),
 		}); err != nil {
@@ -95,7 +95,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 		}
 
 		// Add flash message
-		h.sessions.Put(req.Context(), "flash", "Willkommen "+form.Username+"! Ihre Registrierung war erfolgreich. "+
+		handler.sessions.Put(req.Context(), "flash", "Willkommen "+form.Username+"! Ihre Registrierung war erfolgreich. "+
 			"Loggen Sie sich bitte ein.")
 
 		// Redirect to Home
@@ -106,7 +106,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 // Login
 // A GET-method. It renders a form in which values for logging in can be
 // entered.
-func (h *UserHandler) Login() http.HandlerFunc {
+func (handler *UserHandler) Login() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -120,7 +120,7 @@ func (h *UserHandler) Login() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -132,7 +132,7 @@ func (h *UserHandler) Login() http.HandlerFunc {
 // A POST-method. It validates the form from Login and redirects to Login
 // in case of an invalid input with corresponding error messages. In case of a
 // valid form, it stores the user in the session and redirects to the home-page.
-func (h *UserHandler) LoginSubmit() http.HandlerFunc {
+func (handler *UserHandler) LoginSubmit() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from form
 		form := LoginForm{
@@ -143,7 +143,7 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to get a user
-		user, err := h.store.UserByUsername(form.Username)
+		user, err := handler.store.UserByUsername(form.Username)
 		if err != nil {
 			// In case of an error, the username doesn't exist
 			form.IncorrectUsername = true
@@ -157,16 +157,16 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 
 		// Validate form
 		if !form.Validate() {
-			h.sessions.Put(req.Context(), "form", form)
+			handler.sessions.Put(req.Context(), "form", form)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
 		// Store user ID in session
-		h.sessions.Put(req.Context(), "user_id", user.UserID)
+		handler.sessions.Put(req.Context(), "user_id", user.UserID)
 
 		// Add flash message to session
-		h.sessions.Put(req.Context(), "flash", "Hallo "+form.Username+"! Sie sind nun eingeloggt.")
+		handler.sessions.Put(req.Context(), "flash", "Hallo "+form.Username+"! Sie sind nun eingeloggt.")
 
 		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)
@@ -175,13 +175,13 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 
 // Logout
 // A GET-method that any user can call. It removes user from the session.
-func (h *UserHandler) Logout() http.HandlerFunc {
+func (handler *UserHandler) Logout() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Remove user ID from session
-		h.sessions.Remove(req.Context(), "user_id")
+		handler.sessions.Remove(req.Context(), "user_id")
 
 		// Add flash message to session
-		h.sessions.Put(req.Context(), "flash", "Sie wurden erfolgreich ausgeloggt.")
+		handler.sessions.Put(req.Context(), "flash", "Sie wurden erfolgreich ausgeloggt.")
 
 		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)
@@ -191,7 +191,7 @@ func (h *UserHandler) Logout() http.HandlerFunc {
 // EditUsername
 // A GET-method that any user can call. It renders a form in which values for
 // updating the current username can be entered.
-func (h *UserHandler) EditUsername() http.HandlerFunc {
+func (handler *UserHandler) EditUsername() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -205,7 +205,7 @@ func (h *UserHandler) EditUsername() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -218,7 +218,7 @@ func (h *UserHandler) EditUsername() http.HandlerFunc {
 // EditUsername in case of an invalid input with corresponding error messages.
 // In case of a valid form, it stores the user in the database and redirects to
 // the user's profile.
-func (h *UserHandler) EditUsernameSubmit() http.HandlerFunc {
+func (handler *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from form
 		form := UsernameForm{
@@ -229,7 +229,7 @@ func (h *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 		}
 
 		// Check if username is taken
-		_, err := h.store.UserByUsername(form.NewUsername)
+		_, err := handler.store.UserByUsername(form.NewUsername)
 		// If error is nil, a user with that username was found, which means
 		// the username is already taken.
 		form.UsernameTaken = err == nil
@@ -244,16 +244,16 @@ func (h *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 		form.IncorrectPassword = err != nil
 
 		if !form.Validate() {
-			h.sessions.Put(req.Context(), "form", form)
+			handler.sessions.Put(req.Context(), "form", form)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
 		// Store user ID in session
-		h.sessions.Put(req.Context(), "user_id", user.UserID)
+		handler.sessions.Put(req.Context(), "user_id", user.UserID)
 
 		// Add flash message to session
-		h.sessions.Put(req.Context(), "flash", "Ihr Benutzername wurde erfolgreich geändert.")
+		handler.sessions.Put(req.Context(), "flash", "Ihr Benutzername wurde erfolgreich geändert.")
 
 		// Redirect to Home
 		http.Redirect(res, req, "/profile", http.StatusFound)
@@ -263,7 +263,7 @@ func (h *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 // EditPassword
 // A GET-method that any user can call. It renders a form in which values for
 // updating the current password can be entered.
-func (h *UserHandler) EditPassword() http.HandlerFunc {
+func (handler *UserHandler) EditPassword() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -277,7 +277,7 @@ func (h *UserHandler) EditPassword() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -290,7 +290,7 @@ func (h *UserHandler) EditPassword() http.HandlerFunc {
 // EditPassword in case of an invalid input with corresponding error messages.
 // In case of a valid form, it stores the user in the database and redirects to
 // the user's profile.
-func (h *UserHandler) EditPasswordSubmit() http.HandlerFunc {
+func (handler *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from form
 		form := PasswordForm{
@@ -309,7 +309,7 @@ func (h *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 
 		// Validate form
 		if !form.Validate() {
-			h.sessions.Put(req.Context(), "form", form)
+			handler.sessions.Put(req.Context(), "form", form)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
@@ -322,7 +322,7 @@ func (h *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to update a user
-		if err := h.store.UpdateUser(&backend.User{
+		if err := handler.store.UpdateUser(&backend.User{
 			UserID:   user.UserID,
 			Username: user.Username,
 			Password: string(password),

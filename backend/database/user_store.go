@@ -21,61 +21,64 @@ type UserStore struct {
 // User
 // Gets a user by ID
 func (store UserStore) User(userID int) (backend.User, error) {
-	var u backend.User
+	var user backend.User
 
 	// Execute prepared statement
 	query := `SELECT * FROM users WHERE user_id = ?`
-	if err := store.Get(&u, query, userID); err != nil {
+	if err := store.Get(&user, query, userID); err != nil {
 		return backend.User{}, fmt.Errorf("error getting user: %w", err)
 	}
-	return u, nil
+	return user, nil
 }
 
 // UserByUsername
 // Gets a user by username
 func (store UserStore) UserByUsername(username string) (backend.User, error) {
-	var u backend.User
+	var user backend.User
 
 	// Execute prepared statement
 	query := `SELECT * FROM users WHERE username = ?`
-	if err := store.Get(&u, query, username); err != nil {
+	if err := store.Get(&user, query, username); err != nil {
 		return backend.User{}, fmt.Errorf("error getting user: %w", err)
 	}
-	return u, nil
+	return user, nil
 }
 
 // Users
 // Gets all users
 func (store UserStore) Users() ([]backend.User, error) {
-	var uu []backend.User
+	var users []backend.User
 
 	// Execute prepared statement
 	query := `SELECT * FROM users ORDER BY admin DESC, user_id` // order by [1.] admin (true -> false), [2.] user_id (101 -> 1)
-	if err := store.Select(&uu, query); err != nil {
+	if err := store.Select(&users, query); err != nil {
 		return []backend.User{}, fmt.Errorf("error getting topics: %w", err)
 	}
-	return uu, nil
+	return users, nil
 }
 
 // CountUsers
 // Gets amount of users
 func (store *UserStore) CountUsers() (int, error) {
-	var uCount int
+	var userCount int
 
 	// Execute prepared statement
 	query := `SELECT COUNT(*) FROM users`
-	if err := store.Get(&uCount, query); err != nil {
+	if err := store.Get(&userCount, query); err != nil {
 		return 0, fmt.Errorf("error getting number of users: %w", err)
 	}
-	return uCount, nil
+	return userCount, nil
 }
 
 // CreateUser
 // Creates a new user
-func (store UserStore) CreateUser(u *backend.User) error {
+func (store UserStore) CreateUser(user *backend.User) error {
 	// Execute prepared statement
 	query := `INSERT INTO users(username, password, admin) VALUES (?, ?, ?)`
-	if _, err := store.Exec(query, u.Username, u.Password, u.Admin); err != nil {
+	if _, err := store.Exec(query,
+		user.Username,
+		user.Password,
+		user.Admin); err != nil {
 		return fmt.Errorf("error creating user: %w", err)
 	}
 	return nil
@@ -83,10 +86,12 @@ func (store UserStore) CreateUser(u *backend.User) error {
 
 // UpdateUser
 // Updates an existing user
-func (store UserStore) UpdateUser(u *backend.User) error {
+func (store UserStore) UpdateUser(user *backend.User) error {
 	// Execute prepared statement
 	query := `UPDATE users SET password = ? WHERE username = ?`
-	if _, err := store.Exec(query, u.Password, u.Username); err != nil {
+	if _, err := store.Exec(query,
+		user.Password,
+		user.Username); err != nil {
 		return fmt.Errorf("error updating user: %w", err)
 	}
 	return nil

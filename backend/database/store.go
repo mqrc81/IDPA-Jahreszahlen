@@ -12,9 +12,9 @@ import (
 
 // NewStore
 // Connects to database and initializes new store objects
-func NewStore(dsn string) (*Store, error) {
+func NewStore(dataSourceName string) (*Store, error) {
 	// Opens database connection
-	db, err := sqlx.Open("mysql", dsn)
+	db, err := sqlx.Open("mysql", dataSourceName)
 	if err != nil {
 		return nil, fmt.Errorf("error opening database: %w", err)
 	}

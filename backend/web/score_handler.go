@@ -24,7 +24,7 @@ type ScoreHandler struct {
 // List
 // A GET-method that any user can call. It lists all scores, ranked by points,
 // with the ability to filter scores by topic and/or user.
-func (h *ScoreHandler) List() http.HandlerFunc {
+func (handler *ScoreHandler) List() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -72,7 +72,7 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 		if topicID != -1 {
 			if userID != -1 { // Topic and User specified in URL parameters
 				// Execute SQL statement to get scores
-				scores, err := h.store.ScoresByTopicAndUser(topicID, userID, limit, offset)
+				scores, err := handler.store.ScoresByTopicAndUser(topicID, userID, limit, offset)
 				if err != nil {
 					http.Error(res, err.Error(), http.StatusInternalServerError)
 					return
@@ -80,7 +80,7 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 				ss = scores
 			} else { // Topic specified in URL parameters
 				// Execute SQL statement to get scores
-				scores, err := h.store.ScoresByTopic(topicID, limit, offset)
+				scores, err := handler.store.ScoresByTopic(topicID, limit, offset)
 				if err != nil {
 					http.Error(res, err.Error(), http.StatusInternalServerError)
 					return
@@ -89,7 +89,7 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 			}
 		} else if userID != -1 { // User specified in URL parameters
 			// Execute SQL statement to get scores
-			scores, err := h.store.ScoresByUser(userID, limit, offset)
+			scores, err := handler.store.ScoresByUser(userID, limit, offset)
 			if err != nil {
 				http.Error(res, err.Error(), http.StatusInternalServerError)
 				return
@@ -97,7 +97,7 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 			ss = scores
 		} else { // No Topic or User specified in URL parameters
 			// Execute SQL statement to get scores
-			scores, err := h.store.Scores(limit, offset)
+			scores, err := handler.store.Scores(limit, offset)
 			if err != nil {
 				http.Error(res, err.Error(), http.StatusInternalServerError)
 				return
@@ -107,7 +107,7 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Scores:      ss,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -118,7 +118,7 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 
 // Store
 // A POST-method. It stores the new scire in the database and redirects to List.
-func (h *ScoreHandler) Store() http.HandlerFunc {
+func (handler *ScoreHandler) Store() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from form
 		topicID, _ := strconv.Atoi(req.URL.Query().Get("topic_id"))
@@ -127,7 +127,7 @@ func (h *ScoreHandler) Store() http.HandlerFunc {
 		date := time.Now().Format("2006-01-02")
 
 		// Execute SQL statement to create a score
-		if err := h.store.CreateScore(&backend.Score{
+		if err := handler.store.CreateScore(&backend.Score{
 			ScoreID: 0,
 			TopicID: topicID,
 			UserID:  userID,

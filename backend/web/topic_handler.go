@@ -26,7 +26,7 @@ type TopicHandler struct {
 /*
  * List is a GET method that lists all topics
  */
-func (h *TopicHandler) List() http.HandlerFunc {
+func (handler *TopicHandler) List() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -41,7 +41,7 @@ func (h *TopicHandler) List() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute SQL statement to get topics
-		tt, err := h.store.Topics()
+		tt, err := handler.store.Topics()
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -49,7 +49,7 @@ func (h *TopicHandler) List() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topics:      tt,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -61,7 +61,7 @@ func (h *TopicHandler) List() http.HandlerFunc {
 /*
  * Create is a GET method for a form to create a new topic
  */
-func (h *TopicHandler) Create() http.HandlerFunc {
+func (handler *TopicHandler) Create() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -75,7 +75,7 @@ func (h *TopicHandler) Create() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -86,7 +86,7 @@ func (h *TopicHandler) Create() http.HandlerFunc {
 /*
  * CreateStore is a POST method that stores topic created
  */
-func (h *TopicHandler) CreateStore() http.HandlerFunc {
+func (handler *TopicHandler) CreateStore() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve variables from form (Create)
 		startYear, _ := strconv.Atoi(req.FormValue("start_year"))
@@ -100,13 +100,13 @@ func (h *TopicHandler) CreateStore() http.HandlerFunc {
 
 		// Validate form
 		if !form.Validate() {
-			h.sessions.Put(req.Context(), "form", form)
+			handler.sessions.Put(req.Context(), "form", form)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
 		// Execute SQL statement to create a topic
-		if err := h.store.CreateTopic(&backend.Topic{
+		if err := handler.store.CreateTopic(&backend.Topic{
 			Title:       form.Title,
 			StartYear:   form.StartYear,
 			EndYear:     form.EndYear,
@@ -117,7 +117,7 @@ func (h *TopicHandler) CreateStore() http.HandlerFunc {
 		}
 
 		// Adds flash message
-		h.sessions.Put(req.Context(), "flash", "Thema wurde erfolgreich erstellt.")
+		handler.sessions.Put(req.Context(), "flash", "Thema wurde erfolgreich erstellt.")
 
 		// Redirects to list of topics
 		http.Redirect(res, req, "/topics", http.StatusFound)
@@ -127,18 +127,18 @@ func (h *TopicHandler) CreateStore() http.HandlerFunc {
 /*
  * Delete is a POST method that deletes a topic
  */
-func (h *TopicHandler) Delete() http.HandlerFunc {
+func (handler *TopicHandler) Delete() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve TopicID from URL
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
 		// Execute SQL statement to delete a topic
-		if err := h.store.DeleteTopic(topicID); err != nil {
+		if err := handler.store.DeleteTopic(topicID); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		// Add flash message
-		h.sessions.Put(req.Context(), "flash", "Thema wurde erfolgreich gelöscht.")
+		handler.sessions.Put(req.Context(), "flash", "Thema wurde erfolgreich gelöscht.")
 
 		// Redirect to list of topics
 		http.Redirect(res, req, "/topics", http.StatusFound)
@@ -148,7 +148,7 @@ func (h *TopicHandler) Delete() http.HandlerFunc {
 /*
  * Edit is a GET method with the option to edit a specific topic and its events
  */
-func (h *TopicHandler) Edit() http.HandlerFunc {
+func (handler *TopicHandler) Edit() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -167,14 +167,14 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
 		// Execute SQL statement to get a topic
-		t, err := h.store.Topic(topicID)
+		t, err := handler.store.Topic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Execute SQL statement to get events
-		ee, err := h.store.EventsByTopic(topicID, false)
+		ee, err := handler.store.EventsByTopic(topicID, false)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -182,7 +182,7 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topic:       t,
 			Events:      ee,
 		}); err != nil {
@@ -195,7 +195,7 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 /*
  * EditStore is a POST method that stores topic edited
  */
-func (h *TopicHandler) EditStore() http.HandlerFunc {
+func (handler *TopicHandler) EditStore() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve topic ID from URL
 		topicIDstr := req.URL.Query().Get("topicID")
@@ -213,13 +213,13 @@ func (h *TopicHandler) EditStore() http.HandlerFunc {
 
 		// Validate form
 		if !form.Validate() {
-			h.sessions.Put(req.Context(), "form", form)
+			handler.sessions.Put(req.Context(), "form", form)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
 		// Execute SQL statement to update a topic
-		if err := h.store.UpdateTopic(&backend.Topic{
+		if err := handler.store.UpdateTopic(&backend.Topic{
 			TopicID:     topicID,
 			Title:       form.Title,
 			StartYear:   form.StartYear,
@@ -231,7 +231,7 @@ func (h *TopicHandler) EditStore() http.HandlerFunc {
 		}
 
 		// Add flash message
-		h.sessions.Put(req.Context(), "flash", "Thema wurde erfolgreich bearbeitet.")
+		handler.sessions.Put(req.Context(), "flash", "Thema wurde erfolgreich bearbeitet.")
 
 		// Redirect to topic Show
 		http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
@@ -241,7 +241,7 @@ func (h *TopicHandler) EditStore() http.HandlerFunc {
 /*
  * Show is a GET method that shows a specific topic with options to play, see leaderboard, (edit if admin)
  */
-func (h *TopicHandler) Show() http.HandlerFunc {
+func (handler *TopicHandler) Show() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -259,7 +259,7 @@ func (h *TopicHandler) Show() http.HandlerFunc {
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
 		// Execute SQL statement to get a topic
-		t, err := h.store.Topic(topicID)
+		t, err := handler.store.Topic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -267,7 +267,7 @@ func (h *TopicHandler) Show() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topic:       t,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)

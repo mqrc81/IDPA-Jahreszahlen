@@ -24,7 +24,7 @@ type PlayHandler struct {
 // Phase1
 // A GET-method that any user can call. It consists of a form with 3 multiple-
 // choice questions, where the user has to guess the year of a given event.
-func (h *PlayHandler) Phase1() http.HandlerFunc {
+func (handler *PlayHandler) Phase1() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -47,7 +47,7 @@ func (h *PlayHandler) Phase1() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to get events
-		ee, err := h.store.EventsByTopic(topicID, true)
+		ee, err := handler.store.EventsByTopic(topicID, true)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -57,7 +57,7 @@ func (h *PlayHandler) Phase1() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Events:      ee,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -69,7 +69,7 @@ func (h *PlayHandler) Phase1() http.HandlerFunc {
 // Phase2
 // A GET-method that any user can call after having completed Phase1. It consists of a form with 4 questions, where the
 // user has to guess the year of a given event.
-func (h *PlayHandler) Phase2() http.HandlerFunc {
+func (handler *PlayHandler) Phase2() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -111,7 +111,7 @@ func (h *PlayHandler) Phase2() http.HandlerFunc {
 			}
 		}
 		if err := tmpl.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Events:      ee,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -123,7 +123,7 @@ func (h *PlayHandler) Phase2() http.HandlerFunc {
 // Phase3
 // A GET-method that any user can call after having completed Phase2. It consists of a form with up to 15 questions,
 // where the user has to match the year to any of the given events.
-func (h *PlayHandler) Phase3() http.HandlerFunc {
+func (handler *PlayHandler) Phase3() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -167,7 +167,7 @@ func (h *PlayHandler) Phase3() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to get events
-		ee, err = h.store.EventsByTopic(topicID, true)
+		ee, err = handler.store.EventsByTopic(topicID, true)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -179,7 +179,7 @@ func (h *PlayHandler) Phase3() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Events:      ee,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -190,7 +190,7 @@ func (h *PlayHandler) Phase3() http.HandlerFunc {
 
 // Store
 // A POST-method. It stores score of game played and redirects to Review.
-func (h *PlayHandler) Store() http.HandlerFunc {
+func (handler *PlayHandler) Store() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve topic ID from URL
 		topicIDstr := chi.URLParam(req, "topicID")
@@ -205,7 +205,7 @@ func (h *PlayHandler) Store() http.HandlerFunc {
 			// TODO algorithm for points in phase 3
 		}
 
-		if err := h.store.CreateScore(&backend.Score{
+		if err := handler.store.CreateScore(&backend.Score{
 			ScoreID: 0,
 			TopicID: topicID,
 			UserID:  userID,
@@ -223,7 +223,7 @@ func (h *PlayHandler) Store() http.HandlerFunc {
 // Review
 // A GET-method that any user can call after having completed Phase3. It
 // summarizes the game played.
-func (h *PlayHandler) Review() http.HandlerFunc {
+func (handler *PlayHandler) Review() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -241,7 +241,7 @@ func (h *PlayHandler) Review() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
 
 		}
