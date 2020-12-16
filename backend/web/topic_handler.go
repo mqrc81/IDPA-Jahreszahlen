@@ -1,8 +1,7 @@
 package web
 
-/*
- * topic_handler.go contains HTTP-handler functions for topics
- */
+// topic_handler.go
+// Contains all HTTP-handlers for pages evolving around topics.
 
 import (
 	"html/template"
@@ -15,17 +14,15 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
-/*
- * TopicHandler handles sessions, CSRF-protection and database access for topics
- */
+// TopicHandler
+// Object for handlers to access sessions and database.
 type TopicHandler struct {
 	store    backend.Store
 	sessions *scs.SessionManager
 }
 
-/*
- * List is a GET method that lists all topics
- */
+// List
+// A GET-method that any admin can call. It lists all topics.
 func (handler *TopicHandler) List() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
@@ -58,9 +55,9 @@ func (handler *TopicHandler) List() http.HandlerFunc {
 	}
 }
 
-/*
- * Create is a GET method for a form to create a new topic
- */
+// Create
+// A GET-method that any admin can call. It renders a form, in which values
+// for a new topic can be entered.
 func (handler *TopicHandler) Create() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
@@ -73,6 +70,15 @@ func (handler *TopicHandler) Create() http.HandlerFunc {
 		"frontend/templates/topics_create.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
+		// Check if logged in user is admin
+		user := req.Context().Value("user")
+		if user == nil || !user.(backend.User).Admin {
+			// If no user is logged in or logged in user isn't an admin,
+			// redirect back
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
@@ -83,9 +89,10 @@ func (handler *TopicHandler) Create() http.HandlerFunc {
 	}
 }
 
-/*
- * CreateStore is a POST method that stores topic created
- */
+// CreateStore
+// A POST-method. It validates the form from Create and redirects to Create in
+// case of an invalid input with corresponding error message. In case of valid
+// form, it stores the new topic in the database and redirects to List.
 func (handler *TopicHandler) CreateStore() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve variables from form (Create)
@@ -124,9 +131,8 @@ func (handler *TopicHandler) CreateStore() http.HandlerFunc {
 	}
 }
 
-/*
- * Delete is a POST method that deletes a topic
- */
+// Delete
+// A POST-method. It deletes a certain topic and redirects to Show.
 func (handler *TopicHandler) Delete() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve TopicID from URL
@@ -145,9 +151,9 @@ func (handler *TopicHandler) Delete() http.HandlerFunc {
 	}
 }
 
-/*
- * Edit is a GET method with the option to edit a specific topic and its events
- */
+// Edit
+// A GET-method that any admin can call. It renders a form in which values for
+// updating the current topic can be entered.
 func (handler *TopicHandler) Edit() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
@@ -173,18 +179,10 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 			return
 		}
 
-		// Execute SQL statement to get events
-		ee, err := handler.store.EventsByTopic(topicID, false)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topic:       t,
-			Events:      ee,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -192,9 +190,10 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 	}
 }
 
-/*
- * EditStore is a POST method that stores topic edited
- */
+// EditStore
+// A POST-method. It validates the form from Edit and redirects to Edit in
+// case of an invalid input with corresponding error message. In case of valid
+// form, it stores the topic in the database and redirects to Show.
 func (handler *TopicHandler) EditStore() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve topic ID from URL
@@ -238,9 +237,10 @@ func (handler *TopicHandler) EditStore() http.HandlerFunc {
 	}
 }
 
-/*
- * Show is a GET method that shows a specific topic with options to play, see leaderboard, (edit if admin)
- */
+// Show
+// A GET-method that any user can call. It displays details of the topic and
+// has the options to play or edit the topics, to edit an event and to create a
+// new event.
 func (handler *TopicHandler) Show() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
