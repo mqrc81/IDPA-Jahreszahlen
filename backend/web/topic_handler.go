@@ -83,7 +83,6 @@ func (handler *TopicHandler) Create() http.HandlerFunc {
 			// redirect back
 			handler.sessions.Put(req.Context(), "flash", "NOOOOOPE")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
-			return
 		}
 
 		// Execute HTML-templates with data

@@ -15,6 +15,10 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
+const (
+	MYSQL_MAX_INT = 2147483647
+)
+
 var (
 	// FuncMap
 	// A map that stores functions to use in HTML-template
@@ -101,9 +105,11 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		router.Get("/{userID}/edit/password", users.EditPassword())
 		router.Post("/{userID}", users.EditPasswordSubmit())
 
-		// TODO router.Get("/profile", users.Profile())
+		router.Get("/profile", users.Profile())
 		// TODO router.Get("/", users.List())
 		// TODO router.Post("/{userID}/delete", users.Delete())
+		// TODO router.Post("/{userID}/promote", users.Promote())
+		// TODO router.Post("/{userID}/reset/password", users.ResetPassword())
 	})
 
 	// Handler for when the user enters a non-existing URL

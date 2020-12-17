@@ -21,9 +21,6 @@ type UserHandler struct {
 	sessions *scs.SessionManager
 }
 
-//TODO
-// Profile()
-
 // Register
 // A GET-method. It renders a form, in which values for registering can be
 // entered.
@@ -95,8 +92,9 @@ func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
 		}
 
 		// Add flash message
-		handler.sessions.Put(req.Context(), "flash", "Willkommen "+form.Username+"! Ihre Registrierung war erfolgreich. "+
-			"Loggen Sie sich bitte ein.")
+		handler.sessions.Put(req.Context(), "flash",
+			"Willkommen "+form.Username+"! Ihre Registrierung war erfolgreich. "+
+				"Loggen Sie sich bitte ein.")
 
 		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)
@@ -289,7 +287,7 @@ func (handler *UserHandler) EditPassword() http.HandlerFunc {
 // A POST-method. It validates the form from EditPassword and redirects to
 // EditPassword in case of an invalid input with corresponding error messages.
 // In case of a valid form, it stores the user in the database and redirects to
-// the user's profile.
+// the Profile.
 func (handler *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from form
@@ -333,5 +331,59 @@ func (handler *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 
 		// Redirect to user's profile
 		http.Redirect(res, req, "/users/profile", http.StatusFound)
+	}
+}
+
+// Profile
+// A GET-Method that displays a user's username and statistics, with option to
+// change username or password.
+func (handler *UserHandler) Profile() http.HandlerFunc {
+	// Data to pass to HTML-temmplates
+	type data struct {
+		User      backend.User
+		Points    int
+		PlayCount int
+
+		SessionData
+	}
+
+	// Parse HTML-templates
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/users_profile.html"))
+
+	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Get user logged in
+		userInf := req.Context().Value("user")
+		if userInf == nil {
+			// If no user is logged in, redirect back
+			handler.sessions.Put(req.Context(), "flash", "NOOOOOPE")
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+		}
+		user := userInf.(backend.User)
+
+		scores, err := handler.store.ScoresByUser(user.UserID, MYSQL_MAX_INT, 0)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Calculate total points
+		var points int
+		for _, score := range scores {
+			points += score.Points
+		}
+
+		// Execute HTML-templates with data
+		if err := tmpl.Execute(res, data{
+			User:        user,
+			Points:      points,
+			PlayCount:   len(scores),
+			SessionData: GetSessionData(handler.sessions, req.Context()),
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
