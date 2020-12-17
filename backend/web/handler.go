@@ -15,24 +15,22 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
-const (
-	MYSQL_MAX_INT = 2147483647
-)
+// MySQLMaxInt
+// The highest possible value for a MySQL INT type
+const MySQLMaxInt = 2147483647 // TEMP
 
-var (
-	// FuncMap
-	// A map that stores functions to use in HTML-template
-	FuncMap = template.FuncMap{
-		// ranks scores
-		"rank": func(num int, page int, limit int) int {
-			return (page-1)*limit + num + 1
-		},
-		// increments number by 1
-		"increment": func(num int) int {
-			return num + 1
-		},
-	}
-)
+// FuncMap
+// A map that stores functions to use in HTML-template
+var FuncMap = template.FuncMap{
+	// ranks scores
+	"rank": func(num int, page int, limit int) int {
+		return (page-1)*limit + num + 1
+	},
+	// increments number by 1
+	"increment": func(num int) int {
+		return num + 1
+	},
+}
 
 // NewHandler
 // Initializes HTTP-handlers, including router and middleware
@@ -106,7 +104,7 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		router.Post("/{userID}", users.EditPasswordSubmit())
 
 		router.Get("/profile", users.Profile())
-		// TODO router.Get("/", users.List())
+		router.Get("/", users.List())
 		// TODO router.Post("/{userID}/delete", users.Delete())
 		// TODO router.Post("/{userID}/promote", users.Promote())
 		// TODO router.Post("/{userID}/reset/password", users.ResetPassword())

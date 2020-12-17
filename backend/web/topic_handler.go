@@ -45,15 +45,10 @@ func (handler *TopicHandler) List() http.HandlerFunc {
 			return
 		}
 
-		// TODO Retrieve topic ID from URL
-
-		// TODO Execute SQL statement to get amount of events
-
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topics:      topics,
-			// TODO EventCount: eCount,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -244,9 +239,9 @@ func (handler *TopicHandler) EditStore() http.HandlerFunc {
 }
 
 // Show
-// A GET-method that any user can call. It displays details of the topic and
-// has the options to play or edit the topics, to edit an event and to create a
-// new event.
+// A GET-method that any user can call. It displays details of the topic with
+// the options to play or edit the topics, to edit an event and to create a new
+// event.
 func (handler *TopicHandler) Show() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {

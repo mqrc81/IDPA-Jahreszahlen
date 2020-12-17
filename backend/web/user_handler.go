@@ -335,8 +335,8 @@ func (handler *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 }
 
 // Profile
-// A GET-Method that displays a user's username and statistics, with option to
-// change username or password.
+// A GET-Method that displays a user's username and statistics, with the
+// options to change username or password.
 func (handler *UserHandler) Profile() http.HandlerFunc {
 	// Data to pass to HTML-temmplates
 	type data struct {
@@ -363,7 +363,7 @@ func (handler *UserHandler) Profile() http.HandlerFunc {
 		}
 		user := userInf.(backend.User)
 
-		scores, err := handler.store.ScoresByUser(user.UserID, MYSQL_MAX_INT, 0)
+		scores, err := handler.store.ScoresByUser(user.UserID, MySQLMaxInt, 0)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -383,6 +383,42 @@ func (handler *UserHandler) Profile() http.HandlerFunc {
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+// List
+// A GET-method that any admin can call. It lists all users with the options to
+// delete or promote a user or reset a user's password.
+func (handler *UserHandler) List() http.HandlerFunc {
+	// Data to pass to HTML-template
+	type data struct {
+		Users []backend.User
+
+		SessionData
+	}
+
+	// Parse HTML-templates
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/users_list.html"))
+
+	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Execute SQL statement to get users
+		users, err := handler.store.Users()
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Execute HTML-templates with data
+		if err := tmpl.Execute(res, data{
+			Users:       users,
+			SessionData: GetSessionData(handler.sessions, req.Context()),
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusFound)
 			return
 		}
 	}
