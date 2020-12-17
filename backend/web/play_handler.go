@@ -192,7 +192,7 @@ func (handler *PlayHandler) Phase3() http.HandlerFunc {
 // A POST-method. It stores score of game played and redirects to Review.
 func (handler *PlayHandler) Store() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Retrieve topic ID from URL
+		// Retrieve topic ID from URL parameters
 		topicIDstr := chi.URLParam(req, "topicID")
 		topicID, _ := strconv.Atoi(topicIDstr)
 

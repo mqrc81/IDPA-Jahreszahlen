@@ -38,7 +38,7 @@ func (handler *EventHandler) List() http.HandlerFunc {
 		"frontend/templates/layout.html",
 		"frontend/templates/events_list.html"))
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Retrieve topic ID from URL
+		// Retrieve topic ID from URL parameters
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
 		// Execute SQL statement to get a topic
@@ -84,7 +84,7 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 		"frontend/templates/events_create.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Retrieve topic ID from URL
+		// Retrieve topic ID from URL parameters
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
 		// Execute SQL statement to get a topic
@@ -112,7 +112,7 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 // of the event's topic.
 func (handler *EventHandler) CreateStore() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Retrieve topic ID from URL
+		// Retrieve topic ID from URL parameters
 		topicIDstr := chi.URLParam(req, "topicID")
 		topicID, _ := strconv.Atoi(topicIDstr)
 
@@ -153,10 +153,10 @@ func (handler *EventHandler) CreateStore() http.HandlerFunc {
 // event's topic.
 func (handler *EventHandler) Delete() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Retrieve event ID from URL
+		// Retrieve event ID from URL parameters
 		topicID := chi.URLParam(req, "topicID")
 
-		// Retrieve event ID from URL
+		// Retrieve event ID from URL parameters
 		eventID, _ := strconv.Atoi(chi.URLParam(req, "eventID"))
 
 		// Execute SQL statement to delete an event
@@ -187,7 +187,7 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 		"frontend/templates/events_edit.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Retrieve event ID from URL
+		// Retrieve event ID from URL parameters
 		eventID, _ := strconv.Atoi(chi.URLParam(req, "eventID"))
 
 		// Execute SQL statement to get topic
@@ -214,7 +214,7 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 // form, it stores the topic in the database and redirects to List.
 func (handler *EventHandler) EditStore() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Retrieve topic ID from URL
+		// Retrieve topic ID from URL parameters
 		topicIDstr := chi.URLParam(req, "topicID")
 		topicID, _ := strconv.Atoi(topicIDstr)
 

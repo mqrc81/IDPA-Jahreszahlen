@@ -105,7 +105,7 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 
 		router.Get("/profile", users.Profile())
 		router.Get("/", users.List())
-		// TODO router.Post("/{userID}/delete", users.Delete())
+		router.Post("/{userID}/delete", users.Delete())
 		// TODO router.Post("/{userID}/promote", users.Promote())
 		// TODO router.Post("/{userID}/reset/password", users.ResetPassword())
 	})

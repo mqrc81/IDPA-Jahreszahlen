@@ -6,9 +6,11 @@ package web
 import (
 	"html/template"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/alexedwards/scs/v2"
+	"github.com/go-chi/chi"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
@@ -160,7 +162,7 @@ func (handler *UserHandler) LoginSubmit() http.HandlerFunc {
 			return
 		}
 
-		// CreateStore user ID in session
+		// Store user ID in session
 		handler.sessions.Put(req.Context(), "user_id", user.UserID)
 
 		// Add flash message to session
@@ -419,6 +421,22 @@ func (handler *UserHandler) List() http.HandlerFunc {
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusFound)
+			return
+		}
+	}
+}
+
+// Delete
+// A POST-method that any admin can call. It deletes the user and redirects to List.
+func (handler *UserHandler) Delete() http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		// Retrieve user ID from URL parameters
+		userID, _ := strconv.Atoi(chi.URLParam(req, "userID"))
+
+		// Execute SQL statement to delete a user
+		err := handler.store.DeleteUser(userID)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}

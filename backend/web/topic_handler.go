@@ -136,7 +136,7 @@ func (handler *TopicHandler) CreateStore() http.HandlerFunc {
 // A POST-method. It deletes a certain topic and redirects to Show.
 func (handler *TopicHandler) Delete() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Retrieve TopicID from URL
+		// Retrieve TopicID from URL parameters
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
 		// Execute SQL statement to delete a topic
@@ -170,7 +170,7 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 		"frontend/templates/topics_edit.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Retrieve topic ID from URL
+		// Retrieve topic ID from URL parameters
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
 		// Execute SQL statement to get a topic
@@ -256,7 +256,7 @@ func (handler *TopicHandler) Show() http.HandlerFunc {
 		"frontend/templates/topics_show.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Retrieve TopicID from URL
+		// Retrieve TopicID from URL parameters
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
 		// Execute SQL statement to get a topic
