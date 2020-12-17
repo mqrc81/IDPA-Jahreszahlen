@@ -188,6 +188,96 @@ func (handler *UserHandler) Logout() http.HandlerFunc {
 	}
 }
 
+// Profile
+// A GET-Method that displays a user's username and statistics, with the
+// options to change username or password.
+func (handler *UserHandler) Profile() http.HandlerFunc {
+	// Data to pass to HTML-temmplates
+	type data struct {
+		User      backend.User
+		Points    int
+		PlayCount int
+
+		SessionData
+	}
+
+	// Parse HTML-templates
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/users_profile.html"))
+
+	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Get user logged in
+		userInf := req.Context().Value("user")
+		if userInf == nil {
+			// If no user is logged in, redirect back
+			handler.sessions.Put(req.Context(), "flash", "NOOOOOPE")
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+		}
+		user := userInf.(backend.User)
+
+		scores, err := handler.store.ScoresByUser(user.UserID, MySQLMaxInt, 0)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Calculate total points
+		var points int
+		for _, score := range scores {
+			points += score.Points
+		}
+
+		// Execute HTML-templates with data
+		if err := tmpl.Execute(res, data{
+			User:        user,
+			Points:      points,
+			PlayCount:   len(scores),
+			SessionData: GetSessionData(handler.sessions, req.Context()),
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+// List
+// A GET-method that any admin can call. It lists all users with the options to
+// delete or promote a user or reset a user's password.
+func (handler *UserHandler) List() http.HandlerFunc {
+	// Data to pass to HTML-template
+	type data struct {
+		Users []backend.User
+
+		SessionData
+	}
+
+	// Parse HTML-templates
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/users_list.html"))
+
+	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Execute SQL statement to get users
+		users, err := handler.store.Users()
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Execute HTML-templates with data
+		if err := tmpl.Execute(res, data{
+			Users:       users,
+			SessionData: GetSessionData(handler.sessions, req.Context()),
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusFound)
+			return
+		}
+	}
+}
+
 // EditUsername
 // A GET-method that any user can call. It renders a form in which values for
 // updating the current username can be entered.
@@ -336,96 +426,6 @@ func (handler *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 	}
 }
 
-// Profile
-// A GET-Method that displays a user's username and statistics, with the
-// options to change username or password.
-func (handler *UserHandler) Profile() http.HandlerFunc {
-	// Data to pass to HTML-temmplates
-	type data struct {
-		User      backend.User
-		Points    int
-		PlayCount int
-
-		SessionData
-	}
-
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/templates/layout.html",
-		"frontend/templates/users_profile.html"))
-
-	return func(res http.ResponseWriter, req *http.Request) {
-
-		// Get user logged in
-		userInf := req.Context().Value("user")
-		if userInf == nil {
-			// If no user is logged in, redirect back
-			handler.sessions.Put(req.Context(), "flash", "NOOOOOPE")
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
-		}
-		user := userInf.(backend.User)
-
-		scores, err := handler.store.ScoresByUser(user.UserID, MySQLMaxInt, 0)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Calculate total points
-		var points int
-		for _, score := range scores {
-			points += score.Points
-		}
-
-		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
-			User:        user,
-			Points:      points,
-			PlayCount:   len(scores),
-			SessionData: GetSessionData(handler.sessions, req.Context()),
-		}); err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-}
-
-// List
-// A GET-method that any admin can call. It lists all users with the options to
-// delete or promote a user or reset a user's password.
-func (handler *UserHandler) List() http.HandlerFunc {
-	// Data to pass to HTML-template
-	type data struct {
-		Users []backend.User
-
-		SessionData
-	}
-
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/templates/layout.html",
-		"frontend/templates/users_list.html"))
-
-	return func(res http.ResponseWriter, req *http.Request) {
-
-		// Execute SQL statement to get users
-		users, err := handler.store.Users()
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
-			Users:       users,
-			SessionData: GetSessionData(handler.sessions, req.Context()),
-		}); err != nil {
-			http.Error(res, err.Error(), http.StatusFound)
-			return
-		}
-	}
-}
-
 // Delete
 // A POST-method that any admin can call. It deletes the user and redirects to List.
 func (handler *UserHandler) Delete() http.HandlerFunc {
@@ -443,14 +443,56 @@ func (handler *UserHandler) Delete() http.HandlerFunc {
 }
 
 // Promote
-// A POST-method that any admin can call. Promotes a user to admin.
+// A POST-method that any admin can call. It promotes a user to an admin.
 func (handler *UserHandler) Promote() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Retrieve user from session
-		user := req.Context().Value("user").(backend.User)
+		// Retrieve user ID from URL parameters
+		userID, _ := strconv.Atoi(chi.URLParam(req, "userID"))
+
+		// Execute SQL statement to get user
+		user, err := handler.store.User(userID)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		// Make user an admin
 		user.Admin = true
+
+		// Execute SQL statement to update user
+		if err := handler.store.UpdateUser(&user); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Redirect to list of users
+		http.Redirect(res, req, "/users", http.StatusFound)
+	}
+}
+
+// ResetPassword
+// A POST-method that any admin can call. It resets a user's password.
+func (handler *UserHandler) ResetPassword() http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		// Retrieve user ID from URL parameters
+		userID, _ := strconv.Atoi(chi.URLParam(req, "userID"))
+
+		// Execute SQL statement to get user
+		user, err := handler.store.User(userID)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Hash password
+		password, err := bcrypt.GenerateFromPassword([]byte(DefaultPassword), bcrypt.DefaultCost)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Change user's password
+		user.Password = string(password)
 
 		// Execute SQL statement to update user
 		if err := handler.store.UpdateUser(&user); err != nil {

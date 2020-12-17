@@ -50,7 +50,7 @@ func (store UserStore) Users() ([]backend.User, error) {
 	var users []backend.User
 
 	// Execute prepared statement
-	query := `SELECT * FROM users ORDER BY admin DESC, user_id` // order by [1.] admin (true -> false), [2.] user_id (101 -> 1)
+	query := `SELECT * FROM users ORDER BY admin DESC, username` // Sorted in alphabetical order, admins first
 	if err := store.Select(&users, query); err != nil {
 		return []backend.User{}, fmt.Errorf("error getting topics: %w", err)
 	}
@@ -88,10 +88,12 @@ func (store UserStore) CreateUser(user *backend.User) error {
 // Updates an existing user
 func (store UserStore) UpdateUser(user *backend.User) error {
 	// Execute prepared statement
-	query := `UPDATE users SET password = ? WHERE username = ?`
+	query := `UPDATE users SET password = ?, username = ?, admin = ? WHERE user_id = ?`
 	if _, err := store.Exec(query,
 		user.Password,
-		user.Username); err != nil {
+		user.Username,
+		user.Admin,
+		user.UserID); err != nil {
 		return fmt.Errorf("error updating user: %w", err)
 	}
 	return nil

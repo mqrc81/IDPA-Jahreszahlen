@@ -15,22 +15,19 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
-// MySQLMaxInt
-// The highest possible value for a MySQL INT type
-const MySQLMaxInt = 2147483647 // TEMP
+const (
+	MySQLMaxInt     = 2147483647 // TEMP
+	DefaultPassword = "pw123"    // Used when admin manually resets a user's password
+)
 
-// FuncMap
-// A map that stores functions to use in HTML-template
-var FuncMap = template.FuncMap{
-	// ranks scores
-	"rank": func(num int, page int, limit int) int {
-		return (page-1)*limit + num + 1
-	},
-	// increments number by 1
-	"increment": func(num int) int {
-		return num + 1
-	},
-}
+var (
+	FuncMap = template.FuncMap{ // A map with functions to be used in HTML-templates
+		// increments number by 1
+		"increment": func(num int) int {
+			return num + 1
+		},
+	}
+)
 
 // NewHandler
 // Initializes HTTP-handlers, including router and middleware
@@ -98,16 +95,15 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		router.Get("/login", users.Login())
 		router.Post("/login", users.LoginSubmit())
 		router.Get("/logout", users.Logout())
-		router.Get("/{userID}/edit", users.EditUsername())
-		router.Post("/{userID}", users.EditUsernameSubmit())
-		router.Get("/{userID}/edit/password", users.EditPassword())
-		router.Post("/{userID}", users.EditPasswordSubmit())
-
 		router.Get("/profile", users.Profile())
 		router.Get("/", users.List())
+		router.Get("/{userID}/edit/username", users.EditUsername())
+		router.Post("/{userID}/edit/username", users.EditUsernameSubmit())
+		router.Get("/{userID}/edit/password", users.EditPassword())
+		router.Post("/{userID}/edit/password", users.EditPasswordSubmit())
 		router.Post("/{userID}/delete", users.Delete())
 		router.Post("/{userID}/promote", users.Promote())
-		// TODO router.Post("/{userID}/reset/password", users.ResetPassword())
+		router.Post("/{userID}/reset/password", users.ResetPassword())
 	})
 
 	// Handler for when the user enters a non-existing URL

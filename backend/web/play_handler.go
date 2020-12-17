@@ -206,11 +206,9 @@ func (handler *PlayHandler) Store() http.HandlerFunc {
 		}
 
 		if err := handler.store.CreateScore(&backend.Score{
-			ScoreID: 0,
 			TopicID: topicID,
 			UserID:  userID,
 			Points:  points,
-			Date:    "",
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 		}

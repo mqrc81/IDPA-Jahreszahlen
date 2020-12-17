@@ -149,8 +149,7 @@ func (handler *EventHandler) CreateStore() http.HandlerFunc {
 }
 
 // Delete
-// A POST-method. It deletes a certain event and redirects to edit-page of the
-// event's topic.
+// A POST-method. It deletes an event and redirects to the list of events.
 func (handler *EventHandler) Delete() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve event ID from URL parameters
@@ -166,7 +165,7 @@ func (handler *EventHandler) Delete() http.HandlerFunc {
 		}
 
 		// Redirect to list of topics
-		http.Redirect(res, req, "/topics/"+topicID+"/edit", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicID+"/events", http.StatusFound)
 	}
 }
 
