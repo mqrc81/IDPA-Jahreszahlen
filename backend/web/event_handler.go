@@ -169,3 +169,83 @@ func (handler *EventHandler) Delete() http.HandlerFunc {
 		http.Redirect(res, req, "/topics/"+topicID+"/edit", http.StatusFound)
 	}
 }
+
+// Edit
+// A GET-method that any admin can call. It renders a form in which values for
+// updating the current event can be entered.
+func (handler *EventHandler) Edit() http.HandlerFunc {
+	// Data to pass to HTML-templates
+	type data struct {
+		Event backend.Event
+
+		SessionData
+	}
+
+	// Parse HTML-templates
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/templates/layout.html",
+		"frontend/templates/events_edit.html"))
+
+	return func(res http.ResponseWriter, req *http.Request) {
+		// Retrieve event ID from URL
+		eventID, _ := strconv.Atoi(chi.URLParam(req, "eventID"))
+
+		// Execute SQL statement to get topic
+		event, err := handler.store.Event(eventID)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Execute HTML-templates with data
+		if err := tmpl.Execute(res, data{
+			Event:       event,
+			SessionData: GetSessionData(handler.sessions, req.Context()),
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+// EditStore
+// A POST-method. It validates the form from Edit and redirects to Edit in
+// case of an invalid input with corresponding error message. In case of valid
+// form, it stores the topic in the database and redirects to List.
+func (handler *EventHandler) EditStore() http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		// Retrieve topic ID from URL
+		topicIDstr := chi.URLParam(req, "topicID")
+		topicID, _ := strconv.Atoi(topicIDstr)
+
+		// Retrieve values from form (Edit)
+		year, _ := strconv.Atoi(req.FormValue("year"))
+		form := EventForm{
+			Title: req.FormValue("title"),
+			Year:  year,
+		}
+
+		// Validate form
+		if !form.Validate() {
+			handler.sessions.Put(req.Context(), "form", form)
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+
+		// Execute SQL statement to create new event
+		if err := handler.store.CreateEvent(&backend.Event{
+			TopicID: topicID,
+			Title:   form.Title,
+			Year:    form.Year,
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Add flash message to session
+		handler.sessions.Put(req.Context(), "flash", "Thema wurde erfolgreich bearbeitet.")
+
+		// Redirect to list of events
+		http.Redirect(res, req, "/topics/"+topicIDstr+"/events", http.StatusFound)
+	}
+}

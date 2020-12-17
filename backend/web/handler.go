@@ -70,9 +70,8 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		router.Get("/new", events.Create())
 		router.Post("/", events.CreateStore())
 		router.Post("/{eventID}/delete", events.Delete())
-
-		// TODO router.Get("/edit", events.Edit())
-		// TODO router.Post("/edit", events.EditStore())
+		router.Get("/edit", events.Edit())
+		router.Post("/edit", events.EditStore())
 	})
 
 	// Play

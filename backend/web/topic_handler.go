@@ -28,7 +28,8 @@ func (handler *TopicHandler) List() http.HandlerFunc {
 	type data struct {
 		SessionData
 
-		Topics []backend.Topic
+		Topics     []backend.Topic
+		EventCount int
 	}
 
 	// Parse HTML-templates
@@ -38,16 +39,21 @@ func (handler *TopicHandler) List() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute SQL statement to get topics
-		tt, err := handler.store.Topics()
+		topics, err := handler.store.Topics()
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
+		// TODO Retrieve topic ID from URL
+
+		// TODO Execute SQL statement to get amount of events
+
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
-			Topics:      tt,
+			Topics:      topics,
+			// TODO EventCount: eCount,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -75,6 +81,7 @@ func (handler *TopicHandler) Create() http.HandlerFunc {
 		if user == nil || !user.(backend.User).Admin {
 			// If no user is logged in or logged in user isn't an admin,
 			// redirect back
+			handler.sessions.Put(req.Context(), "flash", "NOOOOOPE")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
@@ -173,7 +180,7 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
 		// Execute SQL statement to get a topic
-		t, err := handler.store.Topic(topicID)
+		topic, err := handler.store.Topic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -182,7 +189,7 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
-			Topic:       t,
+			Topic:       topic,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -259,7 +266,7 @@ func (handler *TopicHandler) Show() http.HandlerFunc {
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
 		// Execute SQL statement to get a topic
-		t, err := handler.store.Topic(topicID)
+		topic, err := handler.store.Topic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -268,7 +275,7 @@ func (handler *TopicHandler) Show() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
-			Topic:       t,
+			Topic:       topic,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return

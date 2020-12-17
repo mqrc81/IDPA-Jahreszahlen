@@ -52,8 +52,8 @@ type TopicStore interface {
 	Topic(topicID int) (Topic, error)
 	Topics() ([]Topic, error)
 	CountTopics() (int, error)
-	CreateTopic(t *Topic) error
-	UpdateTopic(t *Topic) error
+	CreateTopic(topic *Topic) error
+	UpdateTopic(topic *Topic) error
 	DeleteTopic(topicID int) error
 }
 
@@ -64,8 +64,8 @@ type EventStore interface {
 	EventsByTopic(topicID int, orderByRand bool) ([]Event, error)
 	CountEvents() (int, error)
 	CountEventsByTopic(topicID int) (int, error)
-	CreateEvent(e *Event) error
-	UpdateEvent(e *Event) error
+	CreateEvent(event *Event) error
+	UpdateEvent(event *Event) error
 	DeleteEvent(eventID int) error
 }
 
@@ -76,8 +76,8 @@ type UserStore interface {
 	UserByUsername(username string) (User, error)
 	Users() ([]User, error)
 	CountUsers() (int, error)
-	CreateUser(u *User) error
-	UpdateUser(u *User) error
+	CreateUser(user *User) error
+	UpdateUser(user *User) error
 	DeleteUser(userID int) error
 }
 
@@ -89,7 +89,7 @@ type ScoreStore interface {
 	ScoresByUser(userID int, limit int, offset int) ([]Score, error)
 	ScoresByTopicAndUser(topicID int, userID int, limit int, offset int) ([]Score, error)
 	CountScores() (int, error)
-	CreateScore(s *Score) error
+	CreateScore(score *Score) error
 }
 
 // Store
