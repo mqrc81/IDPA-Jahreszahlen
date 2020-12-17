@@ -232,8 +232,8 @@ func (handler *EventHandler) EditStore() http.HandlerFunc {
 			return
 		}
 
-		// Execute SQL statement to create new event
-		if err := handler.store.CreateEvent(&backend.Event{
+		// Execute SQL statement to update event
+		if err := handler.store.UpdateEvent(&backend.Event{
 			TopicID: topicID,
 			Title:   form.Title,
 			Year:    form.Year,

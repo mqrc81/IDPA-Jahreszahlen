@@ -441,3 +441,24 @@ func (handler *UserHandler) Delete() http.HandlerFunc {
 		}
 	}
 }
+
+// Promote
+// A POST-method that any admin can call. Promotes a user to admin.
+func (handler *UserHandler) Promote() http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		// Retrieve user from session
+		user := req.Context().Value("user").(backend.User)
+
+		// Make user an admin
+		user.Admin = true
+
+		// Execute SQL statement to update user
+		if err := handler.store.UpdateUser(&user); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Redirect to list of users
+		http.Redirect(res, req, "/users", http.StatusFound)
+	}
+}
