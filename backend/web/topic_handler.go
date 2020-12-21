@@ -29,7 +29,6 @@ func (handler *TopicHandler) List() http.HandlerFunc {
 		SessionData
 
 		Topics     []backend.Topic
-		EventCount int
 	}
 
 	// Parse HTML-templates

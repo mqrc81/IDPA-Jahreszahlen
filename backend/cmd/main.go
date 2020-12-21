@@ -16,7 +16,7 @@ import (
 )
 
 // main
-// The inital starting point of the program, which initializes a connection to
+// The initial starting point of the program, which initializes a connection to
 // the database and the server. It also obtains session management and CSRF-
 // protection.
 func main() {
@@ -40,7 +40,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Initializes HTTP-handlers, including router and middleware
+	// Initialize HTTP-handlers, including router and middleware
 	handler := web.NewHandler(store, sessions)
 
 	// Listen on the TCP network address and call Serve with handler to handle

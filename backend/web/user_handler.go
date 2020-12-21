@@ -192,11 +192,9 @@ func (handler *UserHandler) Logout() http.HandlerFunc {
 // A GET-Method that displays a user's username and statistics, with the
 // options to change username or password.
 func (handler *UserHandler) Profile() http.HandlerFunc {
-	// Data to pass to HTML-temmplates
+	// Data to pass to HTML-templates
 	type data struct {
 		User      backend.User
-		Points    int
-		PlayCount int
 
 		SessionData
 	}
@@ -217,23 +215,9 @@ func (handler *UserHandler) Profile() http.HandlerFunc {
 		}
 		user := userInf.(backend.User)
 
-		scores, err := handler.store.ScoresByUser(user.UserID, MySQLMaxInt, 0)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Calculate total points
-		var points int
-		for _, score := range scores {
-			points += score.Points
-		}
-
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			User:        user,
-			Points:      points,
-			PlayCount:   len(scores),
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)

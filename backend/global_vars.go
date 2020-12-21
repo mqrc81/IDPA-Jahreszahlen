@@ -13,7 +13,8 @@ type Topic struct {
 	StartYear   int    `db:"start_year"`
 	EndYear     int    `db:"end_year"`
 	Description string `db:"description"`
-	PlayCount   int    `db:"playcount"`
+	ScoresCount int    `db:"scores_count"`
+	EventsCount int    `db:"events_count"`
 }
 
 // Event
@@ -29,21 +30,24 @@ type Event struct {
 // User
 // Ger.: "Benutzer". Represents a person's account.
 type User struct {
-	UserID   int    `db:"user_id"`
-	Username string `db:"username"`
-	Password string `db:"password"`
-	Admin    bool   `db:"admin"`
+	UserID      int    `db:"user_id"`
+	Username    string `db:"username"`
+	Password    string `db:"password"`
+	Admin       bool   `db:"admin"`
+	ScoresCount int    `db:"scores_count"`
 }
 
 // Score
 // Ger.: "Resultat". Represents points scored by a user upon having successfully
 // finished playing a game.
 type Score struct {
-	ScoreID int    `db:"score_id"`
-	TopicID int    `db:"topic_id"`
-	UserID  int    `db:"user_id"`
-	Points  int    `db:"points"`
-	Date    string `db:"date"`
+	ScoreID   int    `db:"score_id"`
+	TopicID   int    `db:"topic_id"`
+	UserID    int    `db:"user_id"`
+	Points    int    `db:"points"`
+	Date      string `db:"date"`
+	TopicName string `db:"topic_name"`
+	UserName  string `db:"user_name"`
 }
 
 // TopicStore
@@ -63,7 +67,6 @@ type EventStore interface {
 	Event(eventID int) (Event, error)
 	EventsByTopic(topicID int, orderByRand bool) ([]Event, error)
 	CountEvents() (int, error)
-	CountEventsByTopic(topicID int) (int, error)
 	CreateEvent(event *Event) error
 	UpdateEvent(event *Event) error
 	DeleteEvent(eventID int) error
@@ -88,7 +91,6 @@ type ScoreStore interface {
 	ScoresByTopic(topicID int, limit int, offset int) ([]Score, error)
 	ScoresByUser(userID int, limit int, offset int) ([]Score, error)
 	ScoresByTopicAndUser(topicID int, userID int, limit int, offset int) ([]Score, error)
-	CountScores() (int, error)
 	CreateScore(score *Score) error
 }
 

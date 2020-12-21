@@ -24,7 +24,13 @@ func (store UserStore) User(userID int) (backend.User, error) {
 	var user backend.User
 
 	// Execute prepared statement
-	query := `SELECT * FROM users WHERE user_id = ?`
+	query := `
+		SELECT u.user_id, u.username, u.password, u.admin, 
+		       COUNT(DISTINCT s.score_id) AS scores_count
+		FROM users u 
+		    LEFT JOIN scores s ON s.user_id = u.user_id
+		WHERE u.user_id = ?
+		`
 	if err := store.Get(&user, query, userID); err != nil {
 		return backend.User{}, fmt.Errorf("error getting user: %w", err)
 	}
@@ -37,7 +43,13 @@ func (store UserStore) UserByUsername(username string) (backend.User, error) {
 	var user backend.User
 
 	// Execute prepared statement
-	query := `SELECT * FROM users WHERE username = ?`
+	query := `
+		SELECT u.user_id, u.username, u.password, u.admin, 
+		       COUNT(DISTINCT s.score_id)
+		FROM users u 
+		    LEFT JOIN scores s ON s.user_id = u.user_id
+		WHERE u.username = ?
+		`
 	if err := store.Get(&user, query, username); err != nil {
 		return backend.User{}, fmt.Errorf("error getting user: %w", err)
 	}
@@ -50,7 +62,13 @@ func (store UserStore) Users() ([]backend.User, error) {
 	var users []backend.User
 
 	// Execute prepared statement
-	query := `SELECT * FROM users ORDER BY admin DESC, username` // Sorted in alphabetical order, admins first
+	query := `
+		SELECT u.user_id, u.username, u.password, u.admin, 
+		       COUNT(DISTINCT s.score_id)
+		FROM users u 
+		    LEFT JOIN scores s ON s.user_id = u.user_id
+		ORDER BY u.admin DESC, u.username 
+		` // Sorted in alphabetical order, admins first
 	if err := store.Select(&users, query); err != nil {
 		return []backend.User{}, fmt.Errorf("error getting topics: %w", err)
 	}
@@ -63,7 +81,10 @@ func (store *UserStore) CountUsers() (int, error) {
 	var userCount int
 
 	// Execute prepared statement
-	query := `SELECT COUNT(*) FROM users`
+	query := `
+		SELECT COUNT(*) 
+		FROM users
+		`
 	if err := store.Get(&userCount, query); err != nil {
 		return 0, fmt.Errorf("error getting number of users: %w", err)
 	}
@@ -74,7 +95,10 @@ func (store *UserStore) CountUsers() (int, error) {
 // Creates a new user
 func (store UserStore) CreateUser(user *backend.User) error {
 	// Execute prepared statement
-	query := `INSERT INTO users(username, password, admin) VALUES (?, ?, ?)`
+	query := `
+		INSERT INTO users(username, password, admin) 
+		VALUES (?, ?, ?)
+		`
 	if _, err := store.Exec(query,
 		user.Username,
 		user.Password,
@@ -88,7 +112,11 @@ func (store UserStore) CreateUser(user *backend.User) error {
 // Updates an existing user
 func (store UserStore) UpdateUser(user *backend.User) error {
 	// Execute prepared statement
-	query := `UPDATE users SET password = ?, username = ?, admin = ? WHERE user_id = ?`
+	query := `
+		UPDATE users 
+		SET password = ?, username = ?, admin = ? 
+		WHERE user_id = ?
+		`
 	if _, err := store.Exec(query,
 		user.Password,
 		user.Username,
@@ -103,7 +131,10 @@ func (store UserStore) UpdateUser(user *backend.User) error {
 // Deletes an existing user
 func (store UserStore) DeleteUser(userID int) error {
 	// Execute prepared statement
-	query := `DELETE FROM users WHERE user_id = ?`
+	query := `
+		DELETE FROM users 
+		WHERE user_id = ?
+		`
 	if _, err := store.Exec(query, userID); err != nil {
 		return fmt.Errorf("error deleting user: %w", err)
 	}
