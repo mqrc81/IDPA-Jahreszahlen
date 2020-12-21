@@ -108,6 +108,7 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 
 	// Handler for when the user enters a non-existing URL
 	handler.NotFound(handler.NotFound404())
+	// handler.MethodNotAllowed(handler.NotAllowed405())
 
 	return handler
 }

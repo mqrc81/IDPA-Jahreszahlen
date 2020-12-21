@@ -22,7 +22,7 @@ type TopicHandler struct {
 }
 
 // List
-// A GET-method that any admin can call. It lists all topics.
+// A GET-method. It lists all topics.
 func (handler *TopicHandler) List() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
@@ -71,13 +71,16 @@ func (handler *TopicHandler) Create() http.HandlerFunc {
 		"frontend/templates/topics_create.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Check if logged in user is admin
+
+		// Check if an admin is logged in
 		user := req.Context().Value("user")
 		if user == nil || !user.(backend.User).Admin {
 			// If no user is logged in or logged in user isn't an admin,
-			// redirect back
-			handler.sessions.Put(req.Context(), "flash", "NOOOOOPE")
+			// then redirect back with flash message
+			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. " +
+				"Sie müssen als Admin eingeloggt sein, um ein neues Thema zu erstellen.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
 		}
 
 		// Execute HTML-templates with data
@@ -125,7 +128,7 @@ func (handler *TopicHandler) CreateStore() http.HandlerFunc {
 		}
 
 		// Adds flash message
-		handler.sessions.Put(req.Context(), "flash", "Thema wurde erfolgreich erstellt.")
+		handler.sessions.Put(req.Context(), "flash_success", "Thema wurde erfolgreich erstellt.")
 
 		// Redirects to list of topics
 		http.Redirect(res, req, "/topics", http.StatusFound)
@@ -145,7 +148,7 @@ func (handler *TopicHandler) Delete() http.HandlerFunc {
 			return
 		}
 		// Add flash message
-		handler.sessions.Put(req.Context(), "flash", "Thema wurde erfolgreich gelöscht.")
+		handler.sessions.Put(req.Context(), "flash_success", "Thema wurde erfolgreich gelöscht.")
 
 		// Redirect to list of topics
 		http.Redirect(res, req, "/topics", http.StatusFound)
@@ -170,6 +173,18 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 		"frontend/templates/topics_edit.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Check if an admin is logged in
+		user := req.Context().Value("user")
+		if user == nil || !user.(backend.User).Admin {
+			// If no user is logged in or logged in user isn't an admin,
+			// then redirect back with flash message
+			handler.sessions.Put(req.Context(), "flash_error",
+				"Unzureichende Berechtigung. Sie müssen als Admin eingeloggt sein, um ein Thema zu bearbeiten.")
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+
 		// Retrieve topic ID from URL parameters
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
@@ -231,7 +246,7 @@ func (handler *TopicHandler) EditStore() http.HandlerFunc {
 		}
 
 		// Add flash message
-		handler.sessions.Put(req.Context(), "flash", "Thema wurde erfolgreich bearbeitet.")
+		handler.sessions.Put(req.Context(), "flash_success", "Thema wurde erfolgreich bearbeitet.")
 
 		// Redirect to topic Show
 		http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
@@ -239,7 +254,7 @@ func (handler *TopicHandler) EditStore() http.HandlerFunc {
 }
 
 // Show
-// A GET-method that any user can call. It displays details of the topic with
+// A GET-method. It displays details of the topic with
 // the options to play or edit the topics, to edit an event and to create a new
 // event.
 func (handler *TopicHandler) Show() http.HandlerFunc {

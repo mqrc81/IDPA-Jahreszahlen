@@ -22,9 +22,10 @@ type EventHandler struct {
 }
 
 // List
-// A GET-method that any admin can call. It lists all scores, ranked by points,
+// A GET-method that any user can call. It lists all scores, ranked by points,
 // with the ability to filter scores by topic and/or user.
 func (handler *EventHandler) List() http.HandlerFunc {
+
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -37,7 +38,20 @@ func (handler *EventHandler) List() http.HandlerFunc {
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/templates/layout.html",
 		"frontend/templates/events_list.html"))
+
 	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Check if a user is logged in
+		user := req.Context().Value("user")
+		if user == nil || !user.(backend.User).Admin {
+			// If no user is logged in or logged in user isn't an admin,
+			// then redirect back with flash message
+			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. " +
+				"Sie müssen als Admin eingeloggt sein, um ein neues Thema zu erstellen.")
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+
 		// Retrieve topic ID from URL parameters
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
@@ -71,6 +85,7 @@ func (handler *EventHandler) List() http.HandlerFunc {
 // A GET-method that any admin can call. It renders a form, in which values
 // for a new event can be entered.
 func (handler *EventHandler) Create() http.HandlerFunc {
+
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -84,6 +99,18 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 		"frontend/templates/events_create.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Check if an admin is logged in
+		user := req.Context().Value("user")
+		if user == nil || !user.(backend.User).Admin {
+			// If no user is logged in or logged in user isn't an admin,
+			// then redirect back with flash message
+			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. " +
+				"Sie müssen als Admin eingeloggt sein, um ein neues Ereignis zu erstellen.")
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+
 		// Retrieve topic ID from URL parameters
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
@@ -111,7 +138,9 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 // form, it stores the new event in the database and redirects to the edit-page
 // of the event's topic.
 func (handler *EventHandler) CreateStore() http.HandlerFunc {
+
 	return func(res http.ResponseWriter, req *http.Request) {
+
 		// Retrieve topic ID from URL parameters
 		topicIDstr := chi.URLParam(req, "topicID")
 		topicID, _ := strconv.Atoi(topicIDstr)
@@ -141,7 +170,7 @@ func (handler *EventHandler) CreateStore() http.HandlerFunc {
 		}
 
 		// Adds flash message
-		handler.sessions.Put(req.Context(), "flash", "Ereignis wurde erfolgreich erstellt.")
+		handler.sessions.Put(req.Context(), "flash_success", "Ereignis wurde erfolgreich erstellt.")
 
 		// Redirect to list of topics
 		http.Redirect(res, req, "/topics/"+topicIDstr+"/events", http.StatusFound)
@@ -151,7 +180,9 @@ func (handler *EventHandler) CreateStore() http.HandlerFunc {
 // Delete
 // A POST-method. It deletes an event and redirects to the list of events.
 func (handler *EventHandler) Delete() http.HandlerFunc {
+
 	return func(res http.ResponseWriter, req *http.Request) {
+
 		// Retrieve event ID from URL parameters
 		topicID := chi.URLParam(req, "topicID")
 
@@ -173,6 +204,7 @@ func (handler *EventHandler) Delete() http.HandlerFunc {
 // A GET-method that any admin can call. It renders a form in which values for
 // updating the current event can be entered.
 func (handler *EventHandler) Edit() http.HandlerFunc {
+
 	// Data to pass to HTML-templates
 	type data struct {
 		Event backend.Event
@@ -186,6 +218,18 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 		"frontend/templates/events_edit.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Check if an admin is logged in
+		user := req.Context().Value("user")
+		if user == nil || !user.(backend.User).Admin {
+			// If no user is logged in or logged in user isn't an admin,
+			// then redirect back with flash message
+			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. " +
+				"Sie müssen als Admin eingeloggt sein, um ein Ereignis zu bearbeiten.")
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+
 		// Retrieve event ID from URL parameters
 		eventID, _ := strconv.Atoi(chi.URLParam(req, "eventID"))
 
@@ -212,7 +256,9 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 // case of an invalid input with corresponding error message. In case of valid
 // form, it stores the topic in the database and redirects to List.
 func (handler *EventHandler) EditStore() http.HandlerFunc {
+
 	return func(res http.ResponseWriter, req *http.Request) {
+
 		// Retrieve topic ID from URL parameters
 		topicIDstr := chi.URLParam(req, "topicID")
 		topicID, _ := strconv.Atoi(topicIDstr)
@@ -242,7 +288,7 @@ func (handler *EventHandler) EditStore() http.HandlerFunc {
 		}
 
 		// Add flash message to session
-		handler.sessions.Put(req.Context(), "flash", "Thema wurde erfolgreich bearbeitet.")
+		handler.sessions.Put(req.Context(), "flash_success", "Thema wurde erfolgreich bearbeitet.")
 
 		// Redirect to list of events
 		http.Redirect(res, req, "/topics/"+topicIDstr+"/events", http.StatusFound)

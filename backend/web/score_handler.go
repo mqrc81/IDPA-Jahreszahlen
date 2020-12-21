@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/alexedwards/scs/v2"
@@ -25,6 +26,7 @@ type ScoreHandler struct {
 // A GET-method that any user can call. It lists all scores, ranked by points,
 // with the ability to filter scores by topic and/or user.
 func (handler *ScoreHandler) List() http.HandlerFunc {
+
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -38,6 +40,18 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 		"frontend/templates/scores_list.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Check if a user is logged in
+		userInf := req.Context().Value("user")
+		if userInf == nil {
+			// If no user is logged in, then redirect back with flash message
+			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. " +
+				"Sie müssen als Benutzer eingeloggt sein, um das Leaderboard zu betrachten.")
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+		user := userInf.(backend.User)
+
 		var ss []backend.Score
 
 		// Retrieve topic from URL parameters
@@ -47,15 +61,11 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 			topicID, _ = strconv.Atoi(topic)
 		}
 
-		// Retrieve topic from URL parameters
-		userID := -1
-		user := req.URL.Query().Get("topic")
-		if len(user) != 0 {
-			userID, _ = strconv.Atoi(topic)
-		}
+		// Retrieve user from URL parameters
+		userFilter := req.URL.Query().Get("user")
 
 		// Retrieve limit from URL parameters
-		limit := 25
+		limit := 15
 		show := req.URL.Query().Get("show")
 		if len(show) != 0 {
 			limit, _ = strconv.Atoi(show)
@@ -70,15 +80,15 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 		}
 
 		if topicID != -1 {
-			if userID != -1 { // Topic and User specified in URL parameters
+			if strings.ToLower(userFilter) == "me" { // Topic and user specified in URL parameters
 				// Execute SQL statement to get scores
-				scores, err := handler.store.ScoresByTopicAndUser(topicID, userID, limit, offset)
+				scores, err := handler.store.ScoresByTopicAndUser(topicID, user.UserID, limit, offset)
 				if err != nil {
 					http.Error(res, err.Error(), http.StatusInternalServerError)
 					return
 				}
 				ss = scores
-			} else { // Topic specified in URL parameters
+			} else { // Only topic specified in URL parameters
 				// Execute SQL statement to get scores
 				scores, err := handler.store.ScoresByTopic(topicID, limit, offset)
 				if err != nil {
@@ -87,15 +97,15 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 				}
 				ss = scores
 			}
-		} else if userID != -1 { // User specified in URL parameters
+		} else if strings.ToLower(userFilter) == "me" { // Only user specified in URL parameters
 			// Execute SQL statement to get scores
-			scores, err := handler.store.ScoresByUser(userID, limit, offset)
+			scores, err := handler.store.ScoresByUser(user.UserID, limit, offset)
 			if err != nil {
 				http.Error(res, err.Error(), http.StatusInternalServerError)
 				return
 			}
 			ss = scores
-		} else { // No Topic or User specified in URL parameters
+		} else { // No topic or user specified in URL parameters
 			// Execute SQL statement to get scores
 			scores, err := handler.store.Scores(limit, offset)
 			if err != nil {
@@ -117,9 +127,11 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 }
 
 // Store
-// A POST-method. It stores the new scire in the database and redirects to List.
+// A POST-method. It stores the new score in the database and redirects to List.
 func (handler *ScoreHandler) Store() http.HandlerFunc {
+
 	return func(res http.ResponseWriter, req *http.Request) {
+
 		// Retrieve values from form
 		topicID, _ := strconv.Atoi(req.URL.Query().Get("topic_id"))
 		userID, _ := strconv.Atoi(req.URL.Query().Get("user_id"))

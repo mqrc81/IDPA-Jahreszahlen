@@ -31,10 +31,11 @@ func NewSessionManager(dataSourceName string) (*scs.SessionManager, error) {
 // SessionData
 // Holds data to be accessed through the session.
 type SessionData struct {
-	FlashMessage string
-	Form         interface{}
-	User         backend.User
-	LoggedIn     bool
+	FlashMessageSuccess string
+	FlashMessageError   string
+	Form                interface{}
+	User                backend.User
+	LoggedIn            bool
 }
 
 // GetSessionData
@@ -43,7 +44,8 @@ func GetSessionData(session *scs.SessionManager, ctx context.Context) SessionDat
 	var data SessionData
 
 	// Retrieve flash message from session
-	data.FlashMessage = session.PopString(ctx, "flash")
+	data.FlashMessageSuccess = session.PopString(ctx, "flash_success")
+	data.FlashMessageError = session.PopString(ctx, "flash_error")
 
 	// Retrieve form from session
 	data.Form = session.Pop(ctx, "form")

@@ -27,6 +27,7 @@ type UserHandler struct {
 // A GET-method. It renders a form, in which values for registering can be
 // entered.
 func (handler *UserHandler) Register() http.HandlerFunc {
+
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -38,6 +39,17 @@ func (handler *UserHandler) Register() http.HandlerFunc {
 		"frontend/templates/users_register.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Check if a user is logged in
+		user := req.Context().Value("user")
+		if user != nil {
+			// If a user is already logged in, then redirect back with flash
+			// message
+			handler.sessions.Put(req.Context(), "flash_error", "Sie sind bereits eingeloggt.")
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
@@ -54,6 +66,7 @@ func (handler *UserHandler) Register() http.HandlerFunc {
 // valid form, it stores the new user in the database and redirects to the home-
 // page.
 func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
+
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from form (Register)
 		form := RegisterForm{
@@ -94,9 +107,8 @@ func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
 		}
 
 		// Add flash message
-		handler.sessions.Put(req.Context(), "flash",
-			"Willkommen "+form.Username+"! Ihre Registrierung war erfolgreich. "+
-				"Loggen Sie sich bitte ein.")
+		handler.sessions.Put(req.Context(), "flash_success",
+			"Willkommen "+form.Username+"! Ihre Registrierung war erfolgreich. Loggen Sie sich bitte ein.")
 
 		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)
@@ -107,6 +119,7 @@ func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
 // A GET-method. It renders a form in which values for logging in can be
 // entered.
 func (handler *UserHandler) Login() http.HandlerFunc {
+
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -118,6 +131,17 @@ func (handler *UserHandler) Login() http.HandlerFunc {
 		"frontend/templates/users_login.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Check if a user is logged in
+		user := req.Context().Value("user")
+		if user != nil {
+			// If a user is already logged in, then redirect back with flash
+			// message
+			handler.sessions.Put(req.Context(), "flash_error", "Sie sind bereits eingeloggt.")
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
@@ -133,6 +157,7 @@ func (handler *UserHandler) Login() http.HandlerFunc {
 // in case of an invalid input with corresponding error messages. In case of a
 // valid form, it stores the user in the session and redirects to the home-page.
 func (handler *UserHandler) LoginSubmit() http.HandlerFunc {
+
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from form
 		form := LoginForm{
@@ -166,7 +191,7 @@ func (handler *UserHandler) LoginSubmit() http.HandlerFunc {
 		handler.sessions.Put(req.Context(), "user_id", user.UserID)
 
 		// Add flash message to session
-		handler.sessions.Put(req.Context(), "flash", "Hallo "+form.Username+"! Sie sind nun eingeloggt.")
+		handler.sessions.Put(req.Context(), "flash_success", "Hallo "+form.Username+"! Sie sind nun eingeloggt.")
 
 		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)
@@ -176,12 +201,23 @@ func (handler *UserHandler) LoginSubmit() http.HandlerFunc {
 // Logout
 // A GET-method that any user can call. It removes user from the session.
 func (handler *UserHandler) Logout() http.HandlerFunc {
+
 	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Check if a user is logged in
+		user := req.Context().Value("user")
+		if user == nil {
+			// If no user is logged in, then redirect back with flash message
+			handler.sessions.Put(req.Context(), "flash_error", "Sie sind gar nicht eingeloggt.")
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+
 		// Remove user ID from session
 		handler.sessions.Remove(req.Context(), "user_id")
 
 		// Add flash message to session
-		handler.sessions.Put(req.Context(), "flash", "Sie wurden erfolgreich ausgeloggt.")
+		handler.sessions.Put(req.Context(), "flash_success", "Sie wurden erfolgreich ausgeloggt.")
 
 		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)
@@ -192,7 +228,7 @@ func (handler *UserHandler) Logout() http.HandlerFunc {
 // A GET-Method that displays a user's username and statistics, with the
 // options to change username or password.
 func (handler *UserHandler) Profile() http.HandlerFunc {
-	// Data to pass to HTML-temmplates
+	// Data to pass to HTML-templates
 	type data struct {
 		User      backend.User
 		Points    int
@@ -211,9 +247,11 @@ func (handler *UserHandler) Profile() http.HandlerFunc {
 		// Get user logged in
 		userInf := req.Context().Value("user")
 		if userInf == nil {
-			// If no user is logged in, redirect back
-			handler.sessions.Put(req.Context(), "flash", "NOOOOOPE")
+			// If no user is logged in, then redirect back with flash message
+			handler.sessions.Put(req.Context(), "flash_error",
+				"Unzureichende Berechtigung. Loggen Sie sich zuerst ein, um Ihr Profil zu betrachten.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
 		}
 		user := userInf.(backend.User)
 
@@ -260,6 +298,17 @@ func (handler *UserHandler) List() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
+		// Check if an admin is logged in
+		user := req.Context().Value("user")
+		if user == nil || !user.(backend.User).Admin {
+			// If no user is logged in or user logged in isn't an admin, then
+			// redirect back with flash message
+			handler.sessions.Put(req.Context(), "flash_error",
+				"Unzureichende Berechtigung. Sie müssen als Admin eingeloggt sein, um alle Benutzer aufzulisten.")
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+
 		// Execute SQL statement to get users
 		users, err := handler.store.Users()
 		if err != nil {
@@ -293,6 +342,17 @@ func (handler *UserHandler) EditUsername() http.HandlerFunc {
 		"frontend/templates/users_edit_username.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Check if a user is logged in
+		user := req.Context().Value("user")
+		if user == nil {
+			// If no user is logged in, then redirect back with flash message
+			handler.sessions.Put(req.Context(), "flash_error",
+				"Unzureichende Berechtigung. Loggen Sie sich zuerst ein, um Ihr Benutzernamen zu ändern.")
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
@@ -309,7 +369,9 @@ func (handler *UserHandler) EditUsername() http.HandlerFunc {
 // In case of a valid form, it stores the user in the database and redirects to
 // the user's profile.
 func (handler *UserHandler) EditUsernameSubmit() http.HandlerFunc {
+
 	return func(res http.ResponseWriter, req *http.Request) {
+
 		// Retrieve values from form
 		form := UsernameForm{
 			NewUsername:       strings.ToLower(req.FormValue("username")),
@@ -343,7 +405,7 @@ func (handler *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 		handler.sessions.Put(req.Context(), "user_id", user.UserID)
 
 		// Add flash message to session
-		handler.sessions.Put(req.Context(), "flash", "Ihr Benutzername wurde erfolgreich geändert.")
+		handler.sessions.Put(req.Context(), "flash_success", "Ihr Benutzername wurde erfolgreich geändert.")
 
 		// Redirect to Home
 		http.Redirect(res, req, "/profile", http.StatusFound)
@@ -354,6 +416,7 @@ func (handler *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 // A GET-method that any user can call. It renders a form in which values for
 // updating the current password can be entered.
 func (handler *UserHandler) EditPassword() http.HandlerFunc {
+
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -365,6 +428,17 @@ func (handler *UserHandler) EditPassword() http.HandlerFunc {
 		"frontend/templates/users_edit_password.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Check if a user is logged in
+		user := req.Context().Value("user")
+		if user == nil {
+			// If no user is logged in, then redirect back with flash message
+			handler.sessions.Put(req.Context(), "flash_error",
+				"Unzureichende Berechtigung. Loggen Sie sich zuerst ein, um Ihr Passwort zu ändern.")
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
@@ -381,7 +455,9 @@ func (handler *UserHandler) EditPassword() http.HandlerFunc {
 // In case of a valid form, it stores the user in the database and redirects to
 // the Profile.
 func (handler *UserHandler) EditPasswordSubmit() http.HandlerFunc {
+
 	return func(res http.ResponseWriter, req *http.Request) {
+
 		// Retrieve values from form
 		form := PasswordForm{
 			NewPassword:          req.FormValue("new_password"),
@@ -429,7 +505,9 @@ func (handler *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 // Delete
 // A POST-method that any admin can call. It deletes the user and redirects to List.
 func (handler *UserHandler) Delete() http.HandlerFunc {
+
 	return func(res http.ResponseWriter, req *http.Request) {
+
 		// Retrieve user ID from URL parameters
 		userID, _ := strconv.Atoi(chi.URLParam(req, "userID"))
 
@@ -445,7 +523,9 @@ func (handler *UserHandler) Delete() http.HandlerFunc {
 // Promote
 // A POST-method that any admin can call. It promotes a user to an admin.
 func (handler *UserHandler) Promote() http.HandlerFunc {
+
 	return func(res http.ResponseWriter, req *http.Request) {
+
 		// Retrieve user ID from URL parameters
 		userID, _ := strconv.Atoi(chi.URLParam(req, "userID"))
 
@@ -473,7 +553,9 @@ func (handler *UserHandler) Promote() http.HandlerFunc {
 // ResetPassword
 // A POST-method that any admin can call. It resets a user's password.
 func (handler *UserHandler) ResetPassword() http.HandlerFunc {
+
 	return func(res http.ResponseWriter, req *http.Request) {
+
 		// Retrieve user ID from URL parameters
 		userID, _ := strconv.Atoi(chi.URLParam(req, "userID"))
 
