@@ -25,7 +25,7 @@ func (store UserStore) User(userID int) (backend.User, error) {
 
 	// Execute prepared statement
 	query := `
-		SELECT u.user_id, u.username, u.password, u.admin, 
+		SELECT u.*, 
 		       COUNT(DISTINCT s.score_id) AS scores_count
 		FROM users u 
 		    LEFT JOIN scores s ON s.user_id = u.user_id
@@ -34,6 +34,7 @@ func (store UserStore) User(userID int) (backend.User, error) {
 	if err := store.Get(&user, query, userID); err != nil {
 		return backend.User{}, fmt.Errorf("error getting user: %w", err)
 	}
+
 	return user, nil
 }
 
@@ -44,8 +45,8 @@ func (store UserStore) UserByUsername(username string) (backend.User, error) {
 
 	// Execute prepared statement
 	query := `
-		SELECT u.user_id, u.username, u.password, u.admin, 
-		       COUNT(DISTINCT s.score_id)
+		SELECT u.*, 
+		       COUNT(DISTINCT s.score_id) AS scores_count
 		FROM users u 
 		    LEFT JOIN scores s ON s.user_id = u.user_id
 		WHERE u.username = ?
@@ -53,6 +54,7 @@ func (store UserStore) UserByUsername(username string) (backend.User, error) {
 	if err := store.Get(&user, query, username); err != nil {
 		return backend.User{}, fmt.Errorf("error getting user: %w", err)
 	}
+
 	return user, nil
 }
 
@@ -63,15 +65,17 @@ func (store UserStore) Users() ([]backend.User, error) {
 
 	// Execute prepared statement
 	query := `
-		SELECT u.user_id, u.username, u.password, u.admin, 
-		       COUNT(DISTINCT s.score_id)
-		FROM users u 
+		SELECT u.*,
+		       COUNT(DISTINCT s.score_id) AS scores_count
+		FROM users u
 		    LEFT JOIN scores s ON s.user_id = u.user_id
-		ORDER BY u.admin DESC, u.username 
-		` // Sorted in alphabetical order, admins first
+		GROUP BY u.user_id, u.admin, u.username
+		ORDER BY u.admin DESC, u.username   
+		` // Sorted in alphabetical order, but all admins first
 	if err := store.Select(&users, query); err != nil {
 		return []backend.User{}, fmt.Errorf("error getting topics: %w", err)
 	}
+
 	return users, nil
 }
 
@@ -88,6 +92,7 @@ func (store *UserStore) CountUsers() (int, error) {
 	if err := store.Get(&userCount, query); err != nil {
 		return 0, fmt.Errorf("error getting number of users: %w", err)
 	}
+
 	return userCount, nil
 }
 
@@ -105,6 +110,7 @@ func (store UserStore) CreateUser(user *backend.User) error {
 		user.Admin); err != nil {
 		return fmt.Errorf("error creating user: %w", err)
 	}
+
 	return nil
 }
 
@@ -124,6 +130,7 @@ func (store UserStore) UpdateUser(user *backend.User) error {
 		user.UserID); err != nil {
 		return fmt.Errorf("error updating user: %w", err)
 	}
+
 	return nil
 }
 

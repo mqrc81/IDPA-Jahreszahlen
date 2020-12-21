@@ -26,7 +26,7 @@ func (store ScoreStore) Scores(limit int, offset int) ([]backend.Score, error) {
 
 	// Execute prepared statement
 	query := `
-		SELECT s.score_id, s.topic_id, s.user_id, s.points, s.date, 
+		SELECT s.*, 
 		       t.title AS topic_name, 
 		       u.username AS user_name
 		FROM scores s 
@@ -40,6 +40,7 @@ func (store ScoreStore) Scores(limit int, offset int) ([]backend.Score, error) {
 		limit); err != nil {
 		return []backend.Score{}, fmt.Errorf("error getting scores: %w", err)
 	}
+
 	return scores, nil
 }
 
@@ -67,6 +68,7 @@ func (store ScoreStore) ScoresByTopic(topicID int, limit int, offset int) ([]bac
 		limit); err != nil {
 		return []backend.Score{}, fmt.Errorf("error getting scores: %w", err)
 	}
+
 	return scores, nil
 }
 
@@ -78,7 +80,7 @@ func (store ScoreStore) ScoresByUser(userID int, limit int, offset int) ([]backe
 
 	// Execute prepared statement
 	query := `
-		SELECT s.score_id, s.topic_id, s.user_id, s.points, s.date, 
+		SELECT s.*, 
 		       t.title AS topic_name, 
 		       u.username AS user_name
 		FROM scores s 
@@ -94,6 +96,7 @@ func (store ScoreStore) ScoresByUser(userID int, limit int, offset int) ([]backe
 		limit); err != nil {
 		return []backend.Score{}, fmt.Errorf("error getting scores: %w", err)
 	}
+
 	return scores, nil
 }
 
@@ -105,7 +108,7 @@ func (store ScoreStore) ScoresByTopicAndUser(topicID int, userID int, limit int,
 
 	// Execute prepared statement
 	query := `
-		SELECT s.score_id, s.topic_id, s.user_id, s.points, s.date, 
+		SELECT s.*, 
 		       t.title AS topic_name, 
 		       u.username AS user_name
 		FROM scores s 
@@ -123,6 +126,7 @@ func (store ScoreStore) ScoresByTopicAndUser(topicID int, userID int, limit int,
 		limit); err != nil {
 		return []backend.Score{}, fmt.Errorf("error getting scores: %w", err)
 	}
+
 	return scores, nil
 }
 

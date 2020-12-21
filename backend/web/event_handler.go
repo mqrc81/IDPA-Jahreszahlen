@@ -63,7 +63,7 @@ func (handler *EventHandler) List() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to get events
-		events, err := handler.store.EventsByTopic(topicID, false)
+		events, err := handler.store.EventsByTopic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return

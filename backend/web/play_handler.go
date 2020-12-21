@@ -5,8 +5,10 @@ package web
 
 import (
 	"html/template"
+	"math/rand"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi"
@@ -47,18 +49,22 @@ func (handler *PlayHandler) Phase1() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to get events
-		ee, err := handler.store.EventsByTopic(topicID, true)
+		events, err := handler.store.EventsByTopic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		// Randomize array of events
+		rand.Seed(time.Now().UnixNano())
+		rand.Shuffle(len(events), func(n1, n2 int) { events[n1], events[n2] = events[n2], events[n1] })
 
 		// TODO session management to ensure correct play order etc.
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
-			Events:      ee,
+			Events:      events,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -138,12 +144,12 @@ func (handler *PlayHandler) Phase3() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from session
-		var ee []backend.Event // ee := session.Pop(ctx, "events")
-		var points int         // points := session.PopInt(ctx, "points")
+		var events []backend.Event // events := session.Pop(ctx, "events")
+		var points int             // points := session.PopInt(ctx, "points")
 
 		for x := 1; x <= 5; x++ {
 			guess, _ := strconv.Atoi(req.FormValue("q" + strconv.Itoa(x))) // The user's answer
-			correctYear := ee[x+3].Year                                    // The correct answer
+			correctYear := events[x+3].Year                                // The correct answer
 
 			// If answer is correct, user gets 7 points
 			if guess == correctYear {
@@ -167,20 +173,24 @@ func (handler *PlayHandler) Phase3() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to get events
-		ee, err = handler.store.EventsByTopic(topicID, true)
+		events, err = handler.store.EventsByTopic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
+		// Randomize array of events
+		rand.Seed(time.Now().UnixNano())
+		rand.Shuffle(len(events), func(n1, n2 int) { events[n1], events[n2] = events[n2], events[n1] })
+
 		// Add values to session
 		// session.Put(ctx, "points", points)
-		// session.Put(ctx, "events", ee)
+		// session.Put(ctx, "events", events)
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
-			Events:      ee,
+			Events:      events,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return

@@ -25,7 +25,7 @@ func (store *TopicStore) Topic(topicID int) (backend.Topic, error) {
 
 	// Execute prepared statement
 	query := `
-		SELECT t.topic_id, t.title, t.start_year, t.end_year, t.description, 
+		SELECT t.*, 
 		       COUNT(DISTINCT e.event_id) AS events_count, 
 		       COUNT(DISTINCT s.score_id) AS scores_count
 		FROM topics t 
@@ -36,6 +36,7 @@ func (store *TopicStore) Topic(topicID int) (backend.Topic, error) {
 	if err := store.Get(&topic, query, topicID); err != nil {
 		return backend.Topic{}, fmt.Errorf("error getting topic: %w", err)
 	}
+
 	return topic, nil
 }
 
@@ -46,17 +47,19 @@ func (store *TopicStore) Topics() ([]backend.Topic, error) {
 
 	// Execute prepared statement
 	query := `
-		SELECT t.topic_id, t.title, t.start_year, t.end_year, t.description, 
+		SELECT t.*, 
 		       COUNT(DISTINCT e.event_id) AS events_count, 
 		       COUNT(DISTINCT s.score_id) AS scores_count
-		FROM topics t 
+		FROM topics t
 			LEFT JOIN events e ON e.topic_id = t.topic_id 
 			LEFT JOIN scores s ON s.topic_id = t.topic_id
-		ORDER BY start_year
+		GROUP BY t.topic_id, t.start_year 
+		ORDER BY t.start_year
 		`
 	if err := store.Select(&topics, query); err != nil {
 		return []backend.Topic{}, fmt.Errorf("error getting topics: %w", err)
 	}
+
 	return topics, nil
 }
 
@@ -73,6 +76,7 @@ func (store *EventStore) CountTopics() (int, error) {
 	if err := store.Get(&topicCount, query); err != nil {
 		return 0, fmt.Errorf("error getting number of topics: %w", err)
 	}
+
 	return topicCount, nil
 }
 
@@ -103,7 +107,10 @@ func (store *TopicStore) UpdateTopic(topic *backend.Topic) error {
 	// Execute prepared statement
 	query := `
 		UPDATE topics 
-		SET title = ?, start_year = ?, end_year = ?, description = ? 
+		SET title = ?, 
+		    start_year = ?, 
+		    end_year = ?, 
+		    description = ? 
 		WHERE topic_id = ?
 		`
 	if _, err := store.Exec(query,
@@ -130,5 +137,6 @@ func (store *TopicStore) DeleteTopic(topicID int) error {
 	if _, err := store.Exec(query, topicID); err != nil {
 		return fmt.Errorf("error deleting topic: %w", err)
 	}
+
 	return nil
 }

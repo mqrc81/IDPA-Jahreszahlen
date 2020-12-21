@@ -21,10 +21,11 @@ type Topic struct {
 // Ger.: "Ereignis". Represents a historical event associated with a specific
 // year (e.g. Battle of Britain).
 type Event struct {
-	EventID int    `db:"event_id"`
-	TopicID int    `db:"topic_id"`
-	Title   string `db:"title"`
-	Year    int    `db:"year"`
+	EventID   int    `db:"event_id"`
+	TopicID   int    `db:"topic_id"`
+	Title     string `db:"title"`
+	Year      int    `db:"year"`
+	TopicName string `db:"topic_name"`
 }
 
 // User
@@ -65,7 +66,7 @@ type TopicStore interface {
 // Stores functions using events for the database-layer.
 type EventStore interface {
 	Event(eventID int) (Event, error)
-	EventsByTopic(topicID int, orderByRand bool) ([]Event, error)
+	EventsByTopic(topicID int) ([]Event, error)
 	CountEvents() (int, error)
 	CreateEvent(event *Event) error
 	UpdateEvent(event *Event) error

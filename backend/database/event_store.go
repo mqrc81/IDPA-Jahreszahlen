@@ -25,39 +25,37 @@ func (store *EventStore) Event(eventID int) (backend.Event, error) {
 
 	// Execute prepared statement
 	query := `
-		SELECT * 
-		FROM events 
-		WHERE event_id = ?
+		SELECT e.*,
+		       t.title AS topic_name
+		FROM events e 
+		    LEFT JOIN topics t ON t.topic_id = e.topic_id
+		WHERE e.event_id = ?
 		`
 	if err := store.Get(&event, query, eventID); err != nil {
 		return backend.Event{}, fmt.Errorf("error getting event: %w", err)
 	}
+
 	return event, nil
 }
 
 // EventsByTopic
-// Gets events of a certain, sorted randomly or by year
-func (store *EventStore) EventsByTopic(topicID int, orderByRand bool) ([]backend.Event, error) {
+// Gets events of a certain, sorted by year
+func (store *EventStore) EventsByTopic(topicID int) ([]backend.Event, error) {
 	var events []backend.Event
 
 	// Execute prepared statement
 	query := `
-		SELECT * 
-		FROM events 
-		WHERE topic_id = ? 
-		ORDER BY year
+		SELECT e.*, 
+		       t.title AS topic_name
+		FROM events e 
+		    LEFT JOIN topics t ON t.topic_id = e.topic_id
+		WHERE e.topic_id = ?
+		ORDER BY e.year
 		`
-	if orderByRand {
-		query = `
-		SELECT * 
-		FROM events 
-		WHERE topic_id = ? 
-		ORDER BY RAND()
-		`
-	}
 	if err := store.Select(&events, query, topicID); err != nil {
 		return []backend.Event{}, fmt.Errorf("error getting events: %w", err)
 	}
+
 	return events, nil
 }
 
@@ -74,6 +72,7 @@ func (store *EventStore) CountEvents() (int, error) {
 	if err := store.Get(&eventCount, query); err != nil {
 		return 0, fmt.Errorf("error getting number of events: %w", err)
 	}
+
 	return eventCount, nil
 }
 
@@ -103,7 +102,8 @@ func (store *EventStore) UpdateEvent(event *backend.Event) error {
 	// Execute prepared statement
 	query := `
 		UPDATE events 
-		SET title = ?, year = ? 
+		SET title = ?, 
+		    year = ? 
 		WHERE event_id = ?
 		`
 	if _, err := store.Exec(query,
@@ -128,5 +128,6 @@ func (store *EventStore) DeleteEvent(eventID int) error {
 	if _, err := store.Exec(query, eventID); err != nil {
 		return fmt.Errorf("error deleting event: %w", err)
 	}
+
 	return nil
 }
