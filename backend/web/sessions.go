@@ -6,12 +6,22 @@ package web
 import (
 	"context"
 	"database/sql"
+	"encoding/gob"
 
 	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/v2"
 
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
+
+// init
+// Gets initialized with the package. Registers certain types to the session,
+// because by default the session can only contain basic data types (int, bool,
+// string, etc.).
+func init() {
+	gob.Register(backend.Event{})
+	gob.Register([]backend.Event{})
+}
 
 // NewSessionManager
 // Initializes new session management.
@@ -36,6 +46,7 @@ type SessionData struct {
 	Form                interface{}
 	User                backend.User
 	LoggedIn            bool
+	PlayEvents          []backend.Event
 }
 
 // GetSessionData
@@ -61,6 +72,12 @@ func GetSessionData(session *scs.SessionManager, ctx context.Context) SessionDat
 	} else {
 		data.User = backend.User{}
 		data.LoggedIn = false
+	}
+
+	// Retrieve events from session
+	data.PlayEvents = session.Pop(ctx, "events").([]backend.Event)
+	if data.PlayEvents == nil {
+		data.PlayEvents = []backend.Event{}
 	}
 
 	return data
