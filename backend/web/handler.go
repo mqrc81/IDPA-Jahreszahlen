@@ -16,12 +16,11 @@ import (
 )
 
 const (
-	MySQLMaxInt     = 2147483647 // TEMP
-	DefaultPassword = "pw123"    // Used when admin manually resets a user's password
+	DefaultPassword = "pw123" // Used when admin manually resets a user's password
 )
 
 var (
-	FuncMap = template.FuncMap{ // A map with functions to be used in HTML-templates
+	FuncMap = template.FuncMap{ // A map with functions to be used in HTML-pages
 		// increments number by 1
 		"increment": func(num int) int {
 			return num + 1
@@ -41,7 +40,7 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 	topics := TopicHandler{store: store, sessions: sessions}
 	events := EventHandler{store: store, sessions: sessions}
 	scores := ScoreHandler{store: store, sessions: sessions}
-	play := PlayHandler{store: store, sessions: sessions}
+	quiz := QuizHandler{store: store, sessions: sessions}
 	users := UserHandler{store: store, sessions: sessions}
 
 	// Use middleware
@@ -73,13 +72,19 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		router.Post("/edit", events.EditStore())
 	})
 
-	// Play
-	handler.Route("/topics/{topicID}/play", func(router chi.Router) {
-		router.Get("/1", play.Phase1())
-		router.Get("/2", play.Phase2())
-		router.Get("/3", play.Phase3())
-		router.Post("/3", play.Store())
-		router.Get("/review", play.Review())
+	// Quiz
+	handler.Route("/topics/{topicID}/quiz", func(router chi.Router) {
+		router.Get("/1", quiz.Phase1())
+		router.Post("/1", quiz.Phase1Submit())
+		router.Get("1/review", quiz.Phase1Review())
+		router.Get("/2", quiz.Phase2())
+		// TODO router.Post("/2", quiz.Phase2Submit())
+		// TODO router.Get("2/review", quiz.Phase2Review())
+		router.Get("/3", quiz.Phase3())
+		// TODO router.Post("/3", quiz.Phase3Submit())
+		// TODO router.Get("3/review", quiz.Phase3Review())
+		router.Post("/", quiz.Store())
+		router.Get("/summary", quiz.Summary())
 	})
 
 	// Scores
@@ -124,7 +129,7 @@ type Handler struct {
 // Home
 // A GET-method. Renders the home-page.
 func (handler *Handler) Home() http.HandlerFunc {
-	// Data to pass to HTML-templates
+	// Data to pass to HTML-pages
 	type data struct {
 		SessionData
 
@@ -132,10 +137,10 @@ func (handler *Handler) Home() http.HandlerFunc {
 		Scores []backend.Score
 	}
 
-	// Parse HTML-templates
+	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/templates/layout.html",
-		"frontend/templates/home.html"))
+		"frontend/pages/layout.html",
+		"frontend/pages/home.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute SQL statement to get topics
@@ -152,7 +157,7 @@ func (handler *Handler) Home() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-templates with data
+		// Execute HTML-pages with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topics:      tt,
@@ -167,17 +172,17 @@ func (handler *Handler) Home() http.HandlerFunc {
 // About
 // A GET-method. Renders the about-page.
 func (handler *Handler) About() http.HandlerFunc {
-	// Data to pass to HTML-templates
+	// Data to pass to HTML-pages
 	type data struct {
 		SessionData
 	}
-	// Parse HTML-templates
+	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/templates/layout.html",
-		"frontend/templates/about.html"))
+		"frontend/pages/layout.html",
+		"frontend/pages/about.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Execute HTML-templates with data
+		// Execute HTML-pages with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
@@ -217,15 +222,15 @@ func (handler *Handler) withUser(next http.Handler) http.Handler {
 // NotFound404
 // Gets called when a non-existing URL has been entered.
 func (handler *Handler) NotFound404() http.HandlerFunc {
-	// Data to pass to HTML-templates
+	// Data to pass to HTML-pages
 	type data struct {
 		SessionData
 	}
 
-	// Parse HTML-templates
+	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/templates/layout.html",
-		"frontend/templates/http_not_found.html"))
+		"frontend/pages/layout.html",
+		"frontend/pages/http_not_found.html"))
 	return func(res http.ResponseWriter, req *http.Request) {
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),

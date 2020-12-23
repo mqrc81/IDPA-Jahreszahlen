@@ -26,7 +26,7 @@ type EventHandler struct {
 // with the ability to filter scores by topic and/or user.
 func (handler *EventHandler) List() http.HandlerFunc {
 
-	// Data to pass to HTML-templates
+	// Data to pass to HTML-pages
 	type data struct {
 		SessionData
 
@@ -34,26 +34,29 @@ func (handler *EventHandler) List() http.HandlerFunc {
 		Events []backend.Event
 	}
 
-	// Parse HTML-templates
+	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/templates/layout.html",
-		"frontend/templates/events_list.html"))
+		"frontend/pages/layout.html",
+		"frontend/pages/events_list.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Check if a user is logged in
 		user := req.Context().Value("user")
-		if user == nil || !user.(backend.User).Admin {
-			// If no user is logged in or logged in user isn't an admin,
-			// then redirect back with flash message
+		if user == nil {
+			// If no user is logged in, then redirect back with flash message
 			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. " +
-				"Sie müssen als Admin eingeloggt sein, um ein neues Thema zu erstellen.")
+				"Sie müssen als Benutzer eingeloggt sein, um all Ereignisse eines Themas aufzulisten.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
 		// Retrieve topic ID from URL parameters
-		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
+		topicID, err := strconv.Atoi(chi.URLParam(req, "topicID"))
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusNotFound)
+			return
+		}
 
 		// Execute SQL statement to get a topic
 		topic, err := handler.store.Topic(topicID)
@@ -69,7 +72,7 @@ func (handler *EventHandler) List() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-templates with data
+		// Execute HTML-pages with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topic:       topic,
@@ -86,17 +89,17 @@ func (handler *EventHandler) List() http.HandlerFunc {
 // for a new event can be entered.
 func (handler *EventHandler) Create() http.HandlerFunc {
 
-	// Data to pass to HTML-templates
+	// Data to pass to HTML-pages
 	type data struct {
 		SessionData
 
 		Topic backend.Topic
 	}
 
-	// Parse HTML-templates
+	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/templates/layout.html",
-		"frontend/templates/events_create.html"))
+		"frontend/pages/layout.html",
+		"frontend/pages/events_create.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -112,7 +115,11 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 		}
 
 		// Retrieve topic ID from URL parameters
-		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
+		topicID, err := strconv.Atoi(chi.URLParam(req, "topicID"))
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusNotFound)
+			return
+		}
 
 		// Execute SQL statement to get a topic
 		topic, err := handler.store.Topic(topicID)
@@ -121,7 +128,7 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-templates with data
+		// Execute HTML-pages with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topic:       topic,
@@ -205,17 +212,17 @@ func (handler *EventHandler) Delete() http.HandlerFunc {
 // updating the current event can be entered.
 func (handler *EventHandler) Edit() http.HandlerFunc {
 
-	// Data to pass to HTML-templates
+	// Data to pass to HTML-pages
 	type data struct {
 		Event backend.Event
 
 		SessionData
 	}
 
-	// Parse HTML-templates
+	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/templates/layout.html",
-		"frontend/templates/events_edit.html"))
+		"frontend/pages/layout.html",
+		"frontend/pages/events_edit.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -231,7 +238,11 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 		}
 
 		// Retrieve event ID from URL parameters
-		eventID, _ := strconv.Atoi(chi.URLParam(req, "eventID"))
+		eventID, err := strconv.Atoi(chi.URLParam(req, "eventID"))
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusNotFound)
+			return
+		}
 
 		// Execute SQL statement to get topic
 		event, err := handler.store.Event(eventID)
@@ -240,7 +251,7 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-templates with data
+		// Execute HTML-pages with data
 		if err := tmpl.Execute(res, data{
 			Event:       event,
 			SessionData: GetSessionData(handler.sessions, req.Context()),

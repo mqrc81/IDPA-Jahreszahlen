@@ -40,7 +40,7 @@ type User struct {
 
 // Score
 // Ger.: "Resultat". Represents points scored by a user upon having successfully
-// finished playing a game.
+// finished playing a quiz.
 type Score struct {
 	ScoreID   int    `db:"score_id"`
 	TopicID   int    `db:"topic_id"`

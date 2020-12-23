@@ -28,15 +28,15 @@ type UserHandler struct {
 // entered.
 func (handler *UserHandler) Register() http.HandlerFunc {
 
-	// Data to pass to HTML-templates
+	// Data to pass to HTML-pages
 	type data struct {
 		SessionData
 	}
 
-	// Parse HTML-templates
+	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/templates/layout.html",
-		"frontend/templates/users_register.html"))
+		"frontend/pages/layout.html",
+		"frontend/pages/users_register.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -50,7 +50,7 @@ func (handler *UserHandler) Register() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-templates with data
+		// Execute HTML-pages with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
@@ -120,15 +120,15 @@ func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
 // entered.
 func (handler *UserHandler) Login() http.HandlerFunc {
 
-	// Data to pass to HTML-templates
+	// Data to pass to HTML-pages
 	type data struct {
 		SessionData
 	}
 
-	// Parse HTML-templates
+	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/templates/layout.html",
-		"frontend/templates/users_login.html"))
+		"frontend/pages/layout.html",
+		"frontend/pages/users_login.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -142,7 +142,7 @@ func (handler *UserHandler) Login() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-templates with data
+		// Execute HTML-pages with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
@@ -228,17 +228,17 @@ func (handler *UserHandler) Logout() http.HandlerFunc {
 // A GET-Method that displays a user's username and statistics, with the
 // options to change username or password.
 func (handler *UserHandler) Profile() http.HandlerFunc {
-	// Data to pass to HTML-templates
+	// Data to pass to HTML-pages
 	type data struct {
 		User      backend.User
 
 		SessionData
 	}
 
-	// Parse HTML-templates
+	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/templates/layout.html",
-		"frontend/templates/users_profile.html"))
+		"frontend/pages/layout.html",
+		"frontend/pages/users_profile.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -253,7 +253,7 @@ func (handler *UserHandler) Profile() http.HandlerFunc {
 		}
 		user := userInf.(backend.User)
 
-		// Execute HTML-templates with data
+		// Execute HTML-pages with data
 		if err := tmpl.Execute(res, data{
 			User:        user,
 			SessionData: GetSessionData(handler.sessions, req.Context()),
@@ -275,10 +275,10 @@ func (handler *UserHandler) List() http.HandlerFunc {
 		SessionData
 	}
 
-	// Parse HTML-templates
+	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/templates/layout.html",
-		"frontend/templates/users_list.html"))
+		"frontend/pages/layout.html",
+		"frontend/pages/users_list.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -300,7 +300,7 @@ func (handler *UserHandler) List() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-templates with data
+		// Execute HTML-pages with data
 		if err := tmpl.Execute(res, data{
 			Users:       users,
 			SessionData: GetSessionData(handler.sessions, req.Context()),
@@ -315,15 +315,15 @@ func (handler *UserHandler) List() http.HandlerFunc {
 // A GET-method that any user can call. It renders a form in which values for
 // updating the current username can be entered.
 func (handler *UserHandler) EditUsername() http.HandlerFunc {
-	// Data to pass to HTML-templates
+	// Data to pass to HTML-pages
 	type data struct {
 		SessionData
 	}
 
-	// Parse HTML-templates
+	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/templates/layout.html",
-		"frontend/templates/users_edit_username.html"))
+		"frontend/pages/layout.html",
+		"frontend/pages/users_edit_username.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -337,7 +337,7 @@ func (handler *UserHandler) EditUsername() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-templates with data
+		// Execute HTML-pages with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
@@ -401,15 +401,15 @@ func (handler *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 // updating the current password can be entered.
 func (handler *UserHandler) EditPassword() http.HandlerFunc {
 
-	// Data to pass to HTML-templates
+	// Data to pass to HTML-pages
 	type data struct {
 		SessionData
 	}
 
-	// Parse HTML-templates
+	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/templates/layout.html",
-		"frontend/templates/users_edit_password.html"))
+		"frontend/pages/layout.html",
+		"frontend/pages/users_edit_password.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -423,7 +423,7 @@ func (handler *UserHandler) EditPassword() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-templates with data
+		// Execute HTML-pages with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {

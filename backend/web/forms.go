@@ -19,6 +19,7 @@ func init() {
 	gob.Register(EventForm{})
 	gob.Register(RegisterForm{})
 	gob.Register(LoginForm{})
+	gob.Register(UsernameForm{})
 	gob.Register(PasswordForm{})
 	gob.Register(FormErrors{})
 }

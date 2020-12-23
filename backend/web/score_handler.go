@@ -27,17 +27,17 @@ type ScoreHandler struct {
 // with the ability to filter scores by topic and/or user.
 func (handler *ScoreHandler) List() http.HandlerFunc {
 
-	// Data to pass to HTML-templates
+	// Data to pass to HTML-pages
 	type data struct {
 		SessionData
 
 		Scores []backend.Score
 	}
 
-	// Parse HTML-templates
+	// Parse HTML-pages
 	tmpl := template.Must(template.New("").Funcs(FuncMap).ParseFiles(
-		"frontend/templates/layout.html",
-		"frontend/templates/scores_list.html"))
+		"frontend/pages/layout.html",
+		"frontend/pages/scores_list.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -56,9 +56,14 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 
 		// Retrieve topic from URL parameters
 		topicID := -1
+		var err error
 		topic := req.URL.Query().Get("topic")
 		if len(topic) != 0 {
-			topicID, _ = strconv.Atoi(topic)
+			topicID, err = strconv.Atoi(topic)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusNotFound)
+				return
+			}
 		}
 
 		// Retrieve user from URL parameters
@@ -68,14 +73,22 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 		limit := 15
 		show := req.URL.Query().Get("show")
 		if len(show) != 0 {
-			limit, _ = strconv.Atoi(show)
+			limit, err = strconv.Atoi(show)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusNotFound)
+				return
+			}
 		}
 
 		// Retrieve offset from URL parameters
 		offset := 0
 		page := req.URL.Query().Get("page")
 		if len(page) != 0 {
-			offset, _ = strconv.Atoi(page)
+			offset, err = strconv.Atoi(page)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusNotFound)
+				return
+			}
 			offset = (offset - 1) * limit
 		}
 
@@ -115,7 +128,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 			ss = scores
 		}
 
-		// Execute HTML-templates with data
+		// Execute HTML-pages with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Scores:      ss,
@@ -132,7 +145,7 @@ func (handler *ScoreHandler) Store() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
-		// Retrieve values from form
+		// Retrieve values from URL
 		topicID, _ := strconv.Atoi(req.URL.Query().Get("topic_id"))
 		userID, _ := strconv.Atoi(req.URL.Query().Get("user_id"))
 		points, _ := strconv.Atoi(req.URL.Query().Get("points"))
@@ -140,7 +153,6 @@ func (handler *ScoreHandler) Store() http.HandlerFunc {
 
 		// Execute SQL statement to create a score
 		if err := handler.store.CreateScore(&backend.Score{
-			ScoreID: 0,
 			TopicID: topicID,
 			UserID:  userID,
 			Points:  points,
