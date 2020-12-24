@@ -26,7 +26,7 @@ type EventHandler struct {
 // with the ability to filter scores by topic and/or user.
 func (handler *EventHandler) List() http.HandlerFunc {
 
-	// Data to pass to HTML-pages
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
@@ -34,10 +34,11 @@ func (handler *EventHandler) List() http.HandlerFunc {
 		Events []backend.Event
 	}
 
-	// Parse HTML-pages
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
-		"frontend/pages/events_list.html"))
+		"frontend/pages/events_list.html",
+	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -72,7 +73,7 @@ func (handler *EventHandler) List() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-pages with data
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topic:       topic,
@@ -89,17 +90,18 @@ func (handler *EventHandler) List() http.HandlerFunc {
 // for a new event can be entered.
 func (handler *EventHandler) Create() http.HandlerFunc {
 
-	// Data to pass to HTML-pages
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
 		Topic backend.Topic
 	}
 
-	// Parse HTML-pages
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
-		"frontend/pages/events_create.html"))
+		"frontend/pages/events_create.html",
+	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -128,7 +130,7 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-pages with data
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topic:       topic,
@@ -212,17 +214,18 @@ func (handler *EventHandler) Delete() http.HandlerFunc {
 // updating the current event can be entered.
 func (handler *EventHandler) Edit() http.HandlerFunc {
 
-	// Data to pass to HTML-pages
+	// Data to pass to HTML-templates
 	type data struct {
 		Event backend.Event
 
 		SessionData
 	}
 
-	// Parse HTML-pages
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
-		"frontend/pages/events_edit.html"))
+		"frontend/pages/events_edit.html",
+	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -251,7 +254,7 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-pages with data
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			Event:       event,
 			SessionData: GetSessionData(handler.sessions, req.Context()),

@@ -27,17 +27,18 @@ type ScoreHandler struct {
 // with the ability to filter scores by topic and/or user.
 func (handler *ScoreHandler) List() http.HandlerFunc {
 
-	// Data to pass to HTML-pages
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
 		Scores []backend.Score
 	}
 
-	// Parse HTML-pages
+	// Parse HTML-templates
 	tmpl := template.Must(template.New("").Funcs(FuncMap).ParseFiles(
 		"frontend/layout.html",
-		"frontend/pages/scores_list.html"))
+		"frontend/pages/scores_list.html",
+	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -128,7 +129,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 			ss = scores
 		}
 
-		// Execute HTML-pages with data
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Scores:      ss,

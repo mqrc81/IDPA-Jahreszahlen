@@ -20,7 +20,7 @@ const (
 )
 
 var (
-	FuncMap = template.FuncMap{ // A map with functions to be used in HTML-pages
+	FuncMap = template.FuncMap{ // A map with functions to be used in HTML-templates
 		// increments number by 1
 		"increment": func(num int) int {
 			return num + 1
@@ -129,7 +129,7 @@ type Handler struct {
 // Home
 // A GET-method. Renders the home-page.
 func (handler *Handler) Home() http.HandlerFunc {
-	// Data to pass to HTML-pages
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
@@ -137,10 +137,11 @@ func (handler *Handler) Home() http.HandlerFunc {
 		Scores []backend.Score
 	}
 
-	// Parse HTML-pages
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
-		"frontend/home.html"))
+		"frontend/home.html",
+	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute SQL statement to get topics
@@ -157,7 +158,7 @@ func (handler *Handler) Home() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-pages with data
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topics:      tt,
@@ -172,17 +173,18 @@ func (handler *Handler) Home() http.HandlerFunc {
 // About
 // A GET-method. Renders the about-page.
 func (handler *Handler) About() http.HandlerFunc {
-	// Data to pass to HTML-pages
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 	}
-	// Parse HTML-pages
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
-		"frontend/pages/about.html"))
+		"frontend/pages/about.html",
+	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Execute HTML-pages with data
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
@@ -222,15 +224,16 @@ func (handler *Handler) withUser(next http.Handler) http.Handler {
 // NotFound404
 // Gets called when a non-existing URL has been entered.
 func (handler *Handler) NotFound404() http.HandlerFunc {
-	// Data to pass to HTML-pages
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 	}
 
-	// Parse HTML-pages
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
-		"frontend/pages/http_not_found.html"))
+		"frontend/pages/http_not_found.html",
+	))
 	return func(res http.ResponseWriter, req *http.Request) {
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),

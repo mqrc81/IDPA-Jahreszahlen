@@ -17,6 +17,10 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
+const (
+	idleTimeMinutes = 15
+)
+
 // init
 // Gets initialized with the package. Registers certain types to the session,
 // because by default the session can only contain basic data types (int, bool,
@@ -36,7 +40,7 @@ type QuizHandler struct {
 
 // QuizData
 // Contains the array of events, the user's points and the token (topic ID,
-// current time and current phase) in order to validateToken the correct playing
+// current time and current phase) in order to validate the correct playing
 // order of a quiz.
 type QuizData struct {
 	Events []backend.Event
@@ -45,7 +49,7 @@ type QuizData struct {
 	Phase    int       // Ensures the correct playing order, so that a user can't skip any phase
 	Reviewed bool      // Ensures a user can't skip a reviewing phase
 	TopicID  int       // Ensures a user can't skip from phase n of topic A to phase n of topic B
-	Time     time.Time // Ensures a user can't continue a quiz after 20min of inactivity
+	Time     time.Time // Ensures a user can't continue a quiz after n minutes of inactivity
 }
 
 // Phase1
@@ -53,17 +57,18 @@ type QuizData struct {
 // choice questions, where the user has to guess the year of a given event.
 func (handler *QuizHandler) Phase1() http.HandlerFunc {
 
-	// Data to pass to HTML-pages
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
-		EventTriplets [][]int
+		EventsMultipleChoice []eventMultipleChoice
 	}
 
-	// Parse HTML-pages
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
-		"frontend/pages/quiz_phase1.html"))
+		"frontend/pages/quiz_phase1.html",
+	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -109,12 +114,12 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 
 		// For each of the 3 first events in the array, get two other random
 		// values for the user to guess the year from
-		triplets := randomEventTriplets(events)
+		triplets := generateEventMultipleChoice(events)
 
-		// Execute HTML-pages with data
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			SessionData:   GetSessionData(handler.sessions, req.Context()),
-			EventTriplets: triplets, // Years of first three events of the array with 2 random numbers each
+			SessionData:          GetSessionData(handler.sessions, req.Context()),
+			EventsMultipleChoice: triplets,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -178,21 +183,22 @@ func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
 // A GET-method that any user can call after Phase1. It returns a correction of the quiz.
 func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 
-	// Data to pass to HTML-pages
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
 		Events []backend.Event
 	}
 
-	// Parse HTML-pages
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
-		"frontend/pages/quiz_phase1.html"))
+		"frontend/pages/quiz_phase1.html",
+	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
-		// Execute HTML-pages with data
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -204,7 +210,7 @@ func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 // A GET-method that any user can call after Phase1Review. It consists of a form with 4 questions, where the
 // user has to guess the year of a given event.
 func (handler *QuizHandler) Phase2() http.HandlerFunc {
-	// Data to pass to HTML-pages
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
@@ -214,7 +220,8 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 	// Parse HTML-template
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
-		"frontend/pages/quiz_phase2.html"))
+		"frontend/pages/quiz_phase2.html",
+	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -250,17 +257,18 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 // A GET-method that any user can call after having completed Phase2. It consists of a form with up to 15 questions,
 // where the user has to match the year to any of the given events.
 func (handler *QuizHandler) Phase3() http.HandlerFunc {
-	// Data to pass to HTML-pages
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
 		Events []backend.Event
 	}
 
-	// Parse HTML-pages
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
-		"frontend/pages/quiz_phase3.html"))
+		"frontend/pages/quiz_phase3.html",
+	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from session
@@ -307,7 +315,7 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 		// session.Put(ctx, "points", points)
 		// session.Put(ctx, "events", events)
 
-		// Execute HTML-pages with data
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Events:      events,
@@ -352,22 +360,23 @@ func (handler *QuizHandler) Store() http.HandlerFunc {
 // A GET-method that any user can call after Phase3Review. It summarizes the
 // quiz played.
 func (handler *QuizHandler) Summary() http.HandlerFunc {
-	// Data to pass to HTML-pages
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 		// TODO
 	}
 
-	// Parse HTML-pages
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
-		"frontend/pages/quiz_summary.html"))
+		"frontend/pages/quiz_summary.html",
+	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// TODO
 
-		// Execute HTML-pages with data
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
@@ -377,14 +386,22 @@ func (handler *QuizHandler) Summary() http.HandlerFunc {
 	}
 }
 
-// randomEventTriplets
+// eventMultipleChoice
+// Contains name of event with the correct year and 2 random years, in random
+// order.
+type eventMultipleChoice struct {
+	Event   string
+	Triplet [3]int
+}
+
+// generateEventMultipleChoice
 // Generates two random numbers for each of the first three events in the array
 // to use in phase 1 of the quiz (multiple-choice).
 // Sample input: array of events, of which the years of the first 3 events are:
 // 1945, 1960, 1981
 // Sample output: [[1955 1945 1935] [1951 1961 1960] [1981 1971 1976]]
-func randomEventTriplets(events []backend.Event) [][]int {
-	triplets := make([][]int, 3)
+func generateEventMultipleChoice(events []backend.Event) []eventMultipleChoice {
+	eventsTriplets := make([]eventMultipleChoice, 3)
 
 	// Set seed to generate random numbers from
 	rand.Seed(time.Now().UnixNano())
@@ -403,23 +420,25 @@ func randomEventTriplets(events []backend.Event) [][]int {
 		for randomYear1 == correctYear {
 			randomYear1 = rand.Intn(max-min+1) + min
 		}
-
-		// Generate a unique random number between max and min
 		for randomYear2 == correctYear || randomYear2 == randomYear1 {
 			randomYear2 = rand.Intn(max-min+1) + min
 		}
 
-		// Put triplet of years into the 2D-array
-		triplets[x] = []int{correctYear, randomYear1, randomYear2}
+		// Put triplet of years into a temporary array
+		temp := [3]int{correctYear, randomYear1, randomYear2}
 
-		// Randomize the order of the years, so that the correct year isn't
-		// always in the first spot
-		rand.Shuffle(len(triplets[x]), func(i, j int) {
-			triplets[x][i], triplets[x][j] = triplets[x][j], triplets[x][i]
+		// Shuffle the years, so that the correct year isn't always in the
+		// first spot
+		rand.Shuffle(len(temp), func(i, j int) {
+			temp[i], temp[j] = temp[j], temp[i]
 		})
+
+		// Add values to struct
+		eventsTriplets[x].Event = events[x].Title
+		eventsTriplets[x].Triplet = temp
 	}
 
-	return triplets
+	return eventsTriplets
 }
 
 // validateToken

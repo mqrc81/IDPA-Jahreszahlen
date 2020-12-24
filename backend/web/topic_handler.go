@@ -24,17 +24,18 @@ type TopicHandler struct {
 // List
 // A GET-method. It lists all topics.
 func (handler *TopicHandler) List() http.HandlerFunc {
-	// Data to pass to HTML-pages
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
 		Topics []backend.Topic
 	}
 
-	// Parse HTML-pages
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
-		"frontend/pages/topics_list.html"))
+		"frontend/pages/topics_list.html",
+	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute SQL statement to get topics
@@ -44,7 +45,7 @@ func (handler *TopicHandler) List() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-pages with data
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topics:      topics,
@@ -59,15 +60,16 @@ func (handler *TopicHandler) List() http.HandlerFunc {
 // A GET-method that any admin can call. It renders a form, in which values
 // for a new topic can be entered.
 func (handler *TopicHandler) Create() http.HandlerFunc {
-	// Data to pass to HTML-pages
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 	}
 
-	// Parse HTML-pages
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
-		"frontend/pages/topics_create.html"))
+		"frontend/pages/topics_create.html",
+	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -82,7 +84,7 @@ func (handler *TopicHandler) Create() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-pages with data
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
@@ -158,7 +160,7 @@ func (handler *TopicHandler) Delete() http.HandlerFunc {
 // A GET-method that any admin can call. It renders a form in which values for
 // updating the current topic can be entered.
 func (handler *TopicHandler) Edit() http.HandlerFunc {
-	// Data to pass to HTML-pages
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
@@ -166,10 +168,11 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 		Events []backend.Event
 	}
 
-	// Parse HTML-pages
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
-		"frontend/pages/topics_edit.html"))
+		"frontend/pages/topics_edit.html",
+	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -198,7 +201,7 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-pages with data
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topic:       topic,
@@ -260,17 +263,18 @@ func (handler *TopicHandler) EditStore() http.HandlerFunc {
 // A GET-method. It displays details of the topic with the options to play the
 // quiz, to edit the topic and to edit the events.
 func (handler *TopicHandler) Show() http.HandlerFunc {
-	// Data to pass to HTML-pages
+	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
 		Topic backend.Topic
 	}
 
-	// Parse HTML-pages
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
-		"frontend/pages/topics_show.html"))
+		"frontend/pages/topics_show.html",
+	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve TopicID from URL parameters
@@ -287,7 +291,7 @@ func (handler *TopicHandler) Show() http.HandlerFunc {
 			return
 		}
 
-		// Execute HTML-pages with data
+		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topic:       topic,
