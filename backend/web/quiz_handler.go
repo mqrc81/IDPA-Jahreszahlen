@@ -36,7 +36,7 @@ type QuizHandler struct {
 
 // QuizData
 // Contains the array of events, the user's points and the token (topic ID,
-// current time and current phase) in order to validate the correct playing
+// current time and current phase) in order to validateToken the correct playing
 // order of a quiz.
 type QuizData struct {
 	Events []backend.Event
@@ -139,12 +139,10 @@ func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
 		quizInf := handler.sessions.Pop(req.Context(), "quiz")
 
 		// Validate the token of the quiz data
-		quiz, err := validate(quizInf, 1, false, topicID)
-		if err != nil {
-			handler.sessions.Put(req.Context(), "flash_error",
-				"Ein Fehler ist aufgetreten. " +
-				"Womöglich haben Sie über 20 Minuten für eine Phase des Quizzes gebraucht, oder Sie haben versucht, " +
-				"über die URL in ein anderes Quiz oder eine andere Phase zu wechseln.")
+		quiz, msg := validateToken(quizInf, 1, false, topicID)
+		// If msg isn't empty, an error occurred
+		if msg != "" {
+			handler.sessions.Put(req.Context(), "flash_error", "Ein Fehler ist aufgetreten. " + msg)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
@@ -387,13 +385,58 @@ func (handler *QuizHandler) Summary() http.HandlerFunc {
 	}
 }
 
+// randomEventTriplets
+// Generates two random numbers for each of the first three events in the array
+// to use in phase 1 of the quiz (multiple-choice).
+// Sample input: array of events, of which the years of the first 3 events are:
+// 1945, 1960, 1981
+// Sample output: [[1955 1945 1935] [1951 1961 1960] [1981 1971 1976]]
 func randomEventTriplets(events []backend.Event) [][]int {
-	var triplets [][]int
-	// TODO loop through first 3 events and add the year, plus two matching random numbers to the triplets
+	triplets := make([][]int, 3)
+
+	// Set seed to generate random numbers from
+	rand.Seed(time.Now().UnixNano())
+
+	// Loop through the 3 first events of the array
+	for x := 0; x < 3; x++ {
+
+		correctYear := events[x].Year // the event's year
+		randomYear1 := correctYear    // random number #1
+		randomYear2 := correctYear    // random number #2
+
+		min := correctYear - 10 // minimum cap of random number
+		max := correctYear + 10 // maximum cap of random number
+
+		// Generate a unique random number between max and min
+		for randomYear1 == correctYear {
+			randomYear1 = rand.Intn(max-min+1) + min
+		}
+
+		// Generate a unique random number between max and min
+		for randomYear2 == correctYear || randomYear2 == randomYear1 {
+			randomYear2 = rand.Intn(max-min+1) + min
+		}
+
+		// Put triplet of years into the 2D-array
+		triplets[x] = []int{correctYear, randomYear1, randomYear2}
+
+		// Randomize the order of the years, so that the correct year isn't
+		// always in the first spot
+		rand.Shuffle(len(triplets[x]), func(i, j int) {
+			triplets[x][i], triplets[x][j] = triplets[x][j], triplets[x][i]
+		})
+	}
+
 	return triplets
 }
 
-func validate(quiz interface{}, phase int, reviewed bool, topicID int) (QuizData, error) {
+// validateToken
+// Validates the correct playing order of a quiz by comparing the phase, topic
+// and time stamp of the quiz data in the session with the URL and current time
+// respectively. It returns the quiz data as a struct and an empty string, if
+// everything checks out, or an empty quiz data struct and an error string to
+// be used in the error flash message after redirecting back.
+func validateToken(quiz interface{}, phase int, reviewed bool, topicID int) (QuizData, string) {
 	// TODO check for all token error cases
-	return QuizData{}, nil
+	return QuizData{}, ""
 }
