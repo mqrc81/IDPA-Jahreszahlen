@@ -62,7 +62,7 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/quiz_phase1.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -142,7 +142,7 @@ func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
 		quiz, msg := validateToken(quizInf, 1, false, topicID)
 		// If msg isn't empty, an error occurred
 		if msg != "" {
-			handler.sessions.Put(req.Context(), "flash_error", "Ein Fehler ist aufgetreten. " + msg)
+			handler.sessions.Put(req.Context(), "flash_error", "Ein Fehler ist aufgetreten. "+msg)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
@@ -187,7 +187,7 @@ func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/quiz_phase1.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -213,7 +213,7 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 
 	// Parse HTML-template
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/quiz_phase2.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -227,14 +227,6 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 		//	return
 		// }
 
-		// Check if game order is legal
-		// check := session.PopString("game")
-		// if check == nil || strings.Split(check, ":")[0] != "1" || strings.Split(check, ":")[1] != topicIDstr {
-		//	http.Error(res, "Illegal game session", http.StatusBadRequest)
-		//	return
-		// }
-
-		// TODO Retrieve events array from sessions
 		var ee []backend.Event // TEMP
 
 		points := 0
@@ -267,7 +259,7 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/quiz_phase3.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -368,7 +360,7 @@ func (handler *QuizHandler) Summary() http.HandlerFunc {
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/quiz_summary.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {

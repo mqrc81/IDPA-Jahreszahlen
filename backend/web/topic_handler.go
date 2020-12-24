@@ -28,12 +28,12 @@ func (handler *TopicHandler) List() http.HandlerFunc {
 	type data struct {
 		SessionData
 
-		Topics     []backend.Topic
+		Topics []backend.Topic
 	}
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/topics_list.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -66,7 +66,7 @@ func (handler *TopicHandler) Create() http.HandlerFunc {
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/topics_create.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -76,7 +76,7 @@ func (handler *TopicHandler) Create() http.HandlerFunc {
 		if user == nil || !user.(backend.User).Admin {
 			// If no user is logged in or logged in user isn't an admin,
 			// then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. " +
+			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Admin eingeloggt sein, um ein neues Thema zu erstellen.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
@@ -168,7 +168,7 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/topics_edit.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -269,7 +269,7 @@ func (handler *TopicHandler) Show() http.HandlerFunc {
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/topics_show.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {

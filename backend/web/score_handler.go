@@ -36,7 +36,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.New("").Funcs(FuncMap).ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/scores_list.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -45,7 +45,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 		userInf := req.Context().Value("user")
 		if userInf == nil {
 			// If no user is logged in, then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. " +
+			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Benutzer eingeloggt sein, um das Leaderboard zu betrachten.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return

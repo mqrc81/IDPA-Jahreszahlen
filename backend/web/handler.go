@@ -139,8 +139,8 @@ func (handler *Handler) Home() http.HandlerFunc {
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
-		"frontend/pages/home.html"))
+		"frontend/layout.html",
+		"frontend/home.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute SQL statement to get topics
@@ -178,7 +178,7 @@ func (handler *Handler) About() http.HandlerFunc {
 	}
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/about.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -229,7 +229,7 @@ func (handler *Handler) NotFound404() http.HandlerFunc {
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/http_not_found.html"))
 	return func(res http.ResponseWriter, req *http.Request) {
 		if err := tmpl.Execute(res, data{

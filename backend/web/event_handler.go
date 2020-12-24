@@ -36,7 +36,7 @@ func (handler *EventHandler) List() http.HandlerFunc {
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/events_list.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -45,7 +45,7 @@ func (handler *EventHandler) List() http.HandlerFunc {
 		user := req.Context().Value("user")
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. " +
+			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Benutzer eingeloggt sein, um all Ereignisse eines Themas aufzulisten.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
@@ -98,7 +98,7 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/events_create.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -108,7 +108,7 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 		if user == nil || !user.(backend.User).Admin {
 			// If no user is logged in or logged in user isn't an admin,
 			// then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. " +
+			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Admin eingeloggt sein, um ein neues Ereignis zu erstellen.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
@@ -221,7 +221,7 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/events_edit.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -231,7 +231,7 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 		if user == nil || !user.(backend.User).Admin {
 			// If no user is logged in or logged in user isn't an admin,
 			// then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. " +
+			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Admin eingeloggt sein, um ein Ereignis zu bearbeiten.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return

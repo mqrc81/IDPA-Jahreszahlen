@@ -35,7 +35,7 @@ func (handler *UserHandler) Register() http.HandlerFunc {
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/users_register.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -127,7 +127,7 @@ func (handler *UserHandler) Login() http.HandlerFunc {
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/users_login.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -230,14 +230,14 @@ func (handler *UserHandler) Logout() http.HandlerFunc {
 func (handler *UserHandler) Profile() http.HandlerFunc {
 	// Data to pass to HTML-pages
 	type data struct {
-		User      backend.User
+		User backend.User
 
 		SessionData
 	}
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/users_profile.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -277,7 +277,7 @@ func (handler *UserHandler) List() http.HandlerFunc {
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/users_list.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -322,7 +322,7 @@ func (handler *UserHandler) EditUsername() http.HandlerFunc {
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/users_edit_username.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -408,7 +408,7 @@ func (handler *UserHandler) EditPassword() http.HandlerFunc {
 
 	// Parse HTML-pages
 	tmpl := template.Must(template.ParseFiles(
-		"frontend/pages/layout.html",
+		"frontend/layout.html",
 		"frontend/pages/users_edit_password.html"))
 
 	return func(res http.ResponseWriter, req *http.Request) {
