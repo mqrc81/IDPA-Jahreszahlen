@@ -83,7 +83,6 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		router.Get("/3", quiz.Phase3())
 		// TODO router.Post("/3", quiz.Phase3Submit())
 		// TODO router.Get("3/review", quiz.Phase3Review())
-		router.Post("/", quiz.Store())
 		router.Get("/summary", quiz.Summary())
 	})
 
@@ -111,9 +110,8 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		router.Post("/{userID}/reset/password", users.ResetPassword())
 	})
 
-	// Handler for when the user enters a non-existing URL
+	// Handler for when a non-existing URL is called
 	handler.NotFound(handler.NotFound404())
-	// handler.MethodNotAllowed(handler.NotAllowed405())
 
 	return handler
 }
