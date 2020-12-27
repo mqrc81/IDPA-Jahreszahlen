@@ -78,7 +78,6 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 	// Scores
 	handler.Route("/scores", func(router chi.Router) {
 		router.Get("/", scores.List())
-		// TODO router.Post("/", scores.Filter())
 	})
 
 	// Users

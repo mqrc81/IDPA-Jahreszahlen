@@ -10,7 +10,7 @@
     <form action="/topics" method="POST" class="form">
         <label>Titel*</label>
         <div class="form-group">
-            <input type="text" name="title"
+            <input type="text" name="name"
                    class="form-control {{with .Form.Errors.Name}}is-invalid{{end}}"
                    placeholder="Titel des Themas"
                    value="{{with .Form.Name}}{{.}}{{end}}">

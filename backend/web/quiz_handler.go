@@ -112,10 +112,7 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 		}
 
 		// Shuffle array of events
-		rand.Seed(time.Now().UnixNano())
-		rand.Shuffle(len(topic.Events), func(n1, n2 int) {
-			topic.Events[n1], topic.Events[n2] = topic.Events[n2], topic.Events[n1]
-		})
+		topic.Events = shuffleEvents(topic.Events)
 
 		// Add quiz data to session for future phases
 		handler.sessions.Put(req.Context(), "quiz", QuizData{
@@ -127,7 +124,7 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 
 		// For each of the first 3 events in the array, generate 2 other random
 		// years for the user to guess from
-		questions := generatePhase1Questions(topic.Events)
+		questions := createPhase1Questions(topic.Events)
 
 		// Add questions to session for review of phase 1
 		handler.sessions.Put(req.Context(), "phase1questions", questions)
@@ -152,8 +149,9 @@ func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
 		// Retrieve topic ID from URL parameters
 		topicIDstr := chi.URLParam(req, "topicID")
 
-		// Retrieve quiz data from session
+		// Retrieve quiz data and questions from session
 		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
+		questions := handler.sessions.Get(req.Context(), "phase1questions").([]phase1Question)
 
 		// Loop through the 3 input forms of radio-buttons of phase 1
 		for num := 0; num < p1Questions; num++ {
@@ -163,14 +161,18 @@ func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
 
 			// Check if the user's guess is correct, by comparing it to the
 			// corresponding event in the array of events of the topic
-			if guess == quiz.Topic.Events[num].Year {
-				quiz.Points += p1Points // If guess is correct, user gets 3 points
+			if guess == quiz.Topic.Events[num].Year { // if guess is correct...
+				quiz.Points += p1Points            // ...user gets 3 points
+				questions[num].CorrectGuess = true // ...change value for that question
 			}
 		}
 
-		// Redirect to review of phase 1 whilst keeping the previous request
-		// context
-		http.Redirect(res, req.WithContext(req.Context()), "/topics/"+topicIDstr+"/quiz/1/review", http.StatusFound)
+		// Add data to session again
+		handler.sessions.Put(req.Context(), "quiz", quiz)
+		handler.sessions.Put(req.Context(), "phase1questions", questions)
+
+		// Redirect to review of phase 1
+		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/1/review", http.StatusFound)
 	}
 }
 
@@ -195,7 +197,21 @@ func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 
 		// Retrieve topic ID from URL parameters
 		topicIDstr := chi.URLParam(req, "topicID")
-		topicID, _ := strconv.Atoi(topicIDstr)
+		topicID, err := strconv.Atoi(topicIDstr)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		// Check if a user is logged in
+		user := req.Context().Value("user")
+		if user == nil {
+			// If no user is logged in, then redirect back with flash message
+			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
+				"Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen.")
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			return
+		}
 
 		// Retrieve quiz data from session
 		quizInf := handler.sessions.Get(req.Context(), "quiz")
@@ -205,7 +221,7 @@ func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 		// If msg isn't empty, an error occurred
 		if msg != "" {
 			handler.sessions.Put(req.Context(), "flash_error",
-				"Ein Fehler ist aufgetreten in Phase 1 eines Quizzes. "+msg)
+				"Ein Fehler ist aufgetreten in Phase 1 des Quizzes. "+msg)
 			http.Redirect(res, req, "/topics", http.StatusFound)
 			return
 		}
@@ -251,9 +267,54 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
+		// Retrieve topic ID from URL parameters
+		topicIDstr := chi.URLParam(req, "topicID")
+		topicID, err := strconv.Atoi(topicIDstr)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		// Check if a user is logged in
+		user := req.Context().Value("user")
+		if user == nil {
+			// If no user is logged in, then redirect back with flash message
+			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
+				"Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen.")
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			return
+		}
+
+		// Retrieve quiz data from session
+		quizInf := handler.sessions.Get(req.Context(), "quiz")
+
+		// Validate the token of the quiz data
+		quiz, msg := validateQuizToken(quizInf, 1, true, topicID)
+		// If msg isn't empty, an error occurred
+		if msg != "" {
+			handler.sessions.Put(req.Context(), "flash_error",
+				"Ein Fehler ist aufgetreten in Phase 2 des Quizzes. "+msg)
+			http.Redirect(res, req, "/topics", http.StatusFound)
+			return
+		}
+
+		// Update quiz data
+		quiz.Phase = 2
+		quiz.Reviewed = false
+		quiz.TimeStamp = time.Now()
+
+		// For each of the 4 events in the array, create a question to use in
+		// HTML
+		questions := createPhase2Questions(quiz.Topic.Events)
+
+		// Add quiz data and questions to session
+		handler.sessions.Put(req.Context(), "quiz", quiz)
+		handler.sessions.Put(req.Context(), "phase2questions", questions)
+
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
+			Questions:   questions,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -261,13 +322,55 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 	}
 }
 
-// TODO
 // Phase2Submit is a POST-method that any user can call after Phase2. It
 // calculates the points and redirects to Phase2Review.
 func (handler *QuizHandler) Phase2Submit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
+		// Retrieve topic ID from URL parameters
+		topicIDstr := chi.URLParam(req, "topicID")
+
+		// Retrieve quiz data and questions from session
+		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
+		questions := handler.sessions.Get(req.Context(), "phase2questions").([]phase2Question)
+
+		// Loop through the 4 input fields of phase 2
+		for num := 0; num < p2Questions; num++ {
+
+			// Retrieve user's guess from form
+			guess, _ := strconv.Atoi(req.FormValue("q" + strconv.Itoa(num)))
+
+			// Check if the user's guess is correct, by comparing it to the
+			// corresponding event in the array of events of the topic
+			correctYear := quiz.Topic.Events[num+p1Questions].Year
+			if guess == correctYear { // if guess is correct...
+				quiz.Points += p2Points            // ...user gets 8 points
+				questions[num].CorrectGuess = true // ...change value for that question
+			} else {
+				// Get absolute value of difference between user's guess and
+				// correct year
+				var difference int
+				if guess >= correctYear {
+					difference = guess - correctYear
+				} else {
+					difference = correctYear - guess
+				}
+
+				// Check if the user's guess is close and potentially add
+				// partial points (the closer the guess, the more points)
+				if difference < p2PartialPoints { // if guess is close...
+					quiz.Points += p2PartialPoints - difference // ...user gets partial points
+				}
+			}
+		}
+
+		// Add quiz data and questions to session again
+		handler.sessions.Put(req.Context(), "quiz", quiz)
+		handler.sessions.Put(req.Context(), "phase2questions", questions)
+
+		// Redirect to review of phase 2
+		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/2/review", http.StatusFound)
 	}
 }
 
@@ -400,6 +503,15 @@ func validateQuizToken(quizInf interface{}, phase int, reviewed bool, topicID in
 	return quiz, ""
 }
 
+// shuffleEvents shuffles and returns array of events
+func shuffleEvents(events []backend.Event) []backend.Event {
+	rand.Seed(time.Now().UnixNano()) // generate new seed for RNG
+	rand.Shuffle(len(events), func(n1, n2 int) {
+		events[n1], events[n2] = events[n2], events[n1]
+	})
+	return events
+}
+
 // phase1Question represents 1 of the 3 multiple-choice questions of phase 1.
 // It contains name of event, year of event and 2 random years randomly mixed
 // in with the correct year.
@@ -407,15 +519,17 @@ type phase1Question struct {
 	EventName string // name of event
 	EventYear int    // year of event
 	Choices   []int  // choices in random order (including correct year)
-	ID        string // only relevant for HTML input form name
+
+	CorrectGuess bool   // only relevant for review of phase 1
+	ID           string // only relevant for HTML input form name
 }
 
-// generatePhase1Questions generates 3 phase1Question structures by generating
+// createPhase1Questions generates 3 phase1Question structures by generating
 // 2 random years for each of the first 3 events in the array.
 //
 // Sample input: []backend.Event{{..., Year: 1945}, {..., Year: 1960}, {..., Year: 1981}, ...}
 // Sample output: [[1955 1945 1938] [1951 1961 1960] [1981 1971 1976]]
-func generatePhase1Questions(events []backend.Event) []phase1Question {
+func createPhase1Questions(events []backend.Event) []phase1Question {
 	// Create array of size 3
 	questions := make([]phase1Question, p1Questions)
 
@@ -473,12 +587,14 @@ func generatePhase1Questions(events []backend.Event) []phase1Question {
 type phase2Question struct {
 	EventName string // name of event
 	EventYear int    // year of event
-	ID        string // only relevant for HTML input form name
+
+	CorrectGuess bool   // only relevant for review of phase 2
+	ID           string // only relevant for HTML input form name
 }
 
-// generatePhase2Questions generates 4 phase2Question structures for events 3-7
+// createPhase2Questions generates 4 phase2Question structures for events 3-7
 // respectively of the array of events of the topic.
-func generatePhase2Questions(events []backend.Event) []phase2Question {
+func createPhase2Questions(events []backend.Event) []phase2Question {
 	// Create array of size 4
 	questions := make([]phase2Question, p2Questions)
 
