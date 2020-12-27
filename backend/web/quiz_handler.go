@@ -20,11 +20,16 @@ import (
 )
 
 const (
-	timeExpiry           = 20 // max time to be spent in a specific phase of a quiz
-	phase1Questions      = 3  // amount of questions in phase 1
-	phase1Choices        = 3  // amount of choices per question of phase 1
-	phase1Points         = 3  // amount of points per correct guess of phase 1
-	phase1ChoicesMaxDiff = 10 // highest possible difference between the correct year and a random year of phase 1
+	timeExpiry = 20 // max time to be spent in a specific phase of a quiz
+
+	p1Questions      = 3  // amount of questions in phase 1
+	p1Choices        = 3  // amount of choices per question of phase 1
+	p1Points         = 3  // amount of points per correct guess of phase 1
+	p1ChoicesMaxDiff = 10 // highest possible difference between the correct year and a random year of phase 1
+
+	p2Questions     = 4 // amount of questions in phase 2
+	p2Points        = 8 // amount of points per correct guess of phase 2
+	p2PartialPoints = 3 // amount of partial points possible in phase 2, when guess was incorrect, but close
 )
 
 // init gets initialized with the package. It registers certain types to the
@@ -38,6 +43,8 @@ func init() {
 	gob.Register([]phase1Question{})
 	gob.Register(phase1Question{})
 	gob.Register([]int{})
+	gob.Register([]phase2Question{})
+	gob.Register(phase2Question{})
 }
 
 // QuizHandler is the object for handlers to access sessions and database.
@@ -149,7 +156,7 @@ func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
 		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
 
 		// Loop through the 3 input forms of radio-buttons of phase 1
-		for num := 0; num < phase1Questions; num++ {
+		for num := 0; num < p1Questions; num++ {
 
 			// Retrieve user's guess from form
 			guess, _ := strconv.Atoi(req.FormValue("q" + strconv.Itoa(num)))
@@ -157,7 +164,7 @@ func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
 			// Check if the user's guess is correct, by comparing it to the
 			// corresponding event in the array of events of the topic
 			if guess == quiz.Topic.Events[num].Year {
-				quiz.Points += phase1Points // If guess is correct, user gets 3 points
+				quiz.Points += p1Points // If guess is correct, user gets 3 points
 			}
 		}
 
@@ -233,8 +240,7 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 	type data struct {
 		SessionData
 
-		Events []backend.Event
-		Review bool
+		Questions []phase2Question
 	}
 
 	// Parse HTML-templates
@@ -310,74 +316,6 @@ func (handler *QuizHandler) Summary() http.HandlerFunc {
 	}
 }
 
-// phase1Question represents 1 of the 3 multiple-choice questions of phase 1.
-// It contains name of event and – in random order – the correct year plus 2
-// random years.
-type phase1Question struct {
-	EventName string // name of event
-	EventYear int    // year of event
-	Choices   []int  // choices in random order (including correct year
-	ID        string // relevant for HTML input form name
-}
-
-// generatePhase1Questions generates 2 random numbers for each of the first 3
-// events in the array to use in phase 1 of the quiz (multiple-choice).
-//
-// Sample input: []backend.Event{{..., Year: 1945}, {..., Year: 1960}, {..., Year: 1981}, ...}
-// Sample output: [[1955 1945 1938] [1951 1961 1960] [1981 1971 1976]]
-func generatePhase1Questions(events []backend.Event) []phase1Question {
-	// Create non-nil array of questions
-	questions := make([]phase1Question, phase1Questions)
-
-	// Set seed to generate random numbers from
-	rand.Seed(time.Now().UnixNano())
-
-	// Loop through the first events of the array
-	for q := 0; q < phase1Questions; q++ {
-
-		correctYear := events[q].Year // the event's year
-
-		min := correctYear - phase1ChoicesMaxDiff // minimum cap of random number
-		max := correctYear + phase1ChoicesMaxDiff // maximum cap of random number
-
-		years := []int{correctYear}
-
-		// Generate unique, random numbers between max and min, to mix with the correct year
-		for c := 1; c < phase1Choices; c++ {
-			rand.Seed(time.Now().Unix())          // set a seed for RNG
-			newYear := rand.Intn(max-min+1) + min // generate a random number between min and max
-
-			// Loop through array of already existing years, to check if the newly generated year is unique
-			unique := true
-			for _, year := range years {
-				if newYear == year {
-					unique = false
-					break
-				}
-			}
-			if unique {
-				years = append(years, newYear) // add newly generated year to array of years
-			} else {
-				c-- // redo generating the previous year
-			}
-		}
-
-		// Shuffle the years, so that the correct year isn't always in the
-		// first spot
-		rand.Shuffle(len(years), func(n1, n2 int) {
-			years[n1], years[n2] = years[n2], years[n1]
-		})
-
-		// Add values to structure
-		questions[q].EventName = events[q].Name
-		questions[q].EventYear = events[q].Year
-		questions[q].Choices = years
-		questions[q].ID = "q" + strconv.Itoa(q) // sample ID: q0
-	}
-
-	return questions
-}
-
 // validateQuizToken
 // Validates the correct playing order of a quiz by comparing the phase, topic
 // and time stamp of the quiz data in the session with the URL and current time
@@ -419,4 +357,90 @@ func validateQuizToken(quizInf interface{}, phase int, reviewed bool, topicID in
 	}
 
 	return quiz, ""
+}
+
+// phase1Question represents 1 of the 3 multiple-choice questions of phase 1.
+// It contains name of event, year of event and 2 random years randomly mixed
+// in with the correct year.
+type phase1Question struct {
+	EventName string // name of event
+	EventYear int    // year of event
+	Choices   []int  // choices in random order (including correct year)
+	ID        string // only relevant for HTML input form name
+}
+
+// generatePhase1Questions generates 3 phase1Question structures by generating
+// 2 random years for each of the first 3 events in the array.
+//
+// Sample input: []backend.Event{{..., Year: 1945}, {..., Year: 1960}, {..., Year: 1981}, ...}
+// Sample output: [[1955 1945 1938] [1951 1961 1960] [1981 1971 1976]]
+func generatePhase1Questions(events []backend.Event) []phase1Question {
+	// Create non-nil array of questions
+	questions := make([]phase1Question, p1Questions)
+
+	// Set seed to generate random numbers from
+	rand.Seed(time.Now().UnixNano())
+
+	// Loop through the first events of the array
+	for q := 0; q < p1Questions; q++ {
+
+		correctYear := events[q].Year // the event's year
+
+		min := correctYear - p1ChoicesMaxDiff // minimum cap of random number
+		max := correctYear + p1ChoicesMaxDiff // maximum cap of random number
+
+		years := []int{correctYear}
+
+		// Generate unique, random numbers between max and min, to mix with the correct year
+		for c := 1; c < p1Choices; c++ {
+			rand.Seed(time.Now().Unix())          // set a seed for RNG
+			newYear := rand.Intn(max-min+1) + min // generate a random number between min and max
+
+			// Loop through array of already existing years, to check if the newly generated year is unique
+			unique := true
+			for _, year := range years {
+				if newYear == year {
+					unique = false
+					break
+				}
+			}
+			if unique {
+				years = append(years, newYear) // add newly generated year to array of years
+			} else {
+				c-- // redo generating the previous year
+			}
+		}
+
+		// Shuffle the years, so that the correct year isn't always in the
+		// first spot
+		rand.Shuffle(len(years), func(n1, n2 int) {
+			years[n1], years[n2] = years[n2], years[n1]
+		})
+
+		// Add values to structure
+		questions[q].EventName = events[q].Name
+		questions[q].EventYear = events[q].Year
+		questions[q].Choices = years
+		questions[q].ID = "q" + strconv.Itoa(q) // sample ID: q0
+	}
+
+	return questions
+}
+
+// phase2Question represents 1 of the 4 questions of phase 2. It contains name
+// of event and year of event.
+type phase2Question struct {
+	EventName string // name of event
+	EventYear int    // year of event
+	ID        string // only relevant for HTML input form name
+}
+
+// TODO
+// generatePhase2Questions generates 4 phase2Question structures from events 4-8
+// of the topic .
+func generatePhase2Questions(events []backend.Event) []phase2Question {
+	// Create non-nil array of questions
+	questions := make([]phase2Question, p2Questions)
+
+	return questions
 }
