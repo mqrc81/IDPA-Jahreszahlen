@@ -1,8 +1,9 @@
 package main
 
-// main.go
-// The main file, which initializes a connection to the database and the server.
-// It also obtains session management and CSRF-protection.
+/*
+ * The main file, which initializes a connection to the database and the
+ * server. It also obtains session management and CSRF-protection.
+ */
 
 import (
 	"log"
@@ -15,10 +16,9 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/web"
 )
 
-// main
-// The initial starting point of the program, which initializes a connection to
-// the database and the server. It also obtains session management and CSRF-
-// protection.
+// main is the initial starting point of the program, which initializes a
+// connection to the database and the server. It also obtains session
+// management and CSRF-protection.
 func main() {
 	// Access global environment variables
 	if err := godotenv.Load("backend/.env"); err != nil {

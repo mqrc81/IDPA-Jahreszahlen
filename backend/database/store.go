@@ -1,7 +1,8 @@
 package database
 
-// store.go
-// Pivot of all stores
+/*
+ * The Pivot of all database stores.
+ */
 
 import (
 	"fmt"
@@ -10,16 +11,15 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-// NewStore
-// Connects to database and initializes new store objects
+// NewStore connects to database and initializes new store objects.
 func NewStore(dataSourceName string) (*Store, error) {
-	// Opens database connection
+	// Open database connection
 	db, err := sqlx.Open("mysql", dataSourceName)
 	if err != nil {
 		return nil, fmt.Errorf("error opening database: %w", err)
 	}
 
-	// Pings database connection
+	// Ping database connection
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("error pinging database: %w", err)
 	}
@@ -32,8 +32,7 @@ func NewStore(dataSourceName string) (*Store, error) {
 	}, nil
 }
 
-// Store
-// Combines all stores
+// Store combines all stores.
 type Store struct {
 	*TopicStore
 	*EventStore

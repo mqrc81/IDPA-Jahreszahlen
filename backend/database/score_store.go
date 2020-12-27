@@ -1,8 +1,9 @@
 package database
 
-// score_store.go
-// Part of the database layer. Contains all functions for scores that access the
-// database
+/*
+ * Part of the database layer. Contains all functions for scores that access
+ * the database.
+ */
 
 import (
 	"fmt"
@@ -12,22 +13,20 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
-// ScoreStore
-// The database access object
+// ScoreStore is the database access object.
 type ScoreStore struct {
 	*sqlx.DB
 }
 
-// Scores
-// Gets a certain amount of scores with a certain offset, sorted by points
-// descending
-func (store ScoreStore) Scores(limit int, offset int) ([]backend.Score, error) {
+// GetScores gets a certain amount of scores with a certain offset, sorted by
+// points descending.
+func (store ScoreStore) GetScores(limit int, offset int) ([]backend.Score, error) {
 	var scores []backend.Score
 
 	// Execute prepared statement
 	query := `
 		SELECT s.*, 
-		       t.title AS topic_name, 
+		       t.name AS topic_name, 
 		       u.username AS user_name
 		FROM scores s 
 		    LEFT JOIN topics t ON t.topic_id = s.topic_id 
@@ -44,16 +43,15 @@ func (store ScoreStore) Scores(limit int, offset int) ([]backend.Score, error) {
 	return scores, nil
 }
 
-// ScoresByTopic
-// Gets a certain amount of scores of a certain topic with a certain offset,
-// sorted by points descending
-func (store ScoreStore) ScoresByTopic(topicID int, limit int, offset int) ([]backend.Score, error) {
+// GetScoresByTopic gets a certain amount of scores of a certain topic with a
+// certain offset, sorted by points descending.
+func (store ScoreStore) GetScoresByTopic(topicID int, limit int, offset int) ([]backend.Score, error) {
 	var scores []backend.Score
 
 	// Execute prepared statement
 	query := `
 		SELECT s.score_id, s.topic_id, s.user_id, s.points, s.date, 
-		       t.title AS topic_name, 
+		       t.name AS topic_name, 
 		       u.username AS user_name
 		FROM scores s 
 		    LEFT JOIN topics t ON t.topic_id = s.topic_id 
@@ -72,16 +70,15 @@ func (store ScoreStore) ScoresByTopic(topicID int, limit int, offset int) ([]bac
 	return scores, nil
 }
 
-// ScoresByUser
-// Gets a certain amount of scores of a certain user with a certain offset,
-// sorted by points descending
-func (store ScoreStore) ScoresByUser(userID int, limit int, offset int) ([]backend.Score, error) {
+// GetScoresByUser gets a certain amount of scores of a certain user with a
+// certain offset, sorted by points descending.
+func (store ScoreStore) GetScoresByUser(userID int, limit int, offset int) ([]backend.Score, error) {
 	var scores []backend.Score
 
 	// Execute prepared statement
 	query := `
 		SELECT s.*, 
-		       t.title AS topic_name, 
+		       t.name AS topic_name, 
 		       u.username AS user_name
 		FROM scores s 
 		    LEFT JOIN topics t ON t.topic_id = s.topic_id 
@@ -100,16 +97,15 @@ func (store ScoreStore) ScoresByUser(userID int, limit int, offset int) ([]backe
 	return scores, nil
 }
 
-// ScoresByTopicAndUser
-// Gets a certain amount of scores of a certain topic and user with a certain
-// offset, sorted by points descending
-func (store ScoreStore) ScoresByTopicAndUser(topicID int, userID int, limit int, offset int) ([]backend.Score, error) {
+// GetScoresByTopicAndUser gets a certain amount of scores of a certain topic
+// and user with a certain offset, sorted by points descending.
+func (store ScoreStore) GetScoresByTopicAndUser(topicID int, userID int, limit int, offset int) ([]backend.Score, error) {
 	var scores []backend.Score
 
 	// Execute prepared statement
 	query := `
 		SELECT s.*, 
-		       t.title AS topic_name, 
+		       t.name AS topic_name, 
 		       u.username AS user_name
 		FROM scores s 
 		    LEFT JOIN topics t ON t.topic_id = s.topic_id 
@@ -130,8 +126,7 @@ func (store ScoreStore) ScoresByTopicAndUser(topicID int, userID int, limit int,
 	return scores, nil
 }
 
-// CreateScore
-// Creates a new score
+// CreateScore creates a new score.
 func (store ScoreStore) CreateScore(score *backend.Score) error {
 	// Execute prepared statement
 	query := `

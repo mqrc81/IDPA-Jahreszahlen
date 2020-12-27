@@ -1,7 +1,9 @@
 package web
 
-// quiz_handler.go
-// Contains all HTTP-handlers for pages evolving around playing a quiz.
+/*
+ * Contains all HTTP-handler functions for pages evolving around playing a
+ * quiz.
+ */
 
 import (
 	"encoding/gob"
@@ -18,54 +20,55 @@ import (
 )
 
 const (
-	maxIdleTimeMinutes   = 30 // max time to be spent in a specific phase of a quiz
+	timeExpiry           = 20 // max time to be spent in a specific phase of a quiz
 	phase1Questions      = 3  // amount of questions in phase 1
 	phase1Choices        = 3  // amount of choices per question of phase 1
 	phase1Points         = 3  // amount of points per correct guess of phase 1
-	phase1ChoicesMaxDiff = 10 // highest possible difference between correct year and random year of phase 1
+	phase1ChoicesMaxDiff = 10 // highest possible difference between the correct year and a random year of phase 1
 )
 
-// init
-// Gets initialized with the package. Registers certain types to the session,
-// because by default the session can only contain basic data types (int, bool,
-// string, etc.).
+// init gets initialized with the package. It registers certain types to the
+// session, because by default the session can only contain basic data types
+// (int, bool, string, etc.).
 func init() {
 	gob.Register(QuizData{})
+	gob.Register(backend.Topic{})
 	gob.Register([]backend.Event{})
 	gob.Register(backend.Event{})
+	gob.Register([]phase1Question{})
+	gob.Register(phase1Question{})
+	gob.Register([]int{})
 }
 
-// QuizHandler
-// Object for handlers to access sessions and database.
+// QuizHandler is the object for handlers to access sessions and database.
 type QuizHandler struct {
 	store    backend.Store
 	sessions *scs.SessionManager
 }
 
-// QuizData
-// Contains the array of events, the user's points and the token (topic ID,
-// current time and current phase) in order to validate the correct playing
+// QuizData contains the topic with the array of events and the points to keep
+// track of, as well as the equivalent of a token (consisting of the topic ID,
+// time expiry and current phase) in order to validate the correct playing
 // order of a quiz.
 type QuizData struct {
-	Events []backend.Event
+	Topic  backend.Topic // Contains topic ID for validation and events for playing the quiz
 	Points int
 
 	Phase     int       // Ensures the correct playing order, so that a user can't skip any phase
 	Reviewed  bool      // Ensures a user can't skip a reviewing phase
-	TopicID   int       // Ensures a user can't skip from phase n of topic A to phase n of topic B
 	TimeStamp time.Time // Ensures a user can't continue a quiz after n minutes of inactivity
 }
 
-// Phase1
-// A GET-method that any user can call. It consists of a form with 3 multiple-
-// choice questions, where the user has to guess the year of a given event.
+// Phase1 is a GET-method that any user can call. It consists of a form with 3
+// multiple-choice questions, where the user has to guess the year of a given
+// event.
 func (handler *QuizHandler) Phase1() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
-		EventsMultipleChoice []phase1Question
+		Questions []phase1Question
 	}
 
 	// Parse HTML-templates
@@ -78,6 +81,11 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 
 		// Retrieve topic ID from URL parameters
 		topicIDstr := chi.URLParam(req, "topicID")
+		topicID, err := strconv.Atoi(topicIDstr)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusNotFound)
+			return
+		}
 
 		// Check if a user is logged in
 		user := req.Context().Value("user")
@@ -89,41 +97,38 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 			return
 		}
 
-		// Convert topic ID to int
-		topicID, err := strconv.Atoi(topicIDstr)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusNotFound)
-			return
-		}
-
-		// Execute SQL statement to get events
-		events, err := handler.store.EventsByTopic(topicID)
+		// Execute SQL statement to get topic
+		topic, err := handler.store.GetTopic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// Randomize array of events
+		// Shuffle array of events
 		rand.Seed(time.Now().UnixNano())
-		rand.Shuffle(len(events), func(n1, n2 int) { events[n1], events[n2] = events[n2], events[n1] })
+		rand.Shuffle(len(topic.Events), func(n1, n2 int) {
+			topic.Events[n1], topic.Events[n2] = topic.Events[n2], topic.Events[n1]
+		})
 
-		// Add quiz data to session
+		// Add quiz data to session for future phases
 		handler.sessions.Put(req.Context(), "quiz", QuizData{
-			Events:    events,
-			TopicID:   topicID,
+			Topic:     topic,
 			Phase:     1,
 			Reviewed:  false,
 			TimeStamp: time.Now(),
 		})
 
-		// For each of the first 3 events in the array, get 2 other random
-		// values for the user to guess the year from
-		questions := generatePhase1Questions(events)
+		// For each of the first 3 events in the array, generate 2 other random
+		// years for the user to guess from
+		questions := generatePhase1Questions(topic.Events)
+
+		// Add questions to session for review of phase 1
+		handler.sessions.Put(req.Context(), "phase1questions", questions)
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			SessionData:          GetSessionData(handler.sessions, req.Context()),
-			EventsMultipleChoice: questions,
+			SessionData: GetSessionData(handler.sessions, req.Context()),
+			Questions:   questions,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -131,94 +136,108 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 	}
 }
 
-// Phase1Submit
-// A POST-method. It calculates the points.
+// Phase1Submit is a POST-method. It calculates the points and redirects to
+// Phase1Review.
 func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Retrieve topic ID from URL parameters
-		topicID, err := strconv.Atoi(chi.URLParam(req, "topicID"))
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusNotFound)
-			return
-		}
+		topicIDstr := chi.URLParam(req, "topicID")
 
 		// Retrieve quiz data from session
-		quizInf := handler.sessions.Pop(req.Context(), "quiz")
-
-		// Validate the token of the quiz data
-		quiz, msg := validateQuizToken(quizInf, 1, false, topicID)
-		// If msg isn't empty, an error occurred
-		if msg != "" {
-			handler.sessions.Put(req.Context(), "flash_error", "Ein Fehler ist aufgetreten. "+msg)
-			http.Redirect(res, req, "/topics", http.StatusFound)
-			return
-		}
+		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
 
 		// Loop through the 3 input forms of radio-buttons of phase 1
 		for num := 0; num < phase1Questions; num++ {
 
 			// Retrieve user's guess from form
-			guess, err := strconv.Atoi(req.FormValue("q" + strconv.Itoa(num)))
+			guess, _ := strconv.Atoi(req.FormValue("q" + strconv.Itoa(num)))
 
-			// If no error occurs, the user selected one of the three years;
-			// otherwise, the user left the selection at "Ich weiss es nicht",
-			// in which case we skip this question
-			if err == nil {
-				// Check if the user's guess is correct, by comparing it to the
-				// corresponding event in the array
-				if guess == quiz.Events[num].Year {
-					quiz.Points += phase1Points // If guess is correct, user gets 3 points
-				}
+			// Check if the user's guess is correct, by comparing it to the
+			// corresponding event in the array of events of the topic
+			if guess == quiz.Topic.Events[num].Year {
+				quiz.Points += phase1Points // If guess is correct, user gets 3 points
 			}
 		}
 
-		// Add quiz data to session
-		handler.sessions.Put(req.Context(), "quiz", quiz)
-
-		// Redirect to review of phase 1
-		http.Redirect(res, req, "/topics/"+strconv.Itoa(quiz.TopicID)+"/quiz/1/review", http.StatusFound)
+		// Redirect to review of phase 1 whilst keeping the previous request
+		// context
+		http.Redirect(res, req.WithContext(req.Context()), "/topics/"+topicIDstr+"/quiz/1/review", http.StatusFound)
 	}
 }
 
-// TODO Phase1Review
-// A GET-method that any user can call after Phase1. It returns a correction of the quiz.
+// Phase1Review is a GET-method that any user can call after Phase1. It
+// displays a correction of the questions.
 func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
-		Events []backend.Event
+		Questions []phase1Question
 	}
 
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
-		"frontend/pages/quiz_phase1.html",
+		"frontend/pages/quiz_phase1_review.html",
 	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
+		// Retrieve topic ID from URL parameters
+		topicIDstr := chi.URLParam(req, "topicID")
+		topicID, _ := strconv.Atoi(topicIDstr)
+
+		// Retrieve quiz data from session
+		quizInf := handler.sessions.Get(req.Context(), "quiz")
+
+		// Validate the token of the quiz data
+		quiz, msg := validateQuizToken(quizInf, 1, false, topicID)
+		// If msg isn't empty, an error occurred
+		if msg != "" {
+			handler.sessions.Put(req.Context(), "flash_error",
+				"Ein Fehler ist aufgetreten in Phase 1 eines Quizzes. "+msg)
+			http.Redirect(res, req, "/topics", http.StatusFound)
+			return
+		}
+
+		// Update quiz data
+		quiz.Reviewed = true
+		quiz.TimeStamp = time.Now()
+
+		// Retrieve questions from session
+		questions := handler.sessions.Get(req.Context(), "phase1questions").([]phase1Question)
+
+		// Add quiz data to session for later phases
+		handler.sessions.Put(req.Context(), "quiz", quiz)
+
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{}); err != nil {
+		if err := tmpl.Execute(res, data{
+			SessionData: GetSessionData(handler.sessions, req.Context()),
+			Questions:   questions,
+		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
 }
 
-// TODO Phase2
-// A GET-method that any user can call after Phase1Review. It consists of a form with 4 questions, where the
-// user has to guess the year of a given event.
+// Phase2 is a GET-method that any user can call after Phase1Review. It
+// consists of a form with 4 questions, where the user has to guess the year of
+// a given event.
 func (handler *QuizHandler) Phase2() http.HandlerFunc {
+
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
+
+		Events []backend.Event
+		Review bool
 	}
 
-	// Parse HTML-template
+	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
 		"frontend/pages/quiz_phase2.html",
@@ -236,10 +255,10 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 	}
 }
 
-// TODO Phase3
-// A GET-method that any user can call after Phase2Review. It consists of a
-// form with all events of the topic, where the user has to put the events in
-// chronological order.
+// TODO
+// Phase3 is a GET-method that any user can call after Phase2Review. It
+// consists of a form with all events of the topic, where the user has to put
+// the events in chronological order.
 func (handler *QuizHandler) Phase3() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
@@ -264,9 +283,9 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 	}
 }
 
-// TODO Summary
-// A GET-method that any user can call after Phase3Review. It summarizes the
-// quiz played.
+// TODO
+// Summary is a GET-method that any user can call after Phase3Review. It
+// summarizes the quiz completed.
 func (handler *QuizHandler) Summary() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
@@ -291,22 +310,23 @@ func (handler *QuizHandler) Summary() http.HandlerFunc {
 	}
 }
 
-// phase1Question
-// Contains name of event with the correct year and 2 random years, in random
-// order.
+// phase1Question represents 1 of the 3 multiple-choice questions of phase 1.
+// It contains name of event and – in random order – the correct year plus 2
+// random years.
 type phase1Question struct {
-	Event   string // name of event
-	Choices []int
-	ID      string // relevant for HTML input form name
+	EventName string // name of event
+	EventYear int    // year of event
+	Choices   []int  // choices in random order (including correct year
+	ID        string // relevant for HTML input form name
 }
 
-// generatePhase1Questions
-// Generates two random numbers for each of the first three events in the array
-// to use in phase 1 of the quiz (multiple-choice).
-// Sample input: array of events, of which the years of the first 3 events are:
-// 1945, 1960, 1981
-// Sample output: [[1955 1945 1935] [1951 1961 1960] [1981 1971 1976]]
+// generatePhase1Questions generates 2 random numbers for each of the first 3
+// events in the array to use in phase 1 of the quiz (multiple-choice).
+//
+// Sample input: []backend.Event{{..., Year: 1945}, {..., Year: 1960}, {..., Year: 1981}, ...}
+// Sample output: [[1955 1945 1938] [1951 1961 1960] [1981 1971 1976]]
 func generatePhase1Questions(events []backend.Event) []phase1Question {
+	// Create non-nil array of questions
 	questions := make([]phase1Question, phase1Questions)
 
 	// Set seed to generate random numbers from
@@ -349,7 +369,8 @@ func generatePhase1Questions(events []backend.Event) []phase1Question {
 		})
 
 		// Add values to structure
-		questions[q].Event = events[q].Title
+		questions[q].EventName = events[q].Name
+		questions[q].EventYear = events[q].Year
 		questions[q].Choices = years
 		questions[q].ID = "q" + strconv.Itoa(q) // sample ID: q0
 	}
@@ -376,7 +397,7 @@ func validateQuizToken(quizInf interface{}, phase int, reviewed bool, topicID in
 	quiz := quizInf.(QuizData)
 
 	// Check for invalid topic ID
-	if topicID != quiz.TopicID {
+	if topicID != quiz.Topic.TopicID {
 		// Occurs when a user manually changes the topic ID in the URL whilst
 		// in a later phase of a quiz.
 		return QuizData{}, "Womöglich haben Sie versucht, während des Quizzes das Thema zu ändern."
@@ -391,9 +412,9 @@ func validateQuizToken(quizInf interface{}, phase int, reviewed bool, topicID in
 	// Check for invalid time stamp. Unix() displays the time passed in seconds since
 	// a specific date. By adding the time stamp of the quiz data to the max
 	// idle time, we can check if it was surpassed by the current time
-	if time.Now().Unix() > quiz.TimeStamp.Unix()+maxIdleTimeMinutes*60 {
+	if time.Now().Unix() > quiz.TimeStamp.Unix()+timeExpiry*60 {
 		// Occurs when a user takes unreasonably long to complete a phase
-		return QuizData{}, "Nach " + strconv.Itoa(maxIdleTimeMinutes) + " Minuten Inaktivität in einer Phase, " +
+		return QuizData{}, "Nach " + strconv.Itoa(timeExpiry) + " Minuten Inaktivität in einer Phase, " +
 			"endet das Quiz, da angenommen wird, der Benutzer habe das Quiz verlassen."
 	}
 

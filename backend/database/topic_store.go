@@ -1,8 +1,9 @@
 package database
 
-// topic_store.go
-// Part of the database layer. Contains all functions for topics that access the
-// database
+/*
+ * Part of the database layer. Contains all functions for topics that access
+ * the database.
+ */
 
 import (
 	"fmt"
@@ -12,47 +13,54 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
-// TopicStore
-// The database access object
+// TopicStore is the database access object.
 type TopicStore struct {
 	*sqlx.DB
 }
 
-// Topic
-// Gets a topic by ID
-func (store *TopicStore) Topic(topicID int) (backend.Topic, error) {
+// GetTopic gets a topic and its events by ID.
+func (store *TopicStore) GetTopic(topicID int) (backend.Topic, error) {
 	var topic backend.Topic
 
 	// Execute prepared statement
 	query := `
 		SELECT t.*, 
-		       COUNT(DISTINCT e.event_id) AS events_count, 
-		       COUNT(DISTINCT s.score_id) AS scores_count
+		       COUNT(DISTINCT s.score_id) AS scores_count,
+		       COUNT(DISTINCT e.event_id) AS events_count
 		FROM topics t 
-			LEFT JOIN events e ON e.topic_id = t.topic_id 
-			LEFT JOIN scores s ON s.topic_id = t.topic_id
+			LEFT JOIN scores s ON s.topic_id = t.topic_id 
+		    LEFT JOIN events e on t.topic_id = e.topic_id
 		WHERE t.topic_id = ?
 		`
 	if err := store.Get(&topic, query, topicID); err != nil {
 		return backend.Topic{}, fmt.Errorf("error getting topic: %w", err)
 	}
 
+	// Execute prepared statement
+	query = `
+		SELECT * 
+		FROM events 
+		WHERE topic_id = ?
+		`
+	if err := store.Select(&topic.Events, query, topicID); err != nil {
+		return backend.Topic{}, fmt.Errorf("error getting events of topic: %w", err)
+	}
+
 	return topic, nil
 }
 
-// Topics
-// Gets all topics
-func (store *TopicStore) Topics() ([]backend.Topic, error) {
+// GetTopics gets all topics and their events.
+func (store *TopicStore) GetTopics() ([]backend.Topic, error) {
 	var topics []backend.Topic
 
 	// Execute prepared statement
 	query := `
 		SELECT t.*, 
-		       COUNT(DISTINCT e.event_id) AS events_count, 
-		       COUNT(DISTINCT s.score_id) AS scores_count
-		FROM topics t
-			LEFT JOIN events e ON e.topic_id = t.topic_id 
-			LEFT JOIN scores s ON s.topic_id = t.topic_id
+		       COUNT(DISTINCT s.score_id) AS scores_count,
+		       COUNT(DISTINCT e.event_id) AS events_count
+		FROM topics t 
+			LEFT JOIN scores s ON s.topic_id = t.topic_id 
+		    LEFT JOIN events e on t.topic_id = e.topic_id
 		GROUP BY t.topic_id, t.start_year 
 		ORDER BY t.start_year
 		`
@@ -60,11 +68,23 @@ func (store *TopicStore) Topics() ([]backend.Topic, error) {
 		return []backend.Topic{}, fmt.Errorf("error getting topics: %w", err)
 	}
 
+	// Loop through topics to get events
+	for _, topic := range topics {
+		// Execute prepared statement
+		query = `
+		SELECT * 
+		FROM events 
+		WHERE topic_id = ?
+		`
+		if err := store.Select(&topic.Events, query, topic.TopicID); err != nil {
+			return []backend.Topic{}, fmt.Errorf("error getting events of topics: %w", err)
+		}
+	}
+
 	return topics, nil
 }
 
-// CountTopics
-// Gets amount of topics
+// CountTopics gets amount of topics.
 func (store *EventStore) CountTopics() (int, error) {
 	var topicCount int
 
@@ -80,17 +100,16 @@ func (store *EventStore) CountTopics() (int, error) {
 	return topicCount, nil
 }
 
-// CreateTopic
-// Creates a new topic
+// CreateTopic creates a new topic.
 func (store *TopicStore) CreateTopic(topic *backend.Topic) error {
 
 	// Execute prepared statement
 	query := `
-		INSERT INTO topics(title, start_year, end_year, description) 
+		INSERT INTO topics(name, start_year, end_year, description) 
 		VALUES (?, ?, ?, ?)
 		`
 	if _, err := store.Exec(query,
-		topic.Title,
+		topic.Name,
 		topic.StartYear,
 		topic.EndYear,
 		topic.Description); err != nil {
@@ -100,21 +119,20 @@ func (store *TopicStore) CreateTopic(topic *backend.Topic) error {
 	return nil
 }
 
-// UpdateTopic
-// Updates an existing topic
+// UpdateTopic updates an existing topic.
 func (store *TopicStore) UpdateTopic(topic *backend.Topic) error {
 
 	// Execute prepared statement
 	query := `
 		UPDATE topics 
-		SET title = ?, 
+		SET name = ?, 
 		    start_year = ?, 
 		    end_year = ?, 
 		    description = ? 
 		WHERE topic_id = ?
 		`
 	if _, err := store.Exec(query,
-		topic.Title,
+		topic.Name,
 		topic.StartYear,
 		topic.EndYear,
 		topic.Description,
@@ -125,8 +143,7 @@ func (store *TopicStore) UpdateTopic(topic *backend.Topic) error {
 	return nil
 }
 
-// DeleteTopic
-// Deletes an existing topic
+// DeleteTopic deletes an existing topic.
 func (store *TopicStore) DeleteTopic(topicID int) error {
 
 	// Execute prepared statement

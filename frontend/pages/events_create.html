@@ -8,7 +8,7 @@
 
 {{define "content"}}
 
-    <h5>Ereignis zum Thema '{{.Topic.Title}}'
+    <h5>Ereignis zum Thema '{{.Topic.Name}}'
         <br><br>
     </h5>
 
@@ -16,12 +16,12 @@
         <label>Titel*</label>
         <div class="form-group">
             <input type="text" name="title"
-                   class="form-control {{with .Form.Errors.Title}}is-invalid{{end}}"
+                   class="form-control {{with .Form.Errors.Name}}is-invalid{{end}}"
                    placeholder="Titel des Ereignisses"
-                   value="{{with .Form.Title}}{{.}}{{end}}">
+                   value="{{with .Form.Name}}{{.}}{{end}}">
         </div>
 
-        {{with .Form.Errors.Title}}
+        {{with .Form.Errors.Name}}
             <div style="color:#dc3545;font-size:14px">{{.}}</div>
         {{end}}
 

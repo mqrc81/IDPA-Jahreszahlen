@@ -1,7 +1,8 @@
 package web
 
-// forms.go
-// Contains form validation for all necessary HTTP-handlers.
+/*
+ * Contains form validation for all relevant HTTP-handlers.
+ */
 
 import (
 	"encoding/gob"
@@ -10,10 +11,9 @@ import (
 	"time"
 )
 
-// init
-// Gets initialized with the package. Registers certain types to the session,
-// because by default the session can only contain basic data types (int, bool,
-// string, etc.).
+// init gets initialized with the package. It registers certain types to the
+// session, because by default the session can only contain basic data types
+// (int, bool, string, etc.).
 func init() {
 	gob.Register(TopicForm{})
 	gob.Register(EventForm{})
@@ -24,17 +24,14 @@ func init() {
 	gob.Register(FormErrors{})
 }
 
-// FormErrors
-// A map that holds the error messages. The key string contains the name of the
-// form input that is invalid (e.g. "Title"), the value string contains the
-// error message.
+// FormErrors is a map that holds the error messages. The key string contains
+// the name of the form input that is invalid (e.g. "Name"), the value string
+// contains the error message.
 type FormErrors map[string]string
 
-// TopicForm
-// Holds values of the form input when creating or editing a
-// topic.
+// TopicForm holds values of the form input when creating or editing a topic.
 type TopicForm struct {
-	Title       string
+	Name        string
 	StartYear   int
 	EndYear     int
 	Description string
@@ -42,16 +39,15 @@ type TopicForm struct {
 	Errors FormErrors
 }
 
-// Validate
-// Validates the form input when creating or editing a topic.
+// Validate validates the form input when creating or editing a topic.
 func (form *TopicForm) Validate() bool {
 	form.Errors = FormErrors{}
 
-	// Validate title
-	if form.Title == "" {
-		form.Errors["Title"] = "Titel darf nicht leer sein."
-	} else if len(form.Title) > 50 {
-		form.Errors["Title"] = "Titel darf 50 Zeichen nicht überschreiten."
+	// Validate name
+	if form.Name == "" {
+		form.Errors["Name"] = "Titel darf nicht leer sein."
+	} else if len(form.Name) > 50 {
+		form.Errors["Name"] = "Titel darf 50 Zeichen nicht überschreiten."
 	}
 
 	// Validate start- and end-year
@@ -76,26 +72,23 @@ func (form *TopicForm) Validate() bool {
 	return len(form.Errors) == 0
 }
 
-// EventForm
-// Holds values of the form input when creating or editing an
-// event.
+// EventForm holds values of the form input when creating or editing an event.
 type EventForm struct {
-	Title string
-	Year  int
+	Name string
+	Year int
 
 	Errors FormErrors
 }
 
-// Validate
-// Validates the form input when creating or editing an event.
+// Validate validates the form input when creating or editing an event.
 func (form *EventForm) Validate() bool {
 	form.Errors = FormErrors{}
 
-	// Validate title
-	if form.Title == "" {
-		form.Errors["Title"] = "Titel darf nicht leer sein."
-	} else if len(form.Title) > 110 {
-		form.Errors["Title"] = "Titel darf 110 Zeichen nicht überschreiten."
+	// Validate name
+	if form.Name == "" {
+		form.Errors["Name"] = "Titel darf nicht leer sein."
+	} else if len(form.Name) > 110 {
+		form.Errors["Name"] = "Titel darf 110 Zeichen nicht überschreiten."
 	}
 
 	// Validate year
@@ -110,8 +103,7 @@ func (form *EventForm) Validate() bool {
 	return len(form.Errors) == 0
 }
 
-// RegisterForm
-// Holds values of the form input when registering.
+// RegisterForm holds values of the form input when registering.
 type RegisterForm struct {
 	Username      string
 	Password      string
@@ -120,8 +112,7 @@ type RegisterForm struct {
 	Errors FormErrors
 }
 
-// Validate
-// Validates the form input when registering.
+// Validate validates the form input when registering.
 func (form *RegisterForm) Validate() bool {
 	form.Errors = FormErrors{}
 
@@ -138,8 +129,7 @@ func (form *RegisterForm) Validate() bool {
 	return len(form.Errors) == 0
 }
 
-// LoginForm
-// Holds values of the form input when logging in.
+// LoginForm holds values of the form input when logging in.
 type LoginForm struct {
 	Username          string
 	Password          string
@@ -149,8 +139,7 @@ type LoginForm struct {
 	Errors FormErrors
 }
 
-// Validate
-// Validates the form input when logging in.
+// Validate validates the form input when logging in.
 func (form *LoginForm) Validate() bool {
 	form.Errors = FormErrors{}
 
@@ -171,8 +160,7 @@ func (form *LoginForm) Validate() bool {
 	return len(form.Errors) == 0
 }
 
-// UsernameForm
-// Holds values of the form input when editing a username.
+// UsernameForm holds values of the form input when editing a username.
 type UsernameForm struct {
 	NewUsername       string
 	Password          string
@@ -182,8 +170,7 @@ type UsernameForm struct {
 	Errors FormErrors
 }
 
-// Validate
-// Validates the form input when editing a password.
+// Validate validates the form input when editing a password.
 func (form *UsernameForm) Validate() bool {
 	form.Errors = FormErrors{}
 
@@ -204,8 +191,7 @@ func (form *UsernameForm) Validate() bool {
 	return len(form.Errors) == 0
 }
 
-// PasswordForm
-// Holds values of the form input when editing a password.
+// PasswordForm holds values of the form input when editing a password.
 type PasswordForm struct {
 	NewPassword          string
 	OldPassword          string
@@ -214,8 +200,7 @@ type PasswordForm struct {
 	Errors FormErrors
 }
 
-// Validate
-// Validates the form input when editing a password.
+// Validate validates the form input when editing a password.
 func (form *PasswordForm) Validate() bool {
 	form.Errors = FormErrors{}
 
@@ -232,8 +217,7 @@ func (form *PasswordForm) Validate() bool {
 	return len(form.Errors) == 0
 }
 
-// validateUsername
-// Validates a username.
+// validateUsername validates a username.
 func validateUsername(username string, errors FormErrors) FormErrors {
 	if len(username) < 3 {
 		errors["Username"] = "Benutzername muss mindestens 3 Zeichen lang sein."
@@ -254,8 +238,7 @@ func validateUsername(username string, errors FormErrors) FormErrors {
 	return errors
 }
 
-// validatePassword
-// Validates a password.
+// validatePassword validates a password.
 func validatePassword(password string, errors FormErrors, errorName string) FormErrors {
 	if len(password) < 8 {
 		errors[errorName] = "Passwort muss mindestens 8 Zeichen lang sein."
@@ -272,8 +255,7 @@ func validatePassword(password string, errors FormErrors, errorName string) Form
 	return errors
 }
 
-// regex
-// Checks if a certain regular expression matches a certain string.
+// regex checks if a certain regular expression matches a certain string.
 func regex(str string, regex string) bool {
 	match, err := regexp.MatchString(regex, str)
 	if err != nil {

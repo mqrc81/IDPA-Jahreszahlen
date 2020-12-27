@@ -1,7 +1,8 @@
 package web
 
-// score_handler.go
-// Contains all HTTP-handlers for pages evolving around scores.
+/*
+ * Contains all HTTP-handler functions for pages evolving around scores.
+ */
 
 import (
 	"html/template"
@@ -15,16 +16,15 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
-// ScoreHandler
-// Object for handlers to access sessions and database.
+// ScoreHandler is the object for handlers to access sessions and database.
 type ScoreHandler struct {
 	store    backend.Store
 	sessions *scs.SessionManager
 }
 
-// List
-// A GET-method that any user can call. It lists all scores, ranked by points,
-// with the ability to filter scores by topic and/or user.
+// TODO
+// List is a GET-method that any user can call. It lists all scores, ranked by
+// points, with the ability to filter scores by topic and/or user.
 func (handler *ScoreHandler) List() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
@@ -35,7 +35,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 	}
 
 	// Parse HTML-templates
-	tmpl := template.Must(template.New("").Funcs(FuncMap).ParseFiles(
+	tmpl := template.Must(template.New("").ParseFiles(
 		"frontend/layout.html",
 		"frontend/pages/scores_list.html",
 	))
@@ -53,7 +53,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 		}
 		user := userInf.(backend.User)
 
-		var ss []backend.Score
+		var scores []backend.Score
 
 		// Retrieve topic from URL parameters
 		topicID := -1
@@ -96,43 +96,43 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 		if topicID != -1 {
 			if strings.ToLower(userFilter) == "me" { // Topic and user specified in URL parameters
 				// Execute SQL statement to get scores
-				scores, err := handler.store.ScoresByTopicAndUser(topicID, user.UserID, limit, offset)
+				scores_, err := handler.store.GetScoresByTopicAndUser(topicID, user.UserID, limit, offset)
 				if err != nil {
 					http.Error(res, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				ss = scores
+				scores = scores_
 			} else { // Only topic specified in URL parameters
 				// Execute SQL statement to get scores
-				scores, err := handler.store.ScoresByTopic(topicID, limit, offset)
+				scores_, err := handler.store.GetScoresByTopic(topicID, limit, offset)
 				if err != nil {
 					http.Error(res, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				ss = scores
+				scores = scores_
 			}
 		} else if strings.ToLower(userFilter) == "me" { // Only user specified in URL parameters
 			// Execute SQL statement to get scores
-			scores, err := handler.store.ScoresByUser(user.UserID, limit, offset)
+			scores_, err := handler.store.GetScoresByUser(user.UserID, limit, offset)
 			if err != nil {
 				http.Error(res, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			ss = scores
+			scores = scores_
 		} else { // No topic or user specified in URL parameters
 			// Execute SQL statement to get scores
-			scores, err := handler.store.Scores(limit, offset)
+			scores_, err := handler.store.GetScores(limit, offset)
 			if err != nil {
 				http.Error(res, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			ss = scores
+			scores = scores_
 		}
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
-			Scores:      ss,
+			Scores:      scores,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -140,8 +140,8 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 	}
 }
 
-// Store
-// A POST-method. It stores the new score in the database and redirects to List.
+// Store is a POST-method. It stores the new score in the database and
+// redirects to List.
 func (handler *ScoreHandler) Store() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {

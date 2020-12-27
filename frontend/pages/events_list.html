@@ -3,11 +3,11 @@
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Ereignisse '{{.Topic.Title}}'</h1>
+    <h1 class="mb-0">Ereignisse '{{.Topic.Name}}'</h1>
 {{end}}
 
 {{define "content"}}
-    {{range .Events}}
+    {{range .Topic.Events}}
         <div class="card mb-4">
             <div class="card-body">
                 <p>

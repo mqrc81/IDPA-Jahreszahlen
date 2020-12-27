@@ -1,7 +1,6 @@
 package web
 
-// handler.go
-// Contains HTTP-router and all HTTP-handlers
+// Contains HTTP-router and path to all HTTP-handlers.
 
 import (
 	"context"
@@ -19,17 +18,7 @@ const (
 	DefaultPassword = "pw123" // Used when admin manually resets a user's password
 )
 
-var (
-	FuncMap = template.FuncMap{ // A map with functions to be used in HTML-templates
-		// increments number by 1
-		"increment": func(num int) int {
-			return num + 1
-		},
-	}
-)
-
-// NewHandler
-// Initializes HTTP-handlers, including router and middleware
+// NewHandler initializes HTTP-handlers, including router and middleware.
 func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 	handler := &Handler{
 		Mux:      chi.NewMux(),
@@ -116,16 +105,14 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 	return handler
 }
 
-// Handler
-// Consists of the chi-multiplexer, a store interface and sessions
+// Handler consists of the chi-multiplexer, a store interface and sessions.
 type Handler struct {
 	*chi.Mux
 	store    backend.Store
 	sessions *scs.SessionManager
 }
 
-// Home
-// A GET-method. Renders the home-page.
+// Home is a GET-method. It displays the home-page.
 func (handler *Handler) Home() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
@@ -143,14 +130,14 @@ func (handler *Handler) Home() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute SQL statement to get topics
-		tt, err := handler.store.Topics()
+		topics, err := handler.store.GetTopics()
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Execute SQL statement to get scores
-		ss, err := handler.store.Scores(5, 0)
+		scores, err := handler.store.GetScores(5, 0)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -159,8 +146,8 @@ func (handler *Handler) Home() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
-			Topics:      tt,
-			Scores:      ss,
+			Topics:      topics,
+			Scores:      scores,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -168,8 +155,7 @@ func (handler *Handler) Home() http.HandlerFunc {
 	}
 }
 
-// About
-// A GET-method. Renders the about-page.
+// About is a GET-method. It displays the about-page.
 func (handler *Handler) About() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
@@ -192,8 +178,7 @@ func (handler *Handler) About() http.HandlerFunc {
 	}
 }
 
-// withUser
-// A middleware that replaces the potential user ID with a user object.
+// withUser is a middleware that replaces the potential user ID with a user object.
 func (handler *Handler) withUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve user ID from session
@@ -204,7 +189,7 @@ func (handler *Handler) withUser(next http.Handler) http.Handler {
 		}
 
 		// Execute SQL statement to get user
-		user, err := handler.store.User(userID)
+		user, err := handler.store.GetUser(userID)
 		if err != nil {
 			// No user in session => continue to HTTP-handler
 			next.ServeHTTP(res, req)
@@ -219,8 +204,7 @@ func (handler *Handler) withUser(next http.Handler) http.Handler {
 	})
 }
 
-// NotFound404
-// Gets called when a non-existing URL has been entered.
+// NotFound404 gets called when a non-existing URL has been entered.
 func (handler *Handler) NotFound404() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {

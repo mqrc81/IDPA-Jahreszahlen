@@ -1,8 +1,9 @@
 package database
 
-// user_store.go
-// Part of the database layer. Contains all functions for users that access the
-// database
+/*
+ * Part of the database layer. Contains all functions for users that access
+ * the database.
+ */
 
 import (
 	"fmt"
@@ -12,15 +13,13 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
-// UserStore
-// The database access object
+// UserStore is the database access object.
 type UserStore struct {
 	*sqlx.DB
 }
 
-// User
-// Gets a user by ID
-func (store UserStore) User(userID int) (backend.User, error) {
+// GetUser gets a user by ID.
+func (store UserStore) GetUser(userID int) (backend.User, error) {
 	var user backend.User
 
 	// Execute prepared statement
@@ -38,9 +37,8 @@ func (store UserStore) User(userID int) (backend.User, error) {
 	return user, nil
 }
 
-// UserByUsername
-// Gets a user by username
-func (store UserStore) UserByUsername(username string) (backend.User, error) {
+// GetUserByUsername gets a user by username.
+func (store UserStore) GetUserByUsername(username string) (backend.User, error) {
 	var user backend.User
 
 	// Execute prepared statement
@@ -58,9 +56,8 @@ func (store UserStore) UserByUsername(username string) (backend.User, error) {
 	return user, nil
 }
 
-// Users
-// Gets all users
-func (store UserStore) Users() ([]backend.User, error) {
+// GetUsers gets all users.
+func (store UserStore) GetUsers() ([]backend.User, error) {
 	var users []backend.User
 
 	// Execute prepared statement
@@ -79,8 +76,7 @@ func (store UserStore) Users() ([]backend.User, error) {
 	return users, nil
 }
 
-// CountUsers
-// Gets amount of users
+// CountUsers gets amount of users.
 func (store *UserStore) CountUsers() (int, error) {
 	var userCount int
 
@@ -96,8 +92,7 @@ func (store *UserStore) CountUsers() (int, error) {
 	return userCount, nil
 }
 
-// CreateUser
-// Creates a new user
+// CreateUser creates a new user.
 func (store UserStore) CreateUser(user *backend.User) error {
 	// Execute prepared statement
 	query := `
@@ -114,8 +109,7 @@ func (store UserStore) CreateUser(user *backend.User) error {
 	return nil
 }
 
-// UpdateUser
-// Updates an existing user
+// UpdateUser updates an existing user.
 func (store UserStore) UpdateUser(user *backend.User) error {
 	// Execute prepared statement
 	query := `
@@ -134,8 +128,7 @@ func (store UserStore) UpdateUser(user *backend.User) error {
 	return nil
 }
 
-// DeleteUser
-// Deletes an existing user
+// DeleteUser deletes an existing user.
 func (store UserStore) DeleteUser(userID int) error {
 	// Execute prepared statement
 	query := `

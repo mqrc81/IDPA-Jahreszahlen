@@ -1,7 +1,8 @@
 package web
 
-// event_handler.go
-// Contains all HTTP-handlers for pages evolving around events.
+/*
+ * Contains all HTTP-handler functions for pages evolving around events.
+ */
 
 import (
 	"html/template"
@@ -14,16 +15,14 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
-// EventHandler
-// Object for handlers to access sessions and database.
+// EventHandler is the object for handlers to access sessions and database.
 type EventHandler struct {
 	store    backend.Store
 	sessions *scs.SessionManager
 }
 
-// List
-// A GET-method that any user can call. It lists all scores, ranked by points,
-// with the ability to filter scores by topic and/or user.
+// List is a GET-method that any user can call. It lists all scores, ranked by
+// points, with the ability to filter scores by topic and/or user.
 func (handler *EventHandler) List() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
@@ -60,14 +59,7 @@ func (handler *EventHandler) List() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to get a topic
-		topic, err := handler.store.Topic(topicID)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Execute SQL statement to get events
-		events, err := handler.store.EventsByTopic(topicID)
+		topic, err := handler.store.GetTopic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -77,7 +69,6 @@ func (handler *EventHandler) List() http.HandlerFunc {
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topic:       topic,
-			Events:      events,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -85,9 +76,8 @@ func (handler *EventHandler) List() http.HandlerFunc {
 	}
 }
 
-// Create
-// A GET-method that any admin can call. It renders a form, in which values
-// for a new event can be entered.
+// Create is a GET-method that any admin can call. It displays a form, in which
+// values for a new event can be entered.
 func (handler *EventHandler) Create() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
@@ -124,7 +114,7 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to get a topic
-		topic, err := handler.store.Topic(topicID)
+		topic, err := handler.store.GetTopic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -141,11 +131,10 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 	}
 }
 
-// CreateStore
-// A POST-method. It validates the form from Create and redirects to Create in
-// case of an invalid input with corresponding error message. In case of valid
-// form, it stores the new event in the database and redirects to the edit-page
-// of the event's topic.
+// CreateStore is a POST-method. It validates the form from Create and
+// redirects to Create in case of an invalid input with corresponding error
+// message. In case of valid form, it stores the new event in the database and
+// redirects to the edit-page of the event's topic.
 func (handler *EventHandler) CreateStore() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -157,8 +146,8 @@ func (handler *EventHandler) CreateStore() http.HandlerFunc {
 		// Retrieve variables from form (Create)
 		year, _ := strconv.Atoi(req.FormValue("year"))
 		form := EventForm{
-			Title: req.FormValue("title"),
-			Year:  year,
+			Name: req.FormValue("name"),
+			Year: year,
 		}
 
 		// Validate form
@@ -171,7 +160,7 @@ func (handler *EventHandler) CreateStore() http.HandlerFunc {
 		// Execute SQL statement to create an event
 		if err := handler.store.CreateEvent(&backend.Event{
 			TopicID: topicID,
-			Title:   form.Title,
+			Name:    form.Name,
 			Year:    form.Year,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -186,8 +175,8 @@ func (handler *EventHandler) CreateStore() http.HandlerFunc {
 	}
 }
 
-// Delete
-// A POST-method. It deletes an event and redirects to the list of events.
+// Delete is a POST-method. It deletes an event and redirects to the list of
+// events.
 func (handler *EventHandler) Delete() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -209,9 +198,8 @@ func (handler *EventHandler) Delete() http.HandlerFunc {
 	}
 }
 
-// Edit
-// A GET-method that any admin can call. It renders a form in which values for
-// updating the current event can be entered.
+// Edit is a GET-method that any admin can call. It renders a form in which
+// values for updating the current event can be entered.
 func (handler *EventHandler) Edit() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
@@ -248,7 +236,7 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to get topic
-		event, err := handler.store.Event(eventID)
+		event, err := handler.store.GetEvent(eventID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -265,10 +253,9 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 	}
 }
 
-// EditStore
-// A POST-method. It validates the form from Edit and redirects to Edit in
-// case of an invalid input with corresponding error message. In case of valid
-// form, it stores the topic in the database and redirects to List.
+// EditStore is a POST-method. It validates the form from Edit and redirects to
+// Edit in case of an invalid input with corresponding error message. In case
+// of valid form, it stores the topic in the database and redirects to List.
 func (handler *EventHandler) EditStore() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -280,8 +267,8 @@ func (handler *EventHandler) EditStore() http.HandlerFunc {
 		// Retrieve values from form (Edit)
 		year, _ := strconv.Atoi(req.FormValue("year"))
 		form := EventForm{
-			Title: req.FormValue("title"),
-			Year:  year,
+			Name: req.FormValue("name"),
+			Year: year,
 		}
 
 		// Validate form
@@ -294,7 +281,7 @@ func (handler *EventHandler) EditStore() http.HandlerFunc {
 		// Execute SQL statement to update event
 		if err := handler.store.UpdateEvent(&backend.Event{
 			TopicID: topicID,
-			Title:   form.Title,
+			Name:    form.Name,
 			Year:    form.Year,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)

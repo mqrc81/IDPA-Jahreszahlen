@@ -1,7 +1,8 @@
 package web
 
-// topic_handler.go
-// Contains all HTTP-handlers for pages evolving around topics.
+/*
+ * Contains all HTTP-handler functions for pages evolving around topics.
+ */
 
 import (
 	"html/template"
@@ -14,16 +15,15 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
-// TopicHandler
-// Object for handlers to access sessions and database.
+// TopicHandler is the object for handlers to access sessions and database.
 type TopicHandler struct {
 	store    backend.Store
 	sessions *scs.SessionManager
 }
 
-// List
-// A GET-method. It lists all topics.
+// List is a GET-method. It lists all topics.
 func (handler *TopicHandler) List() http.HandlerFunc {
+
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -38,8 +38,9 @@ func (handler *TopicHandler) List() http.HandlerFunc {
 	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
+
 		// Execute SQL statement to get topics
-		topics, err := handler.store.Topics()
+		topics, err := handler.store.GetTopics()
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -56,10 +57,10 @@ func (handler *TopicHandler) List() http.HandlerFunc {
 	}
 }
 
-// Create
-// A GET-method that any admin can call. It renders a form, in which values
-// for a new topic can be entered.
+// Create is a GET-method that any admin can call. It renders a form, in which
+// values for a new topic can be entered.
 func (handler *TopicHandler) Create() http.HandlerFunc {
+
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -94,17 +95,19 @@ func (handler *TopicHandler) Create() http.HandlerFunc {
 	}
 }
 
-// CreateStore
-// A POST-method. It validates the form from Create and redirects to Create in
-// case of an invalid input with corresponding error message. In case of valid
-// form, it stores the new topic in the database and redirects to List.
+// CreateStore is a POST-method. It validates the form from Create and
+// redirects to Create in case of an invalid input with corresponding error
+// message. In case of valid form, it stores the new topic in the database and
+// redirects to List.
 func (handler *TopicHandler) CreateStore() http.HandlerFunc {
+
 	return func(res http.ResponseWriter, req *http.Request) {
+
 		// Retrieve variables from form (Create)
 		startYear, _ := strconv.Atoi(req.FormValue("start_year"))
 		endYear, _ := strconv.Atoi(req.FormValue("end_year"))
 		form := TopicForm{
-			Title:       req.FormValue("title"),
+			Name:        req.FormValue("name"),
 			StartYear:   startYear,
 			EndYear:     endYear,
 			Description: req.FormValue("description"),
@@ -119,7 +122,7 @@ func (handler *TopicHandler) CreateStore() http.HandlerFunc {
 
 		// Execute SQL statement to create a topic
 		if err := handler.store.CreateTopic(&backend.Topic{
-			Title:       form.Title,
+			Name:        form.Name,
 			StartYear:   form.StartYear,
 			EndYear:     form.EndYear,
 			Description: form.Description,
@@ -136,10 +139,11 @@ func (handler *TopicHandler) CreateStore() http.HandlerFunc {
 	}
 }
 
-// Delete
-// A POST-method. It deletes a certain topic and redirects to Show.
+// Delete is a POST-method. It deletes a certain topic and redirects to Show.
 func (handler *TopicHandler) Delete() http.HandlerFunc {
+
 	return func(res http.ResponseWriter, req *http.Request) {
+
 		// Retrieve TopicID from URL parameters
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
@@ -156,10 +160,10 @@ func (handler *TopicHandler) Delete() http.HandlerFunc {
 	}
 }
 
-// Edit
-// A GET-method that any admin can call. It renders a form in which values for
-// updating the current topic can be entered.
+// Edit is a GET-method that any admin can call. It renders a form in which
+// values for updating the current topic can be entered.
 func (handler *TopicHandler) Edit() http.HandlerFunc {
+
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -195,7 +199,7 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to get a topic
-		topic, err := handler.store.Topic(topicID)
+		topic, err := handler.store.GetTopic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -212,12 +216,13 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 	}
 }
 
-// EditStore
-// A POST-method. It validates the form from Edit and redirects to Edit in
-// case of an invalid input with corresponding error message. In case of valid
-// form, it stores the topic in the database and redirects to Show.
+// EditStore is a POST-method. It validates the form from Edit and redirects to
+// Edit in case of an invalid input with corresponding error message. In case
+// of valid form, it stores the topic in the database and redirects to Show.
 func (handler *TopicHandler) EditStore() http.HandlerFunc {
+
 	return func(res http.ResponseWriter, req *http.Request) {
+
 		// Retrieve topic ID from URL
 		topicIDstr := req.URL.Query().Get("topicID")
 		topicID, _ := strconv.Atoi(topicIDstr)
@@ -226,7 +231,7 @@ func (handler *TopicHandler) EditStore() http.HandlerFunc {
 		startYear, _ := strconv.Atoi(req.FormValue("start_year"))
 		endYear, _ := strconv.Atoi(req.FormValue("end_year"))
 		form := TopicForm{
-			Title:       req.FormValue("title"),
+			Name:        req.FormValue("name"),
 			StartYear:   startYear,
 			EndYear:     endYear,
 			Description: req.FormValue("description"),
@@ -242,7 +247,7 @@ func (handler *TopicHandler) EditStore() http.HandlerFunc {
 		// Execute SQL statement to update a topic
 		if err := handler.store.UpdateTopic(&backend.Topic{
 			TopicID:     topicID,
-			Title:       form.Title,
+			Name:        form.Name,
 			StartYear:   form.StartYear,
 			EndYear:     form.EndYear,
 			Description: form.Description,
@@ -259,10 +264,10 @@ func (handler *TopicHandler) EditStore() http.HandlerFunc {
 	}
 }
 
-// Show
-// A GET-method. It displays details of the topic with the options to play the
-// quiz, to edit the topic and to edit the events.
+// Show is a GET-method. It displays details of the topic with the options to
+// play the quiz, to edit the topic and to edit the events.
 func (handler *TopicHandler) Show() http.HandlerFunc {
+
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -277,6 +282,7 @@ func (handler *TopicHandler) Show() http.HandlerFunc {
 	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
+
 		// Retrieve TopicID from URL parameters
 		topicID, err := strconv.Atoi(chi.URLParam(req, "topicID"))
 		if err != nil {
@@ -285,7 +291,7 @@ func (handler *TopicHandler) Show() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to get a topic
-		topic, err := handler.store.Topic(topicID)
+		topic, err := handler.store.GetTopic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
