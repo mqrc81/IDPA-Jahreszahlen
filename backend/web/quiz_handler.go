@@ -445,7 +445,6 @@ func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 	}
 }
 
-// TODO
 // Phase3 is a GET-method that any user can call after Phase2Review. It
 // consists of a form with all events of the topic, where the user has to put
 // the events in chronological order.
@@ -453,6 +452,8 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
+
+		Events []backend.Event
 	}
 
 	// Parse HTML-templates
@@ -463,9 +464,49 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
+		// Retrieve topic ID from URL parameters
+		topicIDstr := chi.URLParam(req, "topicID")
+		topicID, err := strconv.Atoi(topicIDstr)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		// Check if a user is logged in
+		user := req.Context().Value("user")
+		if user == nil {
+			// If no user is logged in, then redirect back with flash message
+			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
+				"Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen.")
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			return
+		}
+
+		// Retrieve quiz data from session
+		quizInf := handler.sessions.Get(req.Context(), "quiz")
+
+		// Validate the token of the quiz data
+		quiz, msg := validateQuizToken(quizInf, 1, true, topicID)
+		// If msg isn't empty, an error occurred
+		if msg != "" {
+			handler.sessions.Put(req.Context(), "flash_error",
+				"Ein Fehler ist aufgetreten in Phase 3 des Quizzes. "+msg)
+			http.Redirect(res, req, "/topics", http.StatusFound)
+			return
+		}
+
+		// Shuffle array of events
+		quiz.Topic.Events = shuffleEvents(quiz.Topic.Events)
+
+		// Update quiz data
+		quiz.Phase = 3
+		quiz.Reviewed = false
+		quiz.TimeStamp = time.Now()
+
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
+			Events:      quiz.Topic.Events,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
