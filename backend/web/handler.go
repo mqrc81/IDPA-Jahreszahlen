@@ -67,18 +67,18 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 		router.Post("/1", quiz.Phase1Submit())
 		router.Get("1/review", quiz.Phase1Review())
 		router.Get("/2", quiz.Phase2())
-		// TODO router.Post("/2", quiz.Phase2Submit())
-		// TODO router.Get("2/review", quiz.Phase2Review())
+		router.Post("/2", quiz.Phase2Submit())
+		router.Get("2/review", quiz.Phase2Review())
 		router.Get("/3", quiz.Phase3())
-		// TODO router.Post("/3", quiz.Phase3Submit())
-		// TODO router.Get("3/review", quiz.Phase3Review())
+		router.Post("/3", quiz.Phase3Submit())
+		router.Get("3/review", quiz.Phase3Review())
 		router.Get("/summary", quiz.Summary())
 	})
 
 	// Scores
 	handler.Route("/scores", func(router chi.Router) {
 		router.Get("/", scores.List())
-		router.Post("/", scores.Store())
+		// TODO router.Post("/", scores.Filter())
 	})
 
 	// Users

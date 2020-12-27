@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/alexedwards/scs/v2"
 
@@ -133,31 +132,6 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Scores:      scores,
-		}); err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-}
-
-// Store is a POST-method. It stores the new score in the database and
-// redirects to List.
-func (handler *ScoreHandler) Store() http.HandlerFunc {
-
-	return func(res http.ResponseWriter, req *http.Request) {
-
-		// Retrieve values from URL
-		topicID, _ := strconv.Atoi(req.URL.Query().Get("topic_id"))
-		userID, _ := strconv.Atoi(req.URL.Query().Get("user_id"))
-		points, _ := strconv.Atoi(req.URL.Query().Get("points"))
-		date := time.Now().Format("2006-01-02")
-
-		// Execute SQL statement to create a score
-		if err := handler.store.CreateScore(&backend.Score{
-			TopicID: topicID,
-			UserID:  userID,
-			Points:  points,
-			Date:    date,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return

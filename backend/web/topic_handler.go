@@ -57,7 +57,7 @@ func (handler *TopicHandler) List() http.HandlerFunc {
 	}
 }
 
-// Create is a GET-method that any admin can call. It renders a form, in which
+// Create is a GET-method that any admin can call. It displays a form, in which
 // values for a new topic can be entered.
 func (handler *TopicHandler) Create() http.HandlerFunc {
 
@@ -160,7 +160,7 @@ func (handler *TopicHandler) Delete() http.HandlerFunc {
 	}
 }
 
-// Edit is a GET-method that any admin can call. It renders a form in which
+// Edit is a GET-method that any admin can call. It displays a form in which
 // values for updating the current topic can be entered.
 func (handler *TopicHandler) Edit() http.HandlerFunc {
 

@@ -262,6 +262,26 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 }
 
 // TODO
+// Phase2Submit is a POST-method that any user can call after Phase2. It
+// calculates the points and redirects to Phase2Review.
+func (handler *QuizHandler) Phase2Submit() http.HandlerFunc {
+
+	return func(res http.ResponseWriter, req *http.Request) {
+
+	}
+}
+
+// TODO
+// Phase2Review is a GET-method that any user can call after Phase2. It
+// displays a correction of the questions.
+func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
+
+	return func(res http.ResponseWriter, req *http.Request) {
+
+	}
+}
+
+// TODO
 // Phase3 is a GET-method that any user can call after Phase2Review. It
 // consists of a form with all events of the topic, where the user has to put
 // the events in chronological order.
@@ -286,6 +306,27 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+// TODO
+// Phase3Submit is a POST-method that any user can call after Phase3. It
+// calculates the points and redirects to Phase3Review. It also creates a new
+// score object and stores it in the database.
+func (handler *QuizHandler) Phase3Submit() http.HandlerFunc {
+
+	return func(res http.ResponseWriter, req *http.Request) {
+
+	}
+}
+
+// TODO
+// Phase3Review is a GET-method that any user can call after Phase3. It
+// displays a correction of the questions.
+func (handler *QuizHandler) Phase3Review() http.HandlerFunc {
+
+	return func(res http.ResponseWriter, req *http.Request) {
+
 	}
 }
 

@@ -198,7 +198,7 @@ func (handler *EventHandler) Delete() http.HandlerFunc {
 	}
 }
 
-// Edit is a GET-method that any admin can call. It renders a form in which
+// Edit is a GET-method that any admin can call. It displays a form in which
 // values for updating the current event can be entered.
 func (handler *EventHandler) Edit() http.HandlerFunc {
 

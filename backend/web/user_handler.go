@@ -23,7 +23,7 @@ type UserHandler struct {
 	sessions *scs.SessionManager
 }
 
-// Register is a GET-method. It renders a form, in which values for registering
+// Register is a GET-method. It displays a form, in which values for registering
 // can be entered.
 func (handler *UserHandler) Register() http.HandlerFunc {
 
@@ -114,7 +114,7 @@ func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
 	}
 }
 
-// Login is a GET-method. It renders a form in which values for logging in can
+// Login is a GET-method. It displays a form in which values for logging in can
 // be entered.
 func (handler *UserHandler) Login() http.HandlerFunc {
 
@@ -313,7 +313,7 @@ func (handler *UserHandler) List() http.HandlerFunc {
 	}
 }
 
-// EditUsername is a GET-method that any user can call. It renders a form in
+// EditUsername is a GET-method that any user can call. It displays a form in
 // which values for updating the current username can be entered.
 func (handler *UserHandler) EditUsername() http.HandlerFunc {
 
@@ -398,7 +398,7 @@ func (handler *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 	}
 }
 
-// EditPassword is a GET-method that any user can call. It renders a form in
+// EditPassword is a GET-method that any user can call. It displays a form in
 // which values for updating the current password can be entered.
 func (handler *UserHandler) EditPassword() http.HandlerFunc {
 
