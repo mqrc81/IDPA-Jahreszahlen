@@ -374,13 +374,74 @@ func (handler *QuizHandler) Phase2Submit() http.HandlerFunc {
 	}
 }
 
-// TODO
 // Phase2Review is a GET-method that any user can call after Phase2. It
 // displays a correction of the questions.
 func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 
+	// Data to pass to HTML-templates
+	type data struct {
+		SessionData
+
+		Questions []phase2Question
+	}
+
+	// Parse HTML-templates
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/layout.html",
+		"frontend/pages/quiz_phase2_review.html",
+	))
+
 	return func(res http.ResponseWriter, req *http.Request) {
 
+		// Retrieve topic ID from URL parameters
+		topicIDstr := chi.URLParam(req, "topicID")
+		topicID, err := strconv.Atoi(topicIDstr)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		// Check if a user is logged in
+		user := req.Context().Value("user")
+		if user == nil {
+			// If no user is logged in, then redirect back with flash message
+			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
+				"Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen.")
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			return
+		}
+
+		// Retrieve quiz data from session
+		quizInf := handler.sessions.Get(req.Context(), "quiz")
+
+		// Validate the token of the quiz data
+		quiz, msg := validateQuizToken(quizInf, 2, false, topicID)
+		// If msg isn't empty, an error occurred
+		if msg != "" {
+			handler.sessions.Put(req.Context(), "flash_error",
+				"Ein Fehler ist aufgetreten in Phase 2 des Quizzes. "+msg)
+			http.Redirect(res, req, "/topics", http.StatusFound)
+			return
+		}
+
+		// Update quiz data
+		quiz.Reviewed = true
+		quiz.TimeStamp = time.Now()
+
+		// Retrieve questions from session
+		questions := handler.sessions.Get(req.Context(), "phase2questions").([]phase2Question)
+
+		// Add quiz data to session for later phases
+		handler.sessions.Put(req.Context(), "quiz", quiz)
+
+		// Execute HTML-templates with data
+		if err := tmpl.Execute(res, data{
+			SessionData: GetSessionData(handler.sessions, req.Context()),
+			Questions:   questions,
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
