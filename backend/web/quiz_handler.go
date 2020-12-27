@@ -416,13 +416,13 @@ type phase1Question struct {
 // Sample input: []backend.Event{{..., Year: 1945}, {..., Year: 1960}, {..., Year: 1981}, ...}
 // Sample output: [[1955 1945 1938] [1951 1961 1960] [1981 1971 1976]]
 func generatePhase1Questions(events []backend.Event) []phase1Question {
-	// Create non-nil array of questions
+	// Create array of size 3
 	questions := make([]phase1Question, p1Questions)
 
 	// Set seed to generate random numbers from
 	rand.Seed(time.Now().UnixNano())
 
-	// Loop through the first events of the array
+	// Loop through events 0-2
 	for q := 0; q < p1Questions; q++ {
 
 		correctYear := events[q].Year // the event's year
@@ -476,12 +476,20 @@ type phase2Question struct {
 	ID        string // only relevant for HTML input form name
 }
 
-// TODO
-// generatePhase2Questions generates 4 phase2Question structures from events 4-8
-// of the topic .
+// generatePhase2Questions generates 4 phase2Question structures for events 3-7
+// respectively of the array of events of the topic.
 func generatePhase2Questions(events []backend.Event) []phase2Question {
-	// Create non-nil array of questions
+	// Create array of size 4
 	questions := make([]phase2Question, p2Questions)
+
+	// Loop through events 3-7
+	for q := p1Questions; q < p2Questions+p1Questions; q++ {
+		questions = append(questions, phase2Question{
+			EventName: events[q].Name,
+			EventYear: events[q].Year,
+			ID:        "q" + strconv.Itoa(q-p1Questions), // sample ID: q0
+		})
+	}
 
 	return questions
 }
