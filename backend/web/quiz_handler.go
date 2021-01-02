@@ -10,6 +10,7 @@ import (
 	"html/template"
 	"math/rand"
 	"net/http"
+	"sort"
 	"strconv"
 	"time"
 
@@ -112,7 +113,10 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 		}
 
 		// Shuffle array of events
-		topic.Events = shuffleEvents(topic.Events)
+		rand.Seed(time.Now().UnixNano()) // generate new seed to base RNG off of
+		rand.Shuffle(len(topic.Events), func(n1, n2 int) {
+			topic.Events[n1], topic.Events[n2] = topic.Events[n2], topic.Events[n1]
+		})
 
 		// Add quiz data to session for later phases
 		handler.sessions.Put(req.Context(), "quiz", QuizData{
@@ -123,7 +127,7 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 		})
 
 		// For each of the first 3 events in the array, generate 2 other random
-		// years for the user to guess from
+		// years for the user to guess from and to use in HTML-templates
 		questions := createPhase1Questions(topic.Events)
 
 		// Add questions to session for review of phase 1
@@ -496,11 +500,15 @@ func (handler *QuizHandler) Phase3Prepare() http.HandlerFunc {
 		quiz.Reviewed = false
 		quiz.TimeStamp = time.Now()
 
-		// Shuffle array of events
-		quiz.Topic.Events = shuffleEvents(quiz.Topic.Events)
+		// For each of the events in the array, create a question to use in
+		// HTML-templates
+		// This includes marking the order of the events for future calculation
+		// of the user's accuracy and shuffling them
+		questions := createPhase3Questions(quiz.Topic.Events)
 
-		// Add quiz data and questions to session
+		// Pass quiz data and questions to session
 		handler.sessions.Put(req.Context(), "quiz", quiz)
+		handler.sessions.Put(req.Context(), "questions", questions)
 
 		// Redirect to phase 2 of quiz
 		http.Redirect(res, req, "topics/"+topicID+"/quiz/3", http.StatusFound)
@@ -667,15 +675,6 @@ func validateQuizToken(quizInf interface{}, phase int, reviewed bool, topicID in
 	return quiz, ""
 }
 
-// shuffleEvents shuffles and returns array of events
-func shuffleEvents(events []backend.Event) []backend.Event {
-	rand.Seed(time.Now().UnixNano()) // generate new seed for RNG
-	rand.Shuffle(len(events), func(n1, n2 int) {
-		events[n1], events[n2] = events[n2], events[n1]
-	})
-	return events
-}
-
 // phase1Question represents 1 of the 3 multiple-choice questions of phase 1.
 // It contains name of event, year of event and 2 random years randomly mixed
 // in with the correct year.
@@ -694,16 +693,15 @@ type phase1Question struct {
 // Sample input: []backend.Event{{..., Year: 1945}, {..., Year: 1960}, {..., Year: 1981}, ...}
 // Sample output: [[1955 1945 1938] [1951 1961 1960] [1981 1971 1976]]
 func createPhase1Questions(events []backend.Event) []phase1Question {
-	// Create array of size 3
 	var questions []phase1Question
 
 	// Set seed to generate random numbers from
 	rand.Seed(time.Now().UnixNano())
 
-	// Loop through events 0-2
-	for q := 0; q < p1Questions; q++ {
+	// Loop through events 0-2 and turn them into questions
+	for index, event := range events[:p1Questions] { // events[:3] -> 0-2
 
-		correctYear := events[q].Year // the event's year
+		correctYear := event.Year // the event's year
 
 		min := correctYear - p1ChoicesMaxDiff // minimum cap of random number
 		max := correctYear + p1ChoicesMaxDiff // maximum cap of random number
@@ -738,10 +736,10 @@ func createPhase1Questions(events []backend.Event) []phase1Question {
 
 		// Add values to structure
 		questions = append(questions, phase1Question{
-			EventName: events[q].Name,
-			EventYear: events[q].Year,
+			EventName: event.Name,
+			EventYear: event.Year,
 			Choices:   years,
-			ID:        "q" + strconv.Itoa(q), // sample ID: q0
+			ID:        "q" + strconv.Itoa(index), // sample ID of first question: q0
 		})
 	}
 
@@ -761,15 +759,14 @@ type phase2Question struct {
 // createPhase2Questions generates 4 phase2Question structures for events 3-7
 // respectively of the array of events of the topic.
 func createPhase2Questions(events []backend.Event) []phase2Question {
-	// Create array of questions
 	var questions []phase2Question
 
-	// Loop through events 3-7
-	for q := p1Questions; q < p2Questions+p1Questions; q++ {
+	// Loop through events 3-7 and turn them into questions
+	for index, event := range events[p1Questions:(p2Questions + p1Questions + 1)] { // events[3:8] -> 3-7
 		questions = append(questions, phase2Question{
-			EventName: events[q].Name,
-			EventYear: events[q].Year,
-			ID:        "q" + strconv.Itoa(q-p1Questions), // sample ID: q0
+			EventName: event.Name,
+			EventYear: event.Year,
+			ID:        "q" + strconv.Itoa(index), // sample ID of first question: q0
 		})
 	}
 
@@ -783,17 +780,33 @@ type phase3Question struct {
 	EventYear int    // year of event
 	Order     int    // nth smallest year of all events
 
-	CorrectGuess bool   // only relevant for review of phase 2
-	ID           string // only relevant for HTML input form name
+	CorrectGuess bool // only relevant for review of phase 2
 }
 
 // createPhase3Questions generates a phase3Question structure for all events of
 // the topic.
 func createPhase3Questions(events []backend.Event) []phase3Question {
-	// Create array of size 4
 	var questions []phase3Question
 
-	// TODO
+	// Sort array of events by year, in order to add 'order' value to questions
+	sort.Slice(events, func(n1, n2 int) bool {
+		return events[n1].Year < events[n2].Year
+	})
+
+	// Loop through all events and turn them into questions
+	for index, event := range events {
+		questions = append(questions, phase3Question{
+			EventName: event.Name,
+			EventYear: event.Year,
+			Order:     index, // event with earliest year will have order '0'
+		})
+	}
+
+	// Shuffle array of questions
+	rand.Seed(time.Now().UnixNano()) // generate new seed to base RNG off of
+	rand.Shuffle(len(questions), func(n1, n2 int) {
+		questions[n1], questions[n2] = questions[n2], questions[n1]
+	})
 
 	return questions
 }
