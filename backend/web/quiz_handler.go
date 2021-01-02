@@ -361,7 +361,7 @@ func (handler *QuizHandler) Phase2Submit() http.HandlerFunc {
 
 		// Retrieve quiz data and questions from session
 		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
-		questions := handler.sessions.Get(req.Context(), "phase2questions").([]phase2Question)
+		questions := handler.sessions.Get(req.Context(), "questions").([]phase2Question)
 
 		// Loop through the 4 input fields of phase 2
 		for num := 0; num < p2Questions; num++ {
@@ -395,7 +395,7 @@ func (handler *QuizHandler) Phase2Submit() http.HandlerFunc {
 
 		// Add quiz data and questions to session again
 		handler.sessions.Put(req.Context(), "quiz", quiz)
-		handler.sessions.Put(req.Context(), "phase2questions", questions)
+		handler.sessions.Put(req.Context(), "questions", questions)
 
 		// Redirect to review of phase 2
 		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/2/review", http.StatusFound)
@@ -461,7 +461,7 @@ func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 		quiz.TimeStamp = time.Now()
 
 		// Retrieve questions from session
-		questions := handler.sessions.Get(req.Context(), "phase2questions").([]phase2Question)
+		questions := handler.sessions.Get(req.Context(), "questions").([]phase2Question)
 
 		// Pass quiz data to session for later phases
 		handler.sessions.Put(req.Context(), "quiz", quiz)
@@ -695,7 +695,7 @@ type phase1Question struct {
 // Sample output: [[1955 1945 1938] [1951 1961 1960] [1981 1971 1976]]
 func createPhase1Questions(events []backend.Event) []phase1Question {
 	// Create array of size 3
-	questions := make([]phase1Question, p1Questions)
+	var questions []phase1Question
 
 	// Set seed to generate random numbers from
 	rand.Seed(time.Now().UnixNano())
@@ -737,10 +737,12 @@ func createPhase1Questions(events []backend.Event) []phase1Question {
 		})
 
 		// Add values to structure
-		questions[q].EventName = events[q].Name
-		questions[q].EventYear = events[q].Year
-		questions[q].Choices = years
-		questions[q].ID = "q" + strconv.Itoa(q) // sample ID: q0
+		questions = append(questions, phase1Question{
+			EventName: events[q].Name,
+			EventYear: events[q].Year,
+			Choices:   years,
+			ID:        "q" + strconv.Itoa(q), // sample ID: q0
+		})
 	}
 
 	return questions
@@ -759,8 +761,8 @@ type phase2Question struct {
 // createPhase2Questions generates 4 phase2Question structures for events 3-7
 // respectively of the array of events of the topic.
 func createPhase2Questions(events []backend.Event) []phase2Question {
-	// Create array of size 4
-	questions := make([]phase2Question, p2Questions)
+	// Create array of questions
+	var questions []phase2Question
 
 	// Loop through events 3-7
 	for q := p1Questions; q < p2Questions+p1Questions; q++ {
@@ -770,6 +772,28 @@ func createPhase2Questions(events []backend.Event) []phase2Question {
 			ID:        "q" + strconv.Itoa(q-p1Questions), // sample ID: q0
 		})
 	}
+
+	return questions
+}
+
+// phase3Question represents 1 of the events in the timeline of phase 3. It
+// contains name of event and year of event.
+type phase3Question struct {
+	EventName string // name of event
+	EventYear int    // year of event
+	Order     int    // nth smallest year of all events
+
+	CorrectGuess bool   // only relevant for review of phase 2
+	ID           string // only relevant for HTML input form name
+}
+
+// createPhase3Questions generates a phase3Question structure for all events of
+// the topic.
+func createPhase3Questions(events []backend.Event) []phase3Question {
+	// Create array of size 4
+	var questions []phase3Question
+
+	// TODO
 
 	return questions
 }
