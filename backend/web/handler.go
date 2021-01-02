@@ -65,13 +65,15 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 	handler.Route("/topics/{topicID}/quiz", func(router chi.Router) {
 		router.Get("/1", quiz.Phase1())
 		router.Post("/1", quiz.Phase1Submit())
-		router.Get("1/review", quiz.Phase1Review())
+		router.Get("/1/review", quiz.Phase1Review())
+		router.Post("/1/review", quiz.Phase2Prepare())
 		router.Get("/2", quiz.Phase2())
 		router.Post("/2", quiz.Phase2Submit())
-		router.Get("2/review", quiz.Phase2Review())
+		router.Get("/2/review", quiz.Phase2Review())
+		router.Post("/2/review", quiz.Phase3Prepare())
 		router.Get("/3", quiz.Phase3())
 		router.Post("/3", quiz.Phase3Submit())
-		router.Get("3/review", quiz.Phase3Review())
+		router.Get("/3/review", quiz.Phase3Review())
 		router.Get("/summary", quiz.Summary())
 	})
 

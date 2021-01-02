@@ -114,7 +114,7 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 		// Shuffle array of events
 		topic.Events = shuffleEvents(topic.Events)
 
-		// Add quiz data to session for future phases
+		// Add quiz data to session for later phases
 		handler.sessions.Put(req.Context(), "quiz", QuizData{
 			Topic:     topic,
 			Phase:     1,
@@ -127,7 +127,7 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 		questions := createPhase1Questions(topic.Events)
 
 		// Add questions to session for review of phase 1
-		handler.sessions.Put(req.Context(), "phase1questions", questions)
+		handler.sessions.Put(req.Context(), "questions", questions)
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
@@ -151,7 +151,7 @@ func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
 
 		// Retrieve quiz data and questions from session
 		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
-		questions := handler.sessions.Get(req.Context(), "phase1questions").([]phase1Question)
+		questions := handler.sessions.Get(req.Context(), "questions").([]phase1Question)
 
 		// Loop through the 3 input forms of radio-buttons of phase 1
 		for num := 0; num < p1Questions; num++ {
@@ -169,7 +169,7 @@ func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
 
 		// Add data to session again
 		handler.sessions.Put(req.Context(), "quiz", quiz)
-		handler.sessions.Put(req.Context(), "phase1questions", questions)
+		handler.sessions.Put(req.Context(), "questions", questions)
 
 		// Redirect to review of phase 1
 		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/1/review", http.StatusFound)
@@ -217,23 +217,23 @@ func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 		quizInf := handler.sessions.Get(req.Context(), "quiz")
 
 		// Validate the token of the quiz data
+		// Pass in quiz data as interface instead of struct, because before
+		// converting to struct, we have to check whether interface is nil
 		quiz, msg := validateQuizToken(quizInf, 1, false, topicID)
 		// If msg isn't empty, an error occurred
+		// Usually an error only occurs when user manually typed in a URL
+		// without starting at phase 1 or after the time stamp expired
 		if msg != "" {
 			handler.sessions.Put(req.Context(), "flash_error",
 				"Ein Fehler ist aufgetreten in Phase 1 des Quizzes. "+msg)
-			http.Redirect(res, req, "/topics", http.StatusFound)
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
 
-		// Update quiz data
-		quiz.Reviewed = true
-		quiz.TimeStamp = time.Now()
-
 		// Retrieve questions from session
-		questions := handler.sessions.Get(req.Context(), "phase1questions").([]phase1Question)
+		questions := handler.sessions.Get(req.Context(), "questions").([]phase1Question)
 
-		// Add quiz data to session for later phases
+		// Pass quiz data to session for later phases
 		handler.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Execute HTML-templates with data
@@ -244,6 +244,38 @@ func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+// Phase2Prepare is a POST-method that any user can call after
+// Phase1Review. It prepares the questions to be used in Phase2 and updates the
+// quiz data for future validation. This method allows user to refresh Phase2,
+// without quiz data becoming invalid or questions changing.
+func (handler *QuizHandler) Phase2Prepare() http.HandlerFunc {
+
+	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Retrieve topic ID from session
+		topicID := chi.URLParam(req, "topicID")
+
+		// Retrieve quiz data from session
+		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
+
+		// Update quiz data
+		quiz.Phase = 2
+		quiz.Reviewed = false
+		quiz.TimeStamp = time.Now()
+
+		// For each of the 4 events in the array, create a question to use in
+		// HTML-templates
+		questions := createPhase2Questions(quiz.Topic.Events)
+
+		// Add quiz data and questions to session
+		handler.sessions.Put(req.Context(), "quiz", quiz)
+		handler.sessions.Put(req.Context(), "questions", questions)
+
+		// Redirect to phase 2 of quiz
+		http.Redirect(res, req, "topics/"+topicID+"/quiz/2", http.StatusFound)
 	}
 }
 
@@ -281,7 +313,7 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 			// If no user is logged in, then redirect back with flash message
 			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen.")
-			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			http.Redirect(res, req, "topics/"+topicIDstr, http.StatusFound)
 			return
 		}
 
@@ -289,27 +321,23 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 		quizInf := handler.sessions.Get(req.Context(), "quiz")
 
 		// Validate the token of the quiz data
+		// Pass in quiz data as interface instead of struct, because before
+		// converting to struct, we have to check whether interface is nil
 		quiz, msg := validateQuizToken(quizInf, 1, true, topicID)
 		// If msg isn't empty, an error occurred
+		// Usually an error only occurs when user manually typed in a URL
+		// without starting at phase 1 or after the time stamp expired
 		if msg != "" {
 			handler.sessions.Put(req.Context(), "flash_error",
 				"Ein Fehler ist aufgetreten in Phase 2 des Quizzes. "+msg)
-			http.Redirect(res, req, "/topics", http.StatusFound)
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
 
-		// Update quiz data
-		quiz.Phase = 2
-		quiz.Reviewed = false
-		quiz.TimeStamp = time.Now()
-
-		// For each of the 4 events in the array, create a question to use in
-		// HTML
-		questions := createPhase2Questions(quiz.Topic.Events)
-
-		// Add quiz data and questions to session
+		// Pass quiz data and questions to session
 		handler.sessions.Put(req.Context(), "quiz", quiz)
-		handler.sessions.Put(req.Context(), "phase2questions", questions)
+		questions := handler.sessions.Get(req.Context(), "questions").([]phase2Question)
+		handler.sessions.Put(req.Context(), "questions", questions)
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
@@ -415,8 +443,12 @@ func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 		quizInf := handler.sessions.Get(req.Context(), "quiz")
 
 		// Validate the token of the quiz data
+		// Pass in quiz data as interface instead of struct, because before
+		// converting to struct, we have to check whether interface is nil
 		quiz, msg := validateQuizToken(quizInf, 2, false, topicID)
 		// If msg isn't empty, an error occurred
+		// Usually an error only occurs when user manually typed in a URL
+		// without starting at phase 1 or after the time stamp expired
 		if msg != "" {
 			handler.sessions.Put(req.Context(), "flash_error",
 				"Ein Fehler ist aufgetreten in Phase 2 des Quizzes. "+msg)
@@ -431,7 +463,7 @@ func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 		// Retrieve questions from session
 		questions := handler.sessions.Get(req.Context(), "phase2questions").([]phase2Question)
 
-		// Add quiz data to session for later phases
+		// Pass quiz data to session for later phases
 		handler.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Execute HTML-templates with data
@@ -442,6 +474,36 @@ func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+// Phase3Prepare is a POST-method that any user can call after
+// Phase2Review. It prepares the questions to be used in Phase3 and updates the
+// quiz data for future validation. This method allows user to refresh Phase3,
+// without quiz data becoming invalid or questions changing.
+func (handler *QuizHandler) Phase3Prepare() http.HandlerFunc {
+
+	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Retrieve topic ID from session
+		topicID := chi.URLParam(req, "topicID")
+
+		// Retrieve quiz data from session
+		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
+
+		// Update quiz data
+		quiz.Phase = 3
+		quiz.Reviewed = false
+		quiz.TimeStamp = time.Now()
+
+		// Shuffle array of events
+		quiz.Topic.Events = shuffleEvents(quiz.Topic.Events)
+
+		// Add quiz data and questions to session
+		handler.sessions.Put(req.Context(), "quiz", quiz)
+
+		// Redirect to phase 2 of quiz
+		http.Redirect(res, req, "topics/"+topicID+"/quiz/3", http.StatusFound)
 	}
 }
 
@@ -486,22 +548,18 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 		quizInf := handler.sessions.Get(req.Context(), "quiz")
 
 		// Validate the token of the quiz data
+		// Pass in quiz data as interface instead of struct, because before
+		// converting to struct, we have to check whether interface is nil
 		quiz, msg := validateQuizToken(quizInf, 1, true, topicID)
 		// If msg isn't empty, an error occurred
+		// Usually an error only occurs when user manually typed in a URL
+		// without starting at phase 1 or after the time stamp expired
 		if msg != "" {
 			handler.sessions.Put(req.Context(), "flash_error",
 				"Ein Fehler ist aufgetreten in Phase 3 des Quizzes. "+msg)
-			http.Redirect(res, req, "/topics", http.StatusFound)
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
-
-		// Shuffle array of events
-		quiz.Topic.Events = shuffleEvents(quiz.Topic.Events)
-
-		// Update quiz data
-		quiz.Phase = 3
-		quiz.Reviewed = false
-		quiz.TimeStamp = time.Now()
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
@@ -583,21 +641,25 @@ func validateQuizToken(quizInf interface{}, phase int, reviewed bool, topicID in
 	// Check for invalid topic ID
 	if topicID != quiz.Topic.TopicID {
 		// Occurs when a user manually changes the topic ID in the URL whilst
-		// in a later phase of a quiz.
+		// in a later phase of a quiz
+		// Example: "/topics/1/quiz/2/review" -> "/topics/21/quiz/2/review"
 		return QuizData{}, "Womöglich haben Sie versucht, während des Quizzes das Thema zu ändern."
 	}
 
 	// Check for invalid phase
 	if phase != quiz.Phase || reviewed != quiz.Reviewed {
 		// Occurs when a user manually changes the phase in the URL
+		// Example: "/topics/1/quiz/1" -> "/topics/1/quiz/3"
 		return QuizData{}, "Womöglich haben Sie versucht, eine Phase des Quizzes zu überspringen."
 	}
 
-	// Check for invalid time stamp. Unix() displays the time passed in seconds since
-	// a specific date. By adding the time stamp of the quiz data to the max
-	// idle time, we can check if it was surpassed by the current time
+	// Check for invalid time stamp. Unix() displays the time passed in seconds
+	// since a specific date. By adding the time stamp of the quiz data to the
+	// expiry time, we can check if it was surpassed by the current time
 	if time.Now().Unix() > quiz.TimeStamp.Unix()+timeExpiry*60 {
-		// Occurs when a user takes unreasonably long to complete a phase
+		// Occurs when a user refreshes URL or comes back to URL of a active
+		// quiz after 20 minutes have passed
+		// A user can still take more than the 20 minutes in a phase however
 		return QuizData{}, "Nach " + strconv.Itoa(timeExpiry) + " Minuten Inaktivität in einer Phase, " +
 			"endet das Quiz, da angenommen wird, der Benutzer habe das Quiz verlassen."
 	}
