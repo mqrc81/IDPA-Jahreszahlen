@@ -31,6 +31,8 @@ const (
 	p2Questions     = 4 // amount of questions in phase 2
 	p2Points        = 8 // amount of points per correct guess of phase 2
 	p2PartialPoints = 3 // amount of partial points possible in phase 2, when guess was incorrect, but close
+
+	p3Points = 5
 )
 
 // init gets initialized with the package. It registers certain types to the
@@ -377,11 +379,9 @@ func (handler *QuizHandler) Phase2Submit() http.HandlerFunc {
 			} else {
 				// Get absolute value of difference between user's guess and
 				// correct year
-				var difference int
-				if guess >= correctYear {
-					difference = guess - correctYear
-				} else {
-					difference = correctYear - guess
+				difference := correctYear - guess
+				if guess > correctYear {
+					difference *= -1
 				}
 
 				// Check if the user's guess is close and potentially add
@@ -573,7 +573,6 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 	}
 }
 
-// TODO
 // Phase3Submit is a POST-method that any user can call after Phase3. It
 // calculates the points and redirects to Phase3Review. It also creates a new
 // score object and stores it in the database.
@@ -581,6 +580,38 @@ func (handler *QuizHandler) Phase3Submit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
+		// Retrieve topic ID from URL parameters
+		topicID := chi.URLParam(req, "topicID")
+
+		// Retrieve quiz data from session
+		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
+		questions := quiz.Questions.([]phase3Question)
+
+		// Create map of questions to check a question's order given its name
+		questionsMap := make(map[string]int)
+		for _, question := range questions {
+			questionsMap[question.EventName] = question.Order
+		}
+
+		for num := 0; num < len(questions); num++ {
+			// Retrieve user's guess from form
+			guess := req.FormValue("q" + strconv.Itoa(num))
+
+			order := questionsMap[guess] // correct order of the event
+
+			// Get absolute value of difference between user's guess and
+			// correct order
+			difference := order - num // num represents the user's order
+			if num > order {
+				difference *= -1
+			}
+
+			// User gets a max of 5 potential points, -1 per differ of order
+			quiz.Points += p3Points - difference
+		}
+
+		// Redirect to review of phase 3
+		http.Redirect(res, req, "/topics/"+topicID+"/quiz/3/review", http.StatusFound)
 	}
 }
 

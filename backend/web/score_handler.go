@@ -54,7 +54,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 
 		var scores []backend.Score
 
-		// Retrieve topic from URL parameters
+		// Retrieve topic from URL
 		topicID := -1
 		var err error
 		topic := req.URL.Query().Get("topic")
@@ -66,7 +66,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 			}
 		}
 
-		// Retrieve user from URL parameters
+		// Retrieve user from URL
 		userFilter := req.URL.Query().Get("user")
 
 		// Retrieve limit from URL parameters
