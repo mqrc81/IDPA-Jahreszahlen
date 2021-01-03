@@ -46,6 +46,8 @@ func init() {
 	gob.Register([]int{})
 	gob.Register([]phase2Question{})
 	gob.Register(phase2Question{})
+	gob.Register([]phase3Question{})
+	gob.Register(phase3Question{})
 }
 
 // QuizHandler is the object for handlers to access sessions and database.
@@ -59,12 +61,14 @@ type QuizHandler struct {
 // time expiry and current phase) in order to validate the correct playing
 // order of a quiz.
 type QuizData struct {
-	Topic  backend.Topic // Contains topic ID for validation and events for playing the quiz
+	Topic  backend.Topic // contains topic ID for validation and events for playing the quiz
 	Points int
 
-	Phase     int       // Ensures the correct playing order, so that a user can't skip any phase
-	Reviewed  bool      // Ensures a user can't skip a reviewing phase
-	TimeStamp time.Time // Ensures a user can't continue a quiz after n minutes of inactivity
+	Questions interface{} // questions for each of the 3 phases
+
+	Phase     int       // ensures the correct playing order, so that a user can't skip any phase
+	Reviewed  bool      // ensures a user can't skip a reviewing phase
+	TimeStamp time.Time // ensures a user can't return to a quiz after n minutes
 }
 
 // Phase1 is a GET-method that any user can call. It consists of a form with 3
@@ -118,20 +122,18 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 			topic.Events[n1], topic.Events[n2] = topic.Events[n2], topic.Events[n1]
 		})
 
-		// Add quiz data to session for later phases
-		handler.sessions.Put(req.Context(), "quiz", QuizData{
-			Topic:     topic,
-			Phase:     1,
-			Reviewed:  false,
-			TimeStamp: time.Now(),
-		})
-
 		// For each of the first 3 events in the array, generate 2 other random
 		// years for the user to guess from and to use in HTML-templates
 		questions := createPhase1Questions(topic.Events)
 
-		// Add questions to session for review of phase 1
-		handler.sessions.Put(req.Context(), "questions", questions)
+		// Create quiz data and pass it to session
+		handler.sessions.Put(req.Context(), "quiz", QuizData{
+			Topic:     topic,
+			Phase:     1,
+			Questions: questions,
+			Reviewed:  false,
+			TimeStamp: time.Now(),
+		})
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
@@ -153,9 +155,9 @@ func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
 		// Retrieve topic ID from URL parameters
 		topicIDstr := chi.URLParam(req, "topicID")
 
-		// Retrieve quiz data and questions from session
+		// Retrieve quiz data from session
 		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
-		questions := handler.sessions.Get(req.Context(), "questions").([]phase1Question)
+		questions := quiz.Questions.([]phase1Question)
 
 		// Loop through the 3 input forms of radio-buttons of phase 1
 		for num := 0; num < p1Questions; num++ {
@@ -170,10 +172,10 @@ func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
 				questions[num].CorrectGuess = true // ...change value for that question
 			}
 		}
+		quiz.Questions = questions
 
 		// Add data to session again
 		handler.sessions.Put(req.Context(), "quiz", quiz)
-		handler.sessions.Put(req.Context(), "questions", questions)
 
 		// Redirect to review of phase 1
 		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/1/review", http.StatusFound)
@@ -234,16 +236,13 @@ func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 			return
 		}
 
-		// Retrieve questions from session
-		questions := handler.sessions.Get(req.Context(), "questions").([]phase1Question)
-
 		// Pass quiz data to session for later phases
 		handler.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
-			Questions:   questions,
+			Questions:   quiz.Questions.([]phase1Question),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -265,18 +264,16 @@ func (handler *QuizHandler) Phase2Prepare() http.HandlerFunc {
 		// Retrieve quiz data from session
 		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
 
-		// Update quiz data
+		// Update quiz data and add questions for phase 2
 		quiz.Phase = 2
 		quiz.Reviewed = false
 		quiz.TimeStamp = time.Now()
-
 		// For each of the 4 events in the array, create a question to use in
 		// HTML-templates
-		questions := createPhase2Questions(quiz.Topic.Events)
+		quiz.Questions = createPhase2Questions(quiz.Topic.Events)
 
-		// Add quiz data and questions to session
+		// Pass quiz data to session
 		handler.sessions.Put(req.Context(), "quiz", quiz)
-		handler.sessions.Put(req.Context(), "questions", questions)
 
 		// Redirect to phase 2 of quiz
 		http.Redirect(res, req, "topics/"+topicID+"/quiz/2", http.StatusFound)
@@ -338,15 +335,13 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 			return
 		}
 
-		// Pass quiz data and questions to session
+		// Pass quiz data to session
 		handler.sessions.Put(req.Context(), "quiz", quiz)
-		questions := handler.sessions.Get(req.Context(), "questions").([]phase2Question)
-		handler.sessions.Put(req.Context(), "questions", questions)
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
-			Questions:   questions,
+			Questions:   quiz.Questions.([]phase2Question),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -363,9 +358,9 @@ func (handler *QuizHandler) Phase2Submit() http.HandlerFunc {
 		// Retrieve topic ID from URL parameters
 		topicIDstr := chi.URLParam(req, "topicID")
 
-		// Retrieve quiz data and questions from session
+		// Retrieve quiz data from session
 		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
-		questions := handler.sessions.Get(req.Context(), "questions").([]phase2Question)
+		questions := quiz.Questions.([]phase2Question)
 
 		// Loop through the 4 input fields of phase 2
 		for num := 0; num < p2Questions; num++ {
@@ -396,10 +391,10 @@ func (handler *QuizHandler) Phase2Submit() http.HandlerFunc {
 				}
 			}
 		}
+		quiz.Questions = questions
 
-		// Add quiz data and questions to session again
+		// Pass quiz data to session again
 		handler.sessions.Put(req.Context(), "quiz", quiz)
-		handler.sessions.Put(req.Context(), "questions", questions)
 
 		// Redirect to review of phase 2
 		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/2/review", http.StatusFound)
@@ -464,16 +459,13 @@ func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 		quiz.Reviewed = true
 		quiz.TimeStamp = time.Now()
 
-		// Retrieve questions from session
-		questions := handler.sessions.Get(req.Context(), "questions").([]phase2Question)
-
 		// Pass quiz data to session for later phases
 		handler.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
-			Questions:   questions,
+			Questions:   quiz.Questions.([]phase2Question),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -495,20 +487,18 @@ func (handler *QuizHandler) Phase3Prepare() http.HandlerFunc {
 		// Retrieve quiz data from session
 		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
 
-		// Update quiz data
+		// Update quiz data and add questions for phase 3
 		quiz.Phase = 3
 		quiz.Reviewed = false
 		quiz.TimeStamp = time.Now()
-
 		// For each of the events in the array, create a question to use in
 		// HTML-templates
 		// This includes marking the order of the events for future calculation
-		// of the user's accuracy and shuffling them
-		questions := createPhase3Questions(quiz.Topic.Events)
+		// of the user's points and shuffling them
+		quiz.Questions = createPhase3Questions(quiz.Topic.Events)
 
-		// Pass quiz data and questions to session
+		// Pass quiz data to session
 		handler.sessions.Put(req.Context(), "quiz", quiz)
-		handler.sessions.Put(req.Context(), "questions", questions)
 
 		// Redirect to phase 2 of quiz
 		http.Redirect(res, req, "topics/"+topicID+"/quiz/3", http.StatusFound)
@@ -523,7 +513,7 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 	type data struct {
 		SessionData
 
-		Events []backend.Event
+		Questions []phase3Question
 	}
 
 	// Parse HTML-templates
@@ -569,10 +559,13 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 			return
 		}
 
+		// Pass quiz data to session
+		handler.sessions.Put(req.Context(), "quiz", quiz)
+
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
-			Events:      quiz.Topic.Events,
+			Questions:   quiz.Questions.([]phase3Question),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -689,9 +682,6 @@ type phase1Question struct {
 
 // createPhase1Questions generates 3 phase1Question structures by generating
 // 2 random years for each of the first 3 events in the array.
-//
-// Sample input: []backend.Event{{..., Year: 1945}, {..., Year: 1960}, {..., Year: 1981}, ...}
-// Sample output: [[1955 1945 1938] [1951 1961 1960] [1981 1971 1976]]
 func createPhase1Questions(events []backend.Event) []phase1Question {
 	var questions []phase1Question
 
@@ -706,23 +696,17 @@ func createPhase1Questions(events []backend.Event) []phase1Question {
 		min := correctYear - p1ChoicesMaxDiff // minimum cap of random number
 		max := correctYear + p1ChoicesMaxDiff // maximum cap of random number
 
-		years := []int{correctYear}
+		years := []int{correctYear}                 // array of years
+		yearsMap := map[int]bool{correctYear: true} // map of years to ascertain uniqueness of each year
 
 		// Generate unique, random numbers between max and min, to mix with the correct year
+		rand.Seed(time.Now().Unix()) // set a seed to base RNG off of
 		for c := 1; c < p1Choices; c++ {
-			rand.Seed(time.Now().Unix())          // set a seed for RNG
-			newYear := rand.Intn(max-min+1) + min // generate a random number between min and max
+			year := rand.Intn(max-min+1) + min // generate a random number between min and max
 
-			// Loop through array of already existing years, to check if the newly generated year is unique
-			unique := true
-			for _, year := range years {
-				if newYear == year {
-					unique = false
-					break
-				}
-			}
-			if unique {
-				years = append(years, newYear) // add newly generated year to array of years
+			if !yearsMap[year] {
+				years = append(years, year) // add newly generated year to array of years
+				yearsMap[year] = true
 			} else {
 				c-- // redo generating the previous year
 			}
