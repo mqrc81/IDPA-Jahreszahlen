@@ -131,10 +131,7 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 		// Create quiz data and pass it to session
 		handler.sessions.Put(req.Context(), "quiz", QuizData{
 			Topic:     topic,
-			Phase:     1,
 			Questions: questions,
-			Reviewed:  false,
-			TimeStamp: time.Now(),
 		})
 
 		// Execute HTML-templates with data
@@ -160,6 +157,11 @@ func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
 		// Retrieve quiz data from session
 		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
 		questions := quiz.Questions.([]phase1Question)
+
+		// Update quiz data
+		quiz.Phase = 1
+		quiz.Reviewed = false
+		quiz.TimeStamp = time.Now()
 
 		// Loop through the 3 input forms of radio-buttons of phase 1
 		for num := 0; num < p1Questions; num++ {
@@ -267,8 +269,8 @@ func (handler *QuizHandler) Phase2Prepare() http.HandlerFunc {
 		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
 
 		// Update quiz data and add questions for phase 2
-		quiz.Phase = 2
-		quiz.Reviewed = false
+		quiz.Phase = 1
+		quiz.Reviewed = true
 		quiz.TimeStamp = time.Now()
 		// For each of the 4 events in the array, create a question to use in
 		// HTML-templates
@@ -364,6 +366,11 @@ func (handler *QuizHandler) Phase2Submit() http.HandlerFunc {
 		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
 		questions := quiz.Questions.([]phase2Question)
 
+		// Update quiz data
+		quiz.Phase = 2
+		quiz.Reviewed = false
+		quiz.TimeStamp = time.Now()
+
 		// Loop through the 4 input fields of phase 2
 		for num := 0; num < p2Questions; num++ {
 
@@ -455,10 +462,6 @@ func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 			return
 		}
 
-		// Update quiz data
-		quiz.Reviewed = true
-		quiz.TimeStamp = time.Now()
-
 		// Pass quiz data to session for later phases
 		handler.sessions.Put(req.Context(), "quiz", quiz)
 
@@ -488,8 +491,8 @@ func (handler *QuizHandler) Phase3Prepare() http.HandlerFunc {
 		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
 
 		// Update quiz data and add questions for phase 3
-		quiz.Phase = 3
-		quiz.Reviewed = false
+		quiz.Phase = 2
+		quiz.Reviewed = true
 		quiz.TimeStamp = time.Now()
 		// For each of the events in the array, create a question to use in
 		// HTML-templates
@@ -548,7 +551,7 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 		// Validate the token of the quiz data
 		// Pass in quiz data as interface instead of struct, because before
 		// converting to struct, we have to check whether interface is nil
-		quiz, msg := validateQuizToken(quizInf, 1, true, topicID)
+		quiz, msg := validateQuizToken(quizInf, 2, true, topicID)
 		// If msg isn't empty, an error occurred
 		// Usually an error only occurs when user manually typed in a URL
 		// without starting at phase 1 or after the time stamp expired
@@ -587,6 +590,11 @@ func (handler *QuizHandler) Phase3Submit() http.HandlerFunc {
 		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
 		questions := quiz.Questions.([]phase3Question)
 
+		// Update quiz data
+		quiz.Phase = 3
+		quiz.Reviewed = false
+		quiz.TimeStamp = time.Now()
+
 		// Create map of questions to check a question's order given its name
 		questionsMap := make(map[string]int)
 		for _, question := range questions {
@@ -607,6 +615,8 @@ func (handler *QuizHandler) Phase3Submit() http.HandlerFunc {
 			}
 
 			// User gets a max of 5 potential points, -1 per differ of order
+			// Example: order of event: 7, user's guess of order of event: 10
+			// => user gets 2 points (5-[10-7])
 			quiz.Points += p3Points - difference
 		}
 
