@@ -83,6 +83,7 @@ type ScoreStore interface {
 	GetScoresByUser(userID int, limit int, offset int) ([]Score, error)
 	GetScoresByTopicAndUser(topicID int, userID int, limit int, offset int) ([]Score, error)
 	CreateScore(score *Score) error
+	GetAveragePointsByTopic(topicID int) (float64, error)
 }
 
 // Store combines TopicStore, EventStore, UserStore and ScoreStore.

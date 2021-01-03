@@ -144,3 +144,21 @@ func (store ScoreStore) CreateScore(score *backend.Score) error {
 
 	return nil
 }
+
+// GetAveragePointsByTopic calculates the average points of scores of a certain
+// topic.
+func (store ScoreStore) GetAveragePointsByTopic(topicID int) (float64, error) {
+	var averagePoints float64
+
+	// Execute prepared statement
+	query := `
+		SELECT SUM(points) / COUNT(DISTINCT score_id)
+		FROM scores
+		WHERE topic_id = ?
+		`
+	if err := store.Get(&averagePoints, query, topicID); err != nil {
+		return 0, fmt.Errorf("error getting average points of scores: %w", err)
+	}
+
+	return averagePoints, nil
+}

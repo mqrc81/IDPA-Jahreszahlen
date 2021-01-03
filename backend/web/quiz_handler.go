@@ -8,6 +8,7 @@ package web
 import (
 	"encoding/gob"
 	"html/template"
+	"math"
 	"math/rand"
 	"net/http"
 	"sort"
@@ -63,8 +64,9 @@ type QuizHandler struct {
 // time expiry and current phase) in order to validate the correct playing
 // order of a quiz.
 type QuizData struct {
-	Topic  backend.Topic // contains topic ID for validation and events for playing the quiz
-	Points int
+	Topic          backend.Topic // contains topic ID for validation and events for playing the quiz
+	Points         int
+	CorrectGuesses int
 
 	Questions interface{} // questions for each of the 3 phases
 
@@ -172,6 +174,7 @@ func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
 			// Check if the user's guess is correct, by comparing it to the
 			// corresponding event in the array of events of the topic
 			if guess == quiz.Topic.Events[num].Year { // if guess is correct...
+				quiz.CorrectGuesses++
 				quiz.Points += p1Points            // ...user gets 3 points
 				questions[num].CorrectGuess = true // ...change value for that question
 			}
@@ -381,15 +384,13 @@ func (handler *QuizHandler) Phase2Submit() http.HandlerFunc {
 			// corresponding event in the array of events of the topic
 			correctYear := quiz.Topic.Events[num+p1Questions].Year
 			if guess == correctYear { // if guess is correct...
+				quiz.CorrectGuesses++
 				quiz.Points += p2Points            // ...user gets 8 points
 				questions[num].CorrectGuess = true // ...change value for that question
 			} else {
 				// Get absolute value of difference between user's guess and
 				// correct year
-				difference := correctYear - guess
-				if guess > correctYear {
-					difference *= -1
-				}
+				difference := Abs(correctYear - guess)
 
 				// Check if the user's guess is close and potentially add
 				// partial points (the closer the guess, the more points)
@@ -610,13 +611,11 @@ func (handler *QuizHandler) Phase3Submit() http.HandlerFunc {
 
 			// Get absolute value of difference between user's guess and
 			// correct order
-			difference := order - num // num represents the user's order
-			if num > order {
-				difference *= -1
-			}
+			difference := Abs(order - num) // num represents the user's order
 
 			// Check if guess was correct
 			if difference == 0 {
+				quiz.CorrectGuesses++
 				questions[num].CorrectGuess = true
 			}
 
@@ -644,7 +643,6 @@ func (handler *QuizHandler) Phase3Submit() http.HandlerFunc {
 	}
 }
 
-// TODO
 // Phase3Review is a GET-method that any user can call after Phase3. It
 // displays a correction of the questions.
 func (handler *QuizHandler) Phase3Review() http.HandlerFunc {
@@ -713,13 +711,18 @@ func (handler *QuizHandler) Phase3Review() http.HandlerFunc {
 	}
 }
 
-// TODO
 // Summary is a GET-method that any user can call after Phase3Review. It
 // summarizes the quiz completed.
 func (handler *QuizHandler) Summary() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
+
+		Quiz              QuizData
+		QuestionsCount    int
+		PotentialPoints   int
+		AverageComparison int
+		OverAverage       bool
 	}
 
 	// Parse HTML-templates
@@ -730,9 +733,50 @@ func (handler *QuizHandler) Summary() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
+		// Retrieve topic ID from session
+		topicIDstr := chi.URLParam(req, "topicID")
+		topicID, err := strconv.Atoi(topicIDstr)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		// Retrieve quiz data from session
+		quizInf := handler.sessions.Get(req.Context(), "quiz")
+
+		// Validate the token of the quiz data
+		// Pass in quiz data as interface instead of struct, because before
+		// converting to struct, we have to check whether interface is nil
+		quiz, msg := validateQuizToken(quizInf, 1, false, topicID)
+		// If msg isn't empty, an error occurred
+		// Usually an error only occurs when user manually typed in a URL
+		// without starting at phase 1 or after the time stamp expired
+		if msg != "" {
+			handler.sessions.Put(req.Context(), "flash_error",
+				"Ein Fehler ist aufgetreten in Phase 1 des Quizzes. "+msg)
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			return
+		}
+
+		// Get average score for this topic from database
+		averagePoints, err := handler.store.GetAveragePointsByTopic(topicID)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Calculate comparison between user's points and average points
+		overAverage := float64(quiz.Points) >= averagePoints
+		averageComparison := Abs(int(math.Round((float64(quiz.Points) - averagePoints) / averagePoints)))
+
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData:       GetSessionData(handler.sessions, req.Context()),
+			Quiz:              quiz,
+			QuestionsCount:    p1Questions + p2Questions + len(quiz.Topic.Events),
+			PotentialPoints:   p1Questions*p1Points + p2Questions*p2Points + len(quiz.Topic.Events)*p3Points,
+			AverageComparison: averageComparison,
+			OverAverage:       overAverage,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
