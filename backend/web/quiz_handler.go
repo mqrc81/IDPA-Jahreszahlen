@@ -626,6 +626,19 @@ func (handler *QuizHandler) Phase3Submit() http.HandlerFunc {
 			quiz.Points += p3Points - difference
 		}
 
+		// Retrieve user from session
+		user := req.Context().Value("user").(backend.User)
+
+		// Add score of quiz to database
+		if err := handler.store.CreateScore(&backend.Score{
+			TopicID: quiz.Topic.TopicID,
+			UserID:  user.UserID,
+			Points:  quiz.Points,
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		// Redirect to review of phase 3
 		http.Redirect(res, req, "/topics/"+topicID+"/quiz/3/review", http.StatusFound)
 	}
