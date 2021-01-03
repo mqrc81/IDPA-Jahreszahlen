@@ -204,9 +204,9 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
-		Event backend.Event
-
 		SessionData
+
+		Event backend.Event
 	}
 
 	// Parse HTML-templates
@@ -244,8 +244,8 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
-			Event:       event,
 			SessionData: GetSessionData(handler.sessions, req.Context()),
+			Event:       event,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return

@@ -230,9 +230,9 @@ func (handler *UserHandler) Profile() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
-		User backend.User
-
 		SessionData
+
+		User backend.User
 	}
 
 	// Parse HTML-templates
@@ -271,9 +271,9 @@ func (handler *UserHandler) List() http.HandlerFunc {
 
 	// Data to pass to HTML-template
 	type data struct {
-		Users []backend.User
-
 		SessionData
+
+		Users []backend.User
 	}
 
 	// Parse HTML-templates

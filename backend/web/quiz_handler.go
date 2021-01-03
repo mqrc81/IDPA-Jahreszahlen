@@ -601,6 +601,7 @@ func (handler *QuizHandler) Phase3Submit() http.HandlerFunc {
 			questionsMap[question.EventName] = question.Order
 		}
 
+		// Loop through user's order of events of phase 3
 		for num := 0; num < len(questions); num++ {
 			// Retrieve user's guess from form
 			guess := req.FormValue("q" + strconv.Itoa(num))
@@ -612,6 +613,11 @@ func (handler *QuizHandler) Phase3Submit() http.HandlerFunc {
 			difference := order - num // num represents the user's order
 			if num > order {
 				difference *= -1
+			}
+
+			// Check if guess was correct
+			if difference == 0 {
+				questions[num].CorrectGuess = true
 			}
 
 			// User gets a max of 5 potential points, -1 per differ of order
@@ -630,8 +636,67 @@ func (handler *QuizHandler) Phase3Submit() http.HandlerFunc {
 // displays a correction of the questions.
 func (handler *QuizHandler) Phase3Review() http.HandlerFunc {
 
+	// Data to pass to HTML-templates
+	type data struct {
+		SessionData
+
+		Questions []phase3Question
+	}
+
+	// Parse HTML-templates
+	tmpl := template.Must(template.ParseFiles(
+		"frontend/layout.html",
+		"frontend/pages/quiz_phase3_review.html",
+	))
+
 	return func(res http.ResponseWriter, req *http.Request) {
 
+		// Retrieve topic ID from URL parameters
+		topicIDstr := chi.URLParam(req, "topicID")
+		topicID, err := strconv.Atoi(topicIDstr)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		// Check if a user is logged in
+		user := req.Context().Value("user")
+		if user == nil {
+			// If no user is logged in, then redirect back with flash message
+			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
+				"Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen.")
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			return
+		}
+
+		// Retrieve quiz data from session
+		quizInf := handler.sessions.Get(req.Context(), "quiz")
+
+		// Validate the token of the quiz data
+		// Pass in quiz data as interface instead of struct, because before
+		// converting to struct, we have to check whether interface is nil
+		quiz, msg := validateQuizToken(quizInf, 3, false, topicID)
+		// If msg isn't empty, an error occurred
+		// Usually an error only occurs when user manually typed in a URL
+		// without starting at phase 1 or after the time stamp expired
+		if msg != "" {
+			handler.sessions.Put(req.Context(), "flash_error",
+				"Ein Fehler ist aufgetreten in Phase 3 des Quizzes. "+msg)
+			http.Redirect(res, req, "/topics", http.StatusFound)
+			return
+		}
+
+		// Pass quiz data to session for summary
+		handler.sessions.Put(req.Context(), "quiz", quiz)
+
+		// Execute HTML-templates with data
+		if err := tmpl.Execute(res, data{
+			SessionData: GetSessionData(handler.sessions, req.Context()),
+			Questions:   quiz.Questions.([]phase3Question),
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -702,8 +767,8 @@ func validateQuizToken(quizInf interface{}, phase int, reviewed bool, topicID in
 		// Occurs when a user refreshes URL or comes back to URL of a active
 		// quiz after 20 minutes have passed
 		// A user can still take more than the 20 minutes in a phase however
-		return QuizData{}, "Nach " + strconv.Itoa(timeExpiry) + " Minuten Inaktivität in einer Phase, " +
-			"endet das Quiz, da angenommen wird, der Benutzer habe das Quiz verlassen."
+		return QuizData{}, "Womöglich haben Sie das Quiz verlassen und dann versucht, nach über " +
+			strconv.Itoa(timeExpiry) + " Minuten zurückzukehren."
 	}
 
 	return quiz, ""
