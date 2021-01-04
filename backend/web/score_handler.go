@@ -21,7 +21,6 @@ type ScoreHandler struct {
 	sessions *scs.SessionManager
 }
 
-// TODO
 // List is a GET-method that any user can call. It lists all scores, ranked by
 // points, with the ability to filter scores by topic and/or user.
 func (handler *ScoreHandler) List() http.HandlerFunc {
@@ -30,7 +29,12 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 	type data struct {
 		SessionData
 
-		Scores []backend.Score
+		Leaderboard []leaderboardRow
+
+		Topic int
+		User  string
+		Page  int
+		Show  int
 	}
 
 	// Parse HTML-templates
@@ -54,87 +58,89 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 
 		var scores []backend.Score
 
-		// Retrieve topic from URL
-		topicID := -1
-		var err error
-		topic := req.URL.Query().Get("topic")
-		if len(topic) != 0 {
-			topicID, err = strconv.Atoi(topic)
-			if err != nil {
-				http.Error(res, err.Error(), http.StatusNotFound)
-				return
-			}
+		// Retrieve URL query parameters for filtering the leaderboard from URL
+		topicID, _ := strconv.Atoi(req.URL.Query().Get("topic")) // if topic query is empty or not a number, topicID = 0
+		userFilter := strings.ToLower(req.URL.Query().Get("user"))
+		limit, _ := strconv.Atoi(req.URL.Query().Get("show")) // if show query is empty or not a number, limit = 25
+		if limit == 0 {
+			limit = 25
 		}
+		page, _ := strconv.Atoi(req.URL.Query().Get("page")) // if page is empty or not a number, offset = 0
+		offset := (page - 1) * limit                         // if "/scores?page=3&show=15", start at score 31
 
-		// Retrieve user from URL
-		userFilter := req.URL.Query().Get("user")
-
-		// Retrieve limit from URL parameters
-		limit := 15
-		show := req.URL.Query().Get("show")
-		if len(show) != 0 {
-			limit, err = strconv.Atoi(show)
-			if err != nil {
-				http.Error(res, err.Error(), http.StatusNotFound)
-				return
-			}
-		}
-
-		// Retrieve offset from URL parameters
-		offset := 0
-		page := req.URL.Query().Get("page")
-		if len(page) != 0 {
-			offset, err = strconv.Atoi(page)
-			if err != nil {
-				http.Error(res, err.Error(), http.StatusNotFound)
-				return
-			}
-			offset = (offset - 1) * limit
-		}
-
-		if topicID != -1 {
-			if strings.ToLower(userFilter) == "me" { // Topic and user specified in URL parameters
+		if topicID != 0 {
+			if userFilter == "me" { // Topic and user specified in URL parameters
 				// Execute SQL statement to get scores
-				scores_, err := handler.store.GetScoresByTopicAndUser(topicID, user.UserID, limit, offset)
+				scoresByTopicAndUser, err := handler.store.GetScoresByTopicAndUser(topicID, user.UserID, limit, offset)
 				if err != nil {
 					http.Error(res, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				scores = scores_
+				scores = scoresByTopicAndUser
 			} else { // Only topic specified in URL parameters
 				// Execute SQL statement to get scores
-				scores_, err := handler.store.GetScoresByTopic(topicID, limit, offset)
+				scoresByTopic, err := handler.store.GetScoresByTopic(topicID, limit, offset)
 				if err != nil {
 					http.Error(res, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				scores = scores_
+				scores = scoresByTopic
 			}
-		} else if strings.ToLower(userFilter) == "me" { // Only user specified in URL parameters
+		} else if userFilter == "me" { // Only user specified in URL parameters
 			// Execute SQL statement to get scores
-			scores_, err := handler.store.GetScoresByUser(user.UserID, limit, offset)
+			scoresByUser, err := handler.store.GetScoresByUser(user.UserID, limit, offset)
 			if err != nil {
 				http.Error(res, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			scores = scores_
+			scores = scoresByUser
 		} else { // No topic or user specified in URL parameters
 			// Execute SQL statement to get scores
-			scores_, err := handler.store.GetScores(limit, offset)
+			scoresAll, err := handler.store.GetScores(limit, offset)
 			if err != nil {
 				http.Error(res, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			scores = scores_
+			scores = scoresAll
 		}
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
-			Scores:      scores,
+			Leaderboard: createLeaderboardRows(scores, offset),
+			Topic:       topicID,
+			User:        userFilter,
+			Page:        page,
+			Show:        limit,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
+}
+
+// leaderboardRow represents a row of the leaderboard
+type leaderboardRow struct {
+	Rank      int
+	UserName  string
+	TopicName string
+	Date      string
+	Points    int
+}
+
+// createLeaderboardRows generates all rows of the leaderboard
+func createLeaderboardRows(scores []backend.Score, offset int) []leaderboardRow {
+	var leaderboard []leaderboardRow
+
+	for index, score := range scores {
+		leaderboard = append(leaderboard, leaderboardRow{
+			Rank:      index + offset + 1,
+			UserName:  score.UserName,
+			TopicName: score.TopicName,
+			Date:      score.Date,
+			Points:    score.Points,
+		})
+	}
+
+	return leaderboard
 }

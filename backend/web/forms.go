@@ -261,5 +261,11 @@ func regex(str string, regex string) bool {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	return match
 }
+
+// TODO form validation for:
+//  - phase 1 of quiz
+//  - phase 2 of quiz
+//  - phase 3 of quiz
