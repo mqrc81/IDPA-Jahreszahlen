@@ -120,7 +120,6 @@ func (handler *Handler) Home() http.HandlerFunc {
 		SessionData
 
 		Topics []backend.Topic
-		Scores []backend.Score
 	}
 
 	// Parse HTML-templates
@@ -137,18 +136,10 @@ func (handler *Handler) Home() http.HandlerFunc {
 			return
 		}
 
-		// Execute SQL statement to get scores
-		scores, err := handler.store.GetScores(5, 0)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topics:      topics,
-			Scores:      scores,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return

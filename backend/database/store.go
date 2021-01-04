@@ -14,7 +14,7 @@ import (
 // NewStore connects to database and initializes new store objects.
 func NewStore(dataSourceName string) (*Store, error) {
 	// Open database connection
-	db, err := sqlx.Open("mysql", dataSourceName)
+	db, err := sqlx.Open("mysql", dataSourceName+"?parseTime=true")
 	if err != nil {
 		return nil, fmt.Errorf("error opening database: %w", err)
 	}

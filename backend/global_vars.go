@@ -1,5 +1,9 @@
 package backend
 
+import (
+	"time"
+)
+
 /*
  * Contains all global variables and their functions, to be accessed throughout
  * the project.
@@ -37,13 +41,13 @@ type User struct {
 // Score represents points scored by a user upon having successfully finished
 // playing a quiz.
 type Score struct {
-	ScoreID   int    `db:"score_id"`
-	TopicID   int    `db:"topic_id"`
-	UserID    int    `db:"user_id"`
-	Points    int    `db:"points"`
-	Date      string `db:"date"`
-	TopicName string `db:"topic_name"`
-	UserName  string `db:"user_name"`
+	ScoreID   int       `db:"score_id"`
+	TopicID   int       `db:"topic_id"`
+	UserID    int       `db:"user_id"`
+	Points    int       `db:"points"`
+	Date      time.Time `db:"date"`
+	TopicName string    `db:"topic_name"`
+	UserName  string    `db:"user_name"`
 }
 
 // TopicStore stores functions using topics for the database-layer.

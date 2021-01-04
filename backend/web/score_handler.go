@@ -59,14 +59,14 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 		var scores []backend.Score
 
 		// Retrieve URL query parameters for filtering the leaderboard from URL
-		topicID, _ := strconv.Atoi(req.URL.Query().Get("topic")) // if topic query is empty or not a number, topicID = 0
-		userFilter := strings.ToLower(req.URL.Query().Get("user"))
-		limit, _ := strconv.Atoi(req.URL.Query().Get("show")) // if show query is empty or not a number, limit = 25
+		topicID, _ := strconv.Atoi(req.URL.Query().Get("topic"))   // if topic query is empty or invalid -> topicID = 0
+		userFilter := strings.ToLower(req.URL.Query().Get("user")) // usually "me" or empty
+		limit, _ := strconv.Atoi(req.URL.Query().Get("show"))      // if show query is empty or invalid -> limit = 25
 		if limit == 0 {
 			limit = 25
 		}
 		page, _ := strconv.Atoi(req.URL.Query().Get("page")) // if page is empty or not a number, offset = 0
-		offset := (page - 1) * limit                         // if "/scores?page=3&show=15", start at score 31
+		offset := (page - 1) * limit                         // example: "/scores?page=3&show=15" => start at score #31
 
 		if topicID != 0 {
 			if userFilter == "me" { // Topic and user specified in URL parameters
@@ -137,7 +137,7 @@ func createLeaderboardRows(scores []backend.Score, offset int) []leaderboardRow 
 			Rank:      index + offset + 1,
 			UserName:  score.UserName,
 			TopicName: score.TopicName,
-			Date:      score.Date,
+			Date:      score.Date.Format("02.01.06"), // date formatted as 'dd.mm.yy'
 			Points:    score.Points,
 		})
 	}
