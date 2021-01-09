@@ -8,7 +8,6 @@ package web
 import (
 	"encoding/gob"
 	"html/template"
-	"math"
 	"math/rand"
 	"net/http"
 	"sort"
@@ -759,15 +758,20 @@ func (handler *QuizHandler) Summary() http.HandlerFunc {
 		}
 
 		// Get average score for this topic from database
-		averagePoints, err := handler.store.GetAveragePointsByTopic(topicID)
+		scores, err := handler.store.GetScoresByTopic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// Calculate comparison between user's points and average points
-		overAverage := float64(quiz.Points) >= averagePoints
-		averageComparison := Abs(int(math.Round((float64(quiz.Points) - averagePoints) / averagePoints)))
+		// Compare user's points to all previous points by calculating how many
+		// users were worse than the current user
+		// Example: 50 scores, 20 scores have lower points than user => user is
+		// better than 40% of players (-> 20*100/50 = 40%)
+		under := 0
+		for under < len(scores) && quiz.Points > scores[under].Points {
+		}
+		averageComparison := (under + 1) * 100 / (len(scores) + 1)
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
@@ -775,8 +779,7 @@ func (handler *QuizHandler) Summary() http.HandlerFunc {
 			Quiz:              quiz,
 			QuestionsCount:    p1Questions + p2Questions + len(quiz.Topic.Events),
 			PotentialPoints:   p1Questions*p1Points + p2Questions*p2Points + len(quiz.Topic.Events)*p3Points,
-			AverageComparison: averageComparison,
-			OverAverage:       overAverage,
+			AverageComparison: averageComparison, // Example: "Du warst besser als 22% der Spieler bei diesem Thema."
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return

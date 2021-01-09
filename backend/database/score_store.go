@@ -19,9 +19,8 @@ type ScoreStore struct {
 	*sqlx.DB
 }
 
-// GetScores gets a certain amount of scores with a certain offset, sorted by
-// points descending.
-func (store ScoreStore) GetScores(limit int, offset int) ([]backend.Score, error) {
+// GetScores gets all scores, sorted by points descending.
+func (store ScoreStore) GetScores() ([]backend.Score, error) {
 	var scores []backend.Score
 
 	// Execute prepared statement
@@ -32,21 +31,18 @@ func (store ScoreStore) GetScores(limit int, offset int) ([]backend.Score, error
 		FROM scores s 
 		    LEFT JOIN topics t ON t.topic_id = s.topic_id 
 		    LEFT JOIN users u ON u.user_id = s.user_id
-		ORDER BY points DESC 
-		LIMIT ?, ?
+		ORDER BY points DESC
 		`
-	if err := store.Select(&scores, query,
-		offset,
-		limit); err != nil {
+	if err := store.Select(&scores, query); err != nil {
 		return []backend.Score{}, fmt.Errorf("error getting scores: %w", err)
 	}
 
 	return scores, nil
 }
 
-// GetScoresByTopic gets a certain amount of scores of a certain topic with a
-// certain offset, sorted by points descending.
-func (store ScoreStore) GetScoresByTopic(topicID int, limit int, offset int) ([]backend.Score, error) {
+// GetScoresByTopic gets scores of a certain topic, sorted by points
+// descending.
+func (store ScoreStore) GetScoresByTopic(topicID int) ([]backend.Score, error) {
 	var scores []backend.Score
 
 	// Execute prepared statement
@@ -58,22 +54,17 @@ func (store ScoreStore) GetScoresByTopic(topicID int, limit int, offset int) ([]
 		    LEFT JOIN topics t ON t.topic_id = s.topic_id 
 		    LEFT JOIN users u ON u.user_id = s.user_id
 		WHERE s.topic_id = ?
-		ORDER BY points DESC 
-		LIMIT ?, ?
+		ORDER BY points DESC
 		`
-	if err := store.Select(&scores, query,
-		topicID,
-		offset,
-		limit); err != nil {
+	if err := store.Select(&scores, query, topicID); err != nil {
 		return []backend.Score{}, fmt.Errorf("error getting scores: %w", err)
 	}
 
 	return scores, nil
 }
 
-// GetScoresByUser gets a certain amount of scores of a certain user with a
-// certain offset, sorted by points descending.
-func (store ScoreStore) GetScoresByUser(userID int, limit int, offset int) ([]backend.Score, error) {
+// GetScoresByUser gets scores of a certain user, sorted by points descending.
+func (store ScoreStore) GetScoresByUser(userID int) ([]backend.Score, error) {
 	var scores []backend.Score
 
 	// Execute prepared statement
@@ -85,22 +76,18 @@ func (store ScoreStore) GetScoresByUser(userID int, limit int, offset int) ([]ba
 		    LEFT JOIN topics t ON t.topic_id = s.topic_id 
 		    LEFT JOIN users u ON u.user_id = s.user_id
 		WHERE s.user_id = ?
-		ORDER BY points DESC 
-		LIMIT ?, ?
+		ORDER BY points DESC
 		`
-	if err := store.Select(&scores, query,
-		userID,
-		offset,
-		limit); err != nil {
+	if err := store.Select(&scores, query, userID); err != nil {
 		return []backend.Score{}, fmt.Errorf("error getting scores: %w", err)
 	}
 
 	return scores, nil
 }
 
-// GetScoresByTopicAndUser gets a certain amount of scores of a certain topic
-// and user with a certain offset, sorted by points descending.
-func (store ScoreStore) GetScoresByTopicAndUser(topicID int, userID int, limit int, offset int) ([]backend.Score, error) {
+// GetScoresByTopicAndUser gets scores of a certain topic and user, sorted by
+// points descending.
+func (store ScoreStore) GetScoresByTopicAndUser(topicID int, userID int) ([]backend.Score, error) {
 	var scores []backend.Score
 
 	// Execute prepared statement
@@ -113,14 +100,9 @@ func (store ScoreStore) GetScoresByTopicAndUser(topicID int, userID int, limit i
 		    LEFT JOIN users u ON u.user_id = s.user_id
 		WHERE s.topic_id = ? 
 		  AND s.user_id = ?
-		ORDER BY points DESC 
-		LIMIT ?, ?
+		ORDER BY points DESC
 		`
-	if err := store.Select(&scores, query,
-		topicID,
-		userID,
-		offset,
-		limit); err != nil {
+	if err := store.Select(&scores, query, topicID, userID); err != nil {
 		return []backend.Score{}, fmt.Errorf("error getting scores: %w", err)
 	}
 
@@ -143,22 +125,4 @@ func (store ScoreStore) CreateScore(score *backend.Score) error {
 	}
 
 	return nil
-}
-
-// GetAveragePointsByTopic calculates the average points of scores of a certain
-// topic.
-func (store ScoreStore) GetAveragePointsByTopic(topicID int) (float64, error) {
-	var averagePoints float64
-
-	// Execute prepared statement
-	query := `
-		SELECT SUM(points) / COUNT(DISTINCT score_id)
-		FROM scores
-		WHERE topic_id = ?
-		`
-	if err := store.Get(&averagePoints, query, topicID); err != nil {
-		return 0, fmt.Errorf("error getting average points of scores: %w", err)
-	}
-
-	return averagePoints, nil
 }

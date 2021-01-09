@@ -82,12 +82,11 @@ type UserStore interface {
 
 // ScoreStore stores functions using scores for the database-layer.
 type ScoreStore interface {
-	GetScores(limit int, offset int) ([]Score, error)
-	GetScoresByTopic(topicID int, limit int, offset int) ([]Score, error)
-	GetScoresByUser(userID int, limit int, offset int) ([]Score, error)
-	GetScoresByTopicAndUser(topicID int, userID int, limit int, offset int) ([]Score, error)
+	GetScores() ([]Score, error)
+	GetScoresByTopic(topicID int) ([]Score, error)
+	GetScoresByUser(userID int) ([]Score, error)
+	GetScoresByTopicAndUser(topicID int, userID int) ([]Score, error)
 	CreateScore(score *Score) error
-	GetAveragePointsByTopic(topicID int) (float64, error)
 }
 
 // Store combines TopicStore, EventStore, UserStore and ScoreStore.

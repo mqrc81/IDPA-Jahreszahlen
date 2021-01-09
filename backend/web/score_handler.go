@@ -71,7 +71,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 		if topicID != 0 {
 			if userFilter == "me" { // Topic and user specified in URL parameters
 				// Execute SQL statement to get scores
-				scoresByTopicAndUser, err := handler.store.GetScoresByTopicAndUser(topicID, user.UserID, limit, offset)
+				scoresByTopicAndUser, err := handler.store.GetScoresByTopicAndUser(topicID, user.UserID)
 				if err != nil {
 					http.Error(res, err.Error(), http.StatusInternalServerError)
 					return
@@ -79,7 +79,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 				scores = scoresByTopicAndUser
 			} else { // Only topic specified in URL parameters
 				// Execute SQL statement to get scores
-				scoresByTopic, err := handler.store.GetScoresByTopic(topicID, limit, offset)
+				scoresByTopic, err := handler.store.GetScoresByTopic(topicID)
 				if err != nil {
 					http.Error(res, err.Error(), http.StatusInternalServerError)
 					return
@@ -88,7 +88,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 			}
 		} else if userFilter == "me" { // Only user specified in URL parameters
 			// Execute SQL statement to get scores
-			scoresByUser, err := handler.store.GetScoresByUser(user.UserID, limit, offset)
+			scoresByUser, err := handler.store.GetScoresByUser(user.UserID)
 			if err != nil {
 				http.Error(res, err.Error(), http.StatusInternalServerError)
 				return
@@ -96,7 +96,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 			scores = scoresByUser
 		} else { // No topic or user specified in URL parameters
 			// Execute SQL statement to get scores
-			scoresAll, err := handler.store.GetScores(limit, offset)
+			scoresAll, err := handler.store.GetScores()
 			if err != nil {
 				http.Error(res, err.Error(), http.StatusInternalServerError)
 				return
@@ -104,10 +104,14 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 			scores = scoresAll
 		}
 
+		// Create table of scores for the current page & show size
+		// Example: page = 3 & show = 15 => scores[30:45] (31-45)
+		leaderboard := createLeaderboardRows(scores[limit*(offset-1):limit*offset], offset)
+
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
-			Leaderboard: createLeaderboardRows(scores, offset),
+			Leaderboard: leaderboard,
 			Topic:       topicID,
 			User:        userFilter,
 			Page:        page,

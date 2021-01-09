@@ -221,7 +221,7 @@ func (handler *Handler) NotFound404() http.HandlerFunc {
 // Abs gets absolute value of an int number (-10 => 10)
 func Abs(num int) int {
 	if num < 0 {
-		return num * -1
+		return -num
 	}
 	return num
 }
