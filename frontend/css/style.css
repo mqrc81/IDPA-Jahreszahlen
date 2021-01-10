@@ -1,0 +1,14 @@
+.btn{
+    color:black !important;
+    background-color: #4f9ee6 !important;
+    border: solid black 2px !important;
+    border-radius: 15% !important;
+    width: 70%;
+    margin-top: 17% !important;
+    /*funktioniert ned*/
+}
+#headerContainer{
+    background-color: #cde7f0 !important;
+    padding-bottom: 5%;
+    padding-top:5%;
+}

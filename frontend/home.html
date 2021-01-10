@@ -3,7 +3,7 @@
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Willkommen bei xy Jahreszahlen!</h1>
+    <h1>Willkommen bei den Jahreszahlen!</h1>
 {{end}}
 
 {{define "content"}}
@@ -12,7 +12,7 @@
         genau richtig!</h5>
     <hr><br>
     {{range .Topics}}
-        <div class="card mb-4">
+        <div style="background: #c2e2ec" class="card mb-4">
                      <div class="card-body">
                 <p>
                     <a href="#" class="d-block card-title text-body mt-1 h5">
@@ -27,43 +27,44 @@
 {{end}}
 
 {{define "sidebar"}}
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Themen</h5>
-            <p class="card-text">
-                Schauen Sie alle Themen an, zum Lernen ihrer Jahreszahlen.
-            </p>
-            <a href="/topics" class="btn btn-primary btn-block">Zu den Themen</a>
-        </div>
-    </div>
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Leaderboard</h5>
-            <p class="card-text">
-                Schauen Sie das Leaderboard mit allen Spielresultaten an und filtern Sie nach Benutzer und Thema.
-            </p>
-            <a href="/scores" class="btn btn-primary btn-block">Zum Leaderboard</a>
-        </div>
-    </div>
-    {{if .User.Admin}}
-        <div class="card mb-4">
+
+        <div style="background: #c2e2ec" class="card mb-4">
             <div class="card-body">
-                <h5 class="card-title">Alle Benutzer</h5>
+                <h5 class="card-title">Themen</h5>
                 <p class="card-text">
-                    Sehen Sie alle Benutzer, welche sich bisher registriert haben.
+                    Schauen Sie alle Themen an, zum Lernen ihrer Jahreszahlen.
                 </p>
-                <a href="/users/list" class="btn btn-primary btn-block">Zu den Benutzern</a>
+                <a href="/topics" class="btn btn-primary btn-block">Zu den Themen</a>
             </div>
         </div>
-    {{end}}
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Über Jahreszahlen</h5>
-            <p class="card-text">
-                Erfahren Sie mehr über die Hintergründe dieses Projekts und wie es Ihnen beim Lernen der Jahreszahlen
-                von historischen Ereignissen helfen kann.
-            </p>
-            <a href="/about" class="btn btn-primary btn-block">Mehr erfahren</a>
+        <div style="background: #c2e2ec" class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Leaderboard</h5>
+                <p class="card-text">
+                    Schauen Sie das Leaderboard mit allen Spielresultaten an und filtern Sie nach Benutzer und Thema.
+                </p>
+                <a href="/scores" class="btn btn-primary btn-block">Zum Leaderboard</a>
+            </div>
         </div>
-    </div>
+        {{if .User.Admin}}
+            <div style="background: #c2e2ec" class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Alle Benutzer</h5>
+                    <p class="card-text">
+                        Sehen Sie alle Benutzer, welche sich bisher registriert haben.
+                    </p>
+                    <a href="/users/list" class="btn btn-primary btn-block">Zu den Benutzern</a>
+                </div>
+            </div>
+        {{end}}
+        <div style="background: #c2e2ec" class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Über Jahreszahlen</h5>
+                <p class="card-text">
+                    Erfahren Sie mehr über die Hintergründe dieses Projekts und wie es Ihnen beim Lernen der Jahreszahlen
+                    von historischen Ereignissen helfen kann.
+                </p>
+                <a href="/about" class="btn btn-primary btn-block">Mehr erfahren</a>
+            </div>
+        </div>
 {{end}}
