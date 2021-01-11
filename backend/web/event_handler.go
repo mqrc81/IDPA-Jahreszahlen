@@ -36,6 +36,7 @@ func (handler *EventHandler) List() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/events_list.html",
 	))
 
@@ -90,6 +91,7 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/events_create.html",
 	))
 
@@ -212,6 +214,7 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/events_edit.html",
 	))
 

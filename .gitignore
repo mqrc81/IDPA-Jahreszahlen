@@ -21,4 +21,3 @@
 *.iml
 migrations
 .env
-!/backend/cmd/

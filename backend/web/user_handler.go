@@ -35,6 +35,7 @@ func (handler *UserHandler) Register() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/users_register.html",
 	))
 
@@ -126,6 +127,7 @@ func (handler *UserHandler) Login() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/users_login.html",
 	))
 
@@ -238,6 +240,7 @@ func (handler *UserHandler) Profile() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/users_profile.html",
 	))
 
@@ -279,6 +282,7 @@ func (handler *UserHandler) List() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/users_list.html",
 	))
 
@@ -325,6 +329,7 @@ func (handler *UserHandler) EditUsername() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/users_edit_username.html",
 	))
 
@@ -410,6 +415,7 @@ func (handler *UserHandler) EditPassword() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/users_edit_password.html",
 	))
 

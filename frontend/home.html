@@ -7,13 +7,14 @@
 {{end}}
 
 {{define "content"}}
-    <h5>Wollen Sie sich auf die nächste Geschichtsprüfung vorbereiten oder sich einen besseren Überblick von allen
+    <h5>Wollen Sie sich auf die nächste Geschichtsprüfung vorbereiten oder sich einen besseren
+        Überblick von allen
         Ereignissen einer Zeitepoche beschaffen und sich dabei mit Ihren Klassenkameraden messen? – Dann sind Sie hier
         genau richtig!</h5>
     <hr><br>
     {{range .Topics}}
         <div class="card mb-4">
-                     <div class="card-body">
+            <div class="card-body">
                 <p>
                     <a href="#" class="d-block card-title text-body mt-1 h5">
                         {{.Name}} ({{.StartYear}} - {{.EndYear}})

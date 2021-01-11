@@ -40,6 +40,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.New("").ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/scores_list.html",
 	))
 

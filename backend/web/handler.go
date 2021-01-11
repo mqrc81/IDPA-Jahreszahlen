@@ -125,6 +125,7 @@ func (handler *Handler) Home() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/home.html",
 	))
 
@@ -156,6 +157,7 @@ func (handler *Handler) About() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/about.html",
 	))
 
@@ -206,6 +208,7 @@ func (handler *Handler) NotFound404() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/http_not_found.html",
 	))
 	return func(res http.ResponseWriter, req *http.Request) {

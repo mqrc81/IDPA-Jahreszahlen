@@ -83,12 +83,14 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 	type data struct {
 		SessionData
 
+		TopicID   int
 		Questions []phase1Question
 	}
 
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/quiz_phase1.html",
 	))
 
@@ -138,6 +140,7 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
+			TopicID:     topicID,
 			Questions:   questions,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -202,6 +205,7 @@ func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/quiz_phase1_review.html",
 	))
 
@@ -301,6 +305,7 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/quiz_phase2.html",
 	))
 
@@ -422,6 +427,7 @@ func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/quiz_phase2_review.html",
 	))
 
@@ -522,6 +528,7 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/quiz_phase3.html",
 	))
 
@@ -656,6 +663,7 @@ func (handler *QuizHandler) Phase3Review() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/quiz_phase3_review.html",
 	))
 
@@ -727,6 +735,7 @@ func (handler *QuizHandler) Summary() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/quiz_summary.html",
 	))
 

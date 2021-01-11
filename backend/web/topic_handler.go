@@ -34,6 +34,7 @@ func (handler *TopicHandler) List() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/topics_list.html",
 	))
 
@@ -69,6 +70,7 @@ func (handler *TopicHandler) Create() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/topics_create.html",
 	))
 
@@ -175,6 +177,7 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/topics_edit.html",
 	))
 
@@ -278,6 +281,7 @@ func (handler *TopicHandler) Show() http.HandlerFunc {
 	// Parse HTML-templates
 	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
+		"frontend/css/css.html",
 		"frontend/pages/topics_show.html",
 	))
 
