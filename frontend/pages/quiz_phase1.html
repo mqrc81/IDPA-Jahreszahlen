@@ -17,7 +17,7 @@
                 {{$id := .ID}}
                 {{range .Choices}}
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="{{$id}}">
+                        <input class="form-check-input" type="radio" name="{{$id}}" value="{{.}}">
                         <label class="form-check-label" for="{{$id}}">
                             {{.}}
                         </label>

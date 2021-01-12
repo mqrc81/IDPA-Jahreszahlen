@@ -39,7 +39,6 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 
 	// Home
 	handler.Get("/", handler.Home())
-	handler.Get("/about", handler.About())
 
 	// Topics
 	handler.Route("/topics", func(r chi.Router) {
@@ -78,9 +77,7 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 	})
 
 	// Scores
-	handler.Route("/scores", func(router chi.Router) {
-		router.Get("/", scores.List())
-	})
+	handler.Get("/scores", scores.List())
 
 	// Users
 	handler.Route("/users", func(router chi.Router) {
@@ -141,30 +138,6 @@ func (handler *Handler) Home() http.HandlerFunc {
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topics:      topics,
-		}); err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-}
-
-// About is a GET-method. It displays the about-page.
-func (handler *Handler) About() http.HandlerFunc {
-	// Data to pass to HTML-templates
-	type data struct {
-		SessionData
-	}
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/about.html",
-	))
-
-	return func(res http.ResponseWriter, req *http.Request) {
-		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
