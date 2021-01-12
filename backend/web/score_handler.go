@@ -32,7 +32,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 		Leaderboard []leaderboardRow
 
 		Topic int
-		User  string
+		User  bool
 		Page  int
 		Show  int
 	}
@@ -66,11 +66,14 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 		if limit == 0 {
 			limit = 25
 		}
-		page, _ := strconv.Atoi(req.URL.Query().Get("page")) // if page is empty or not a number, offset = 0
-		offset := (page - 1) * limit                         // example: "/scores?page=3&show=15" => start at score #31
+		page, err := strconv.Atoi(req.URL.Query().Get("page"))
+		if err != nil {
+			page = 1
+		}
+		allUsers := userFilter != "me"
 
 		if topicID != 0 {
-			if userFilter == "me" { // Topic and user specified in URL parameters
+			if !allUsers { // Topic and user specified in URL parameters
 				// Execute SQL statement to get scores
 				scoresByTopicAndUser, err := handler.store.GetScoresByTopicAndUser(topicID, user.UserID)
 				if err != nil {
@@ -87,7 +90,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 				}
 				scores = scoresByTopic
 			}
-		} else if userFilter == "me" { // Only user specified in URL parameters
+		} else if !allUsers { // Only user specified in URL parameters
 			// Execute SQL statement to get scores
 			scoresByUser, err := handler.store.GetScoresByUser(user.UserID)
 			if err != nil {
@@ -105,25 +108,22 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 			scores = scoresAll
 		}
 
-		for (offset-1)*limit > len(scores) {
-			offset--
-		}
-
 		// Adjust offset, if the leaderboard rows would be out of bounds of
 		// scores array
-		// limit: 10, offset: 5, len(scores): 10
-		offset -= (offset*limit - (len(scores) + 1)) / limit
+		// Example: limit = 10, offset = 5, len(scores) = 13 => offset = 2
+		// => scores[10:20] => scores[10:12] gets shown (in bounds of array)
+		page -= (page*limit - (len(scores) + 1)) / limit
 
 		// Create table of scores for the current page & show size
 		// Example: page/offset = 3 & show/limit = 15 => scores[30:45] (31-45)
-		leaderboard := createLeaderboardRows(scores, limit, offset)
+		leaderboard := createLeaderboardRows(scores, limit, page)
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Leaderboard: leaderboard,
 			Topic:       topicID,
-			User:        userFilter,
+			User:        allUsers,
 			Page:        page,
 			Show:        limit,
 		}); err != nil {
@@ -145,7 +145,6 @@ type leaderboardRow struct {
 // createLeaderboardRows generates all rows of the leaderboard
 func createLeaderboardRows(scores []backend.Score, limit int, offset int) []leaderboardRow {
 	var leaderboard []leaderboardRow
-
 	for i := limit * (offset - 1); i < len(scores) && i < limit*offset; i++ {
 		leaderboard = append(leaderboard, leaderboardRow{
 			Rank:      i + 1,

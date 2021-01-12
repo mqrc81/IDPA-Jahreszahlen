@@ -8,6 +8,22 @@
 
 {{define "content"}}
 
+    <h3>Limit: {{.Show}}</h3>
+    <h3>Offset: {{.Page}}</h3>
+    <h3>Topic: {{.Topic}}</h3>
+    <h3>User: {{.User}}</h3>
+
+    {{range .Leaderboard}}
+        <h1>
+            <hr>
+        </h1>
+        <h4>Rank: {{.Rank}}</h4>
+        <h4>User: {{.UserName}}</h4>
+        <h4>Topic: {{.TopicName}}</h4>
+        <h4>Date: {{.Date}}</h4>
+        <h4>Points: {{.Points}}</h4>
+    {{end}}
+
 {{end}}
 
 {{define "sidebar"}}
