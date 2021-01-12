@@ -1,13 +1,15 @@
-package backend
+// The collection of all global structures and interfaces to be used throughout
+// the application. The structures are not equivalent to the database tables,
+// as 1:n relationships may be stored directly in the structure of the primary
+// object (e.g topic containing array of events).
+// Go enforces inexplicit inheritance through method declaration in interfaces
+// (almost like "duck-typing").
+
+package jahreszahlen
 
 import (
 	"time"
 )
-
-/*
- * Contains all global variables and their functions, to be accessed throughout
- * the project.
- */
 
 // Topic represents a historical segment consisting of multiple events.
 type Topic struct {

@@ -1,8 +1,8 @@
-package web
+// The web handler evolving around users, with HTTP-handler functions
+// consisting of "GET"- and "POST"-methods. It utilizes session management and
+// database access.
 
-/*
- * Contains all HTTP-handler functions for pages evolving around users.
- */
+package web
 
 import (
 	"html/template"
@@ -14,17 +14,19 @@ import (
 	"github.com/go-chi/chi"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
+	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
 
 // UserHandler is the object for handlers to access sessions and database.
 type UserHandler struct {
-	store    backend.Store
+	store    jahreszahlen.Store
 	sessions *scs.SessionManager
 }
 
-// Register is a GET-method. It displays a form, in which values for registering
-// can be entered.
+// Register is a GET-method that is accessible to anyone not logged in.
+//
+// It displays a form, in which values for registering as a new user can be
+// entered.
 func (handler *UserHandler) Register() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
@@ -61,10 +63,12 @@ func (handler *UserHandler) Register() http.HandlerFunc {
 	}
 }
 
-// RegisterSubmit is a POST-method. It validates the form from Register and
-// redirects to Register in case of an invalid input with corresponding error
-// messages. In case of a valid form, it stores the new user in the database
-// and redirects to the home-page.
+// RegisterSubmit is a POST-method that is accessible to anyone not logged in
+// after Register.
+//
+// It validates the form from Register and redirects to Register in case of an
+// invalid input with corresponding error messages. In case of a valid form, it
+// stores the new user in the database and redirects to the home-page.
 func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -98,7 +102,7 @@ func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to create a user
-		if err := handler.store.CreateUser(&backend.User{
+		if err := handler.store.CreateUser(&jahreszahlen.User{
 			Username: form.Username,
 			Password: string(password),
 		}); err != nil {
@@ -115,8 +119,10 @@ func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
 	}
 }
 
-// Login is a GET-method. It displays a form in which values for logging in can
-// be entered.
+// Login is a GET-method that is accessible to anyone not logged in.
+//
+// It displays a form in which values for logging in as a returning user can be
+// entered.
 func (handler *UserHandler) Login() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
@@ -153,10 +159,12 @@ func (handler *UserHandler) Login() http.HandlerFunc {
 	}
 }
 
-// LoginSubmit is a POST-method. It validates the form from Login and redirects
-// to Login in case of an invalid input with corresponding error messages. In
-// case of a valid form, it stores the user in the session and redirects to the
-// home-page.
+// LoginSubmit is a POST-method that is accessible to anyone not logged in
+// after Login.
+//
+// It validates the form from Login and redirects to Login in case of an
+// invalid input with corresponding error messages. In case of a valid form,
+// it stores the user in the session and redirects to the home-page.
 func (handler *UserHandler) LoginSubmit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -200,8 +208,9 @@ func (handler *UserHandler) LoginSubmit() http.HandlerFunc {
 	}
 }
 
-// Logout is a GET-method that any user can call. It removes user from the
-// session.
+// Logout is a GET-method that is accessible to any user.
+//
+// It removes user from the session and redirects to the home-page.
 func (handler *UserHandler) Logout() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -226,15 +235,17 @@ func (handler *UserHandler) Logout() http.HandlerFunc {
 	}
 }
 
-// Profile is a GET-Method that displays a user's username and statistics, with
-// the options to change username or password.
+// Profile is a GET-Method that is accessible to any user.
+//
+// It displays a user's username and statistics, with the ability to change
+// username or password.
 func (handler *UserHandler) Profile() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
-		User backend.User
+		User jahreszahlen.User
 	}
 
 	// Parse HTML-templates
@@ -255,7 +266,7 @@ func (handler *UserHandler) Profile() http.HandlerFunc {
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
-		user := userInf.(backend.User)
+		user := userInf.(jahreszahlen.User)
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
@@ -268,15 +279,17 @@ func (handler *UserHandler) Profile() http.HandlerFunc {
 	}
 }
 
-// List is a GET-method that any admin can call. It lists all users with the
-// options to delete or promote a user or reset a user's password.
+// List is a GET-method that is accessible to any admin.
+//
+// It lists all users with the ability to delete a user, to promote a user to
+// admin, or to reset a user's password.
 func (handler *UserHandler) List() http.HandlerFunc {
 
 	// Data to pass to HTML-template
 	type data struct {
 		SessionData
 
-		Users []backend.User
+		Users []jahreszahlen.User
 	}
 
 	// Parse HTML-templates
@@ -290,7 +303,7 @@ func (handler *UserHandler) List() http.HandlerFunc {
 
 		// Check if an admin is logged in
 		user := req.Context().Value("user")
-		if user == nil || !user.(backend.User).Admin {
+		if user == nil || !user.(jahreszahlen.User).Admin {
 			// If no user is logged in or user logged in isn't an admin, then
 			// redirect back with flash message
 			handler.sessions.Put(req.Context(), "flash_error",
@@ -317,8 +330,10 @@ func (handler *UserHandler) List() http.HandlerFunc {
 	}
 }
 
-// EditUsername is a GET-method that any user can call. It displays a form in
-// which values for updating the current username can be entered.
+// EditUsername is a GET-method that is accessible to any user.
+//
+// It displays a form in which values for modifying the current username can be
+// entered.
 func (handler *UserHandler) EditUsername() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
@@ -355,10 +370,12 @@ func (handler *UserHandler) EditUsername() http.HandlerFunc {
 	}
 }
 
-// EditUsernameSubmit is a POST-method. It validates the form from EditUsername
-// and redirects to EditUsername in case of an invalid input with corresponding
-// error messages. In case of a valid form, it stores the user in the database
-// and redirects to the Profile.
+// EditUsernameSubmit is a POST-method that is accessible to any user after
+// EditUsername.
+//
+// It validates the form from EditUsername and redirects to EditUsername in
+// case of an invalid input with corresponding error messages. In case of a
+// valid form, it stores the user in the database and redirects to Profile.
 func (handler *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -378,7 +395,7 @@ func (handler *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 		form.UsernameTaken = err == nil
 
 		// Retrieve user from session
-		user := req.Context().Value("user").(backend.User)
+		user := req.Context().Value("user").(jahreszahlen.User)
 
 		// Check if password is correct
 		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password))
@@ -403,8 +420,10 @@ func (handler *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 	}
 }
 
-// EditPassword is a GET-method that any user can call. It displays a form in
-// which values for updating the current password can be entered.
+// EditPassword is a GET-method that is accessible to any user.
+//
+// It displays a form in which values for modifying the current password can
+// be entered.
 func (handler *UserHandler) EditPassword() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
@@ -441,10 +460,12 @@ func (handler *UserHandler) EditPassword() http.HandlerFunc {
 	}
 }
 
-// EditPasswordSubmit is a POST-method. It validates the form from EditPassword
-// and redirects to EditPassword in case of an invalid input with corresponding
-// error messages. In case of a valid form, it stores the user in the database
-// and redirects to the Profile.
+// EditPasswordSubmit is a POST-method that is accessible to any user after
+// EditPassword.
+//
+// It validates the form from EditPassword and redirects to EditPassword in
+// case of an invalid input with corresponding error messages. In case of a
+// valid form, it stores the user in the database and redirects to Profile.
 func (handler *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -457,7 +478,7 @@ func (handler *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 		}
 
 		// Retrieve user from session
-		user := req.Context().Value("user").(backend.User)
+		user := req.Context().Value("user").(jahreszahlen.User)
 
 		// Compare user's password with "old password" from form
 		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.OldPassword)); err != nil {
@@ -479,7 +500,7 @@ func (handler *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to update a user
-		if err := handler.store.UpdateUser(&backend.User{
+		if err := handler.store.UpdateUser(&jahreszahlen.User{
 			UserID:   user.UserID,
 			Username: user.Username,
 			Password: string(password),
@@ -493,8 +514,9 @@ func (handler *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 	}
 }
 
-// Delete is a POST-method that any admin can call. It deletes the user and
-// redirects to List.
+// Delete is a POST-method that is accessible to any admin.
+//
+// It deletes the user and redirects to List.
 func (handler *UserHandler) Delete() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -511,8 +533,9 @@ func (handler *UserHandler) Delete() http.HandlerFunc {
 	}
 }
 
-// Promote is a POST-method that any admin can call. It promotes a user to an
-// admin.
+// Promote is a POST-method that is accessible to any admin.
+//
+// It promotes a user to an admin and redirects to List.
 func (handler *UserHandler) Promote() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -541,8 +564,9 @@ func (handler *UserHandler) Promote() http.HandlerFunc {
 	}
 }
 
-// ResetPassword is a POST-method that any admin can call. It resets a user's
-// password.
+// ResetPassword is a POST-method that is accessible to any admin.
+//
+// It resets a user's password to the default value and redirects to List.
 func (handler *UserHandler) ResetPassword() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {

@@ -1,26 +1,24 @@
-package database
+// The database store evolving around events, with all necessary methods that
+// access the database.
 
-/*
- * Part of the database layer. Contains all functions for events that access
- * the database.
- */
+package database
 
 import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
+	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
 
-// EventStore is the MySQL database access object.
+// EventStore is the MySQL database access object
 type EventStore struct {
 	*sqlx.DB
 }
 
 // GetEvent gets event by ID.
-func (store *EventStore) GetEvent(eventID int) (backend.Event, error) {
-	var event backend.Event
+func (store *EventStore) GetEvent(eventID int) (jahreszahlen.Event, error) {
+	var event jahreszahlen.Event
 
 	// Execute prepared statement
 	query := `
@@ -29,7 +27,7 @@ func (store *EventStore) GetEvent(eventID int) (backend.Event, error) {
 		WHERE event_id = ?
 		`
 	if err := store.Get(&event, query, eventID); err != nil {
-		return backend.Event{}, fmt.Errorf("error getting event: %w", err)
+		return jahreszahlen.Event{}, fmt.Errorf("error getting event: %w", err)
 	}
 
 	return event, nil
@@ -52,7 +50,7 @@ func (store *EventStore) CountEvents() (int, error) {
 }
 
 // CreateEvent creates a new event.
-func (store *EventStore) CreateEvent(event *backend.Event) error {
+func (store *EventStore) CreateEvent(event *jahreszahlen.Event) error {
 
 	// Execute prepared statement
 	query := `
@@ -70,7 +68,7 @@ func (store *EventStore) CreateEvent(event *backend.Event) error {
 }
 
 // UpdateEvent updates an existing event.
-func (store *EventStore) UpdateEvent(event *backend.Event) error {
+func (store *EventStore) UpdateEvent(event *jahreszahlen.Event) error {
 
 	// Execute prepared statement
 	query := `

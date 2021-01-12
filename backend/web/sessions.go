@@ -1,8 +1,6 @@
-package web
+//
 
-/*
- * Contains session management.
- */
+package web
 
 import (
 	"context"
@@ -11,7 +9,7 @@ import (
 	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/v2"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
+	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
 
 // NewSessionManager initializes new session management.
@@ -34,7 +32,7 @@ type SessionData struct {
 	FlashMessageSuccess string
 	FlashMessageError   string
 	Form                interface{}
-	User                backend.User
+	User                jahreszahlen.User
 	LoggedIn            bool
 }
 
@@ -55,10 +53,10 @@ func GetSessionData(session *scs.SessionManager, ctx context.Context) SessionDat
 	// Retrieve user from session
 	userInf := ctx.Value("user")
 	if userInf != nil { // 'If there is a user in the session'
-		data.User = userInf.(backend.User)
+		data.User = userInf.(jahreszahlen.User)
 		data.LoggedIn = true
 	} else {
-		data.User = backend.User{}
+		data.User = jahreszahlen.User{}
 		data.LoggedIn = false
 	}
 

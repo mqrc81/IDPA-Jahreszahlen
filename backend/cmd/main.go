@@ -1,9 +1,7 @@
-package main
+// The main file, which acquires a connection to the database and the
+// server. It also obtains session management and CSRF-protection.
 
-/*
- * The main file, which initializes a connection to the database and the
- * server. It also obtains session management and CSRF-protection.
- */
+package main
 
 import (
 	"log"
@@ -16,7 +14,7 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/web"
 )
 
-// main is the initial starting point of the program, which initializes a
+// main is the initial starting point of the program, which acquires a
 // connection to the database and the server. It also obtains session
 // management and CSRF-protection.
 func main() {
@@ -44,7 +42,7 @@ func main() {
 	handler := web.NewHandler(store, sessions)
 
 	// Listen on the TCP network address and call Serve with handler to handle
-	// requests on incoming connections.
+	// requests on incoming connections
 	if err := http.ListenAndServe(":3000", handler); err != nil {
 		log.Fatal(err)
 	}

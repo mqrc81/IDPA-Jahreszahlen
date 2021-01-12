@@ -1,26 +1,24 @@
-package database
+// The database store evolving around users, with all necessary methods that
+// access the database.
 
-/*
- * Part of the database layer. Contains all functions for users that access
- * the database.
- */
+package database
 
 import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
+	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
 
-// UserStore is the database access object.
+// UserStore is the database access object
 type UserStore struct {
 	*sqlx.DB
 }
 
 // GetUser gets a user by ID.
-func (store UserStore) GetUser(userID int) (backend.User, error) {
-	var user backend.User
+func (store UserStore) GetUser(userID int) (jahreszahlen.User, error) {
+	var user jahreszahlen.User
 
 	// Execute prepared statement
 	query := `
@@ -31,15 +29,15 @@ func (store UserStore) GetUser(userID int) (backend.User, error) {
 		WHERE u.user_id = ?
 		`
 	if err := store.Get(&user, query, userID); err != nil {
-		return backend.User{}, fmt.Errorf("error getting user: %w", err)
+		return jahreszahlen.User{}, fmt.Errorf("error getting user: %w", err)
 	}
 
 	return user, nil
 }
 
 // GetUserByUsername gets a user by username.
-func (store UserStore) GetUserByUsername(username string) (backend.User, error) {
-	var user backend.User
+func (store UserStore) GetUserByUsername(username string) (jahreszahlen.User, error) {
+	var user jahreszahlen.User
 
 	// Execute prepared statement
 	query := `
@@ -50,15 +48,15 @@ func (store UserStore) GetUserByUsername(username string) (backend.User, error) 
 		WHERE u.username = ?
 		`
 	if err := store.Get(&user, query, username); err != nil {
-		return backend.User{}, fmt.Errorf("error getting user: %w", err)
+		return jahreszahlen.User{}, fmt.Errorf("error getting user: %w", err)
 	}
 
 	return user, nil
 }
 
 // GetUsers gets all users.
-func (store UserStore) GetUsers() ([]backend.User, error) {
-	var users []backend.User
+func (store UserStore) GetUsers() ([]jahreszahlen.User, error) {
+	var users []jahreszahlen.User
 
 	// Execute prepared statement
 	query := `
@@ -70,7 +68,7 @@ func (store UserStore) GetUsers() ([]backend.User, error) {
 		ORDER BY u.admin DESC, u.username   
 		` // Sorted in alphabetical order, but all admins first
 	if err := store.Select(&users, query); err != nil {
-		return []backend.User{}, fmt.Errorf("error getting topics: %w", err)
+		return []jahreszahlen.User{}, fmt.Errorf("error getting topics: %w", err)
 	}
 
 	return users, nil
@@ -93,7 +91,7 @@ func (store *UserStore) CountUsers() (int, error) {
 }
 
 // CreateUser creates a new user.
-func (store UserStore) CreateUser(user *backend.User) error {
+func (store UserStore) CreateUser(user *jahreszahlen.User) error {
 	// Execute prepared statement
 	query := `
 		INSERT INTO users(username, password, admin) 
@@ -110,7 +108,7 @@ func (store UserStore) CreateUser(user *backend.User) error {
 }
 
 // UpdateUser updates an existing user.
-func (store UserStore) UpdateUser(user *backend.User) error {
+func (store UserStore) UpdateUser(user *jahreszahlen.User) error {
 	// Execute prepared statement
 	query := `
 		UPDATE users 

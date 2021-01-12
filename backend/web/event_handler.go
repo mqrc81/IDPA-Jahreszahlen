@@ -1,8 +1,8 @@
-package web
+// The web handler evolving around events, with HTTP-handler functions
+// consisting of "GET"- and "POST"-methods. It utilizes session management and
+// database access.
 
-/*
- * Contains all HTTP-handler functions for pages evolving around events.
- */
+package web
 
 import (
 	"html/template"
@@ -12,25 +12,28 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
+	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
 
 // EventHandler is the object for handlers to access sessions and database.
 type EventHandler struct {
-	store    backend.Store
+	store    jahreszahlen.Store
 	sessions *scs.SessionManager
 }
 
-// List is a GET-method that any user can call. It lists all scores, ranked by
-// points, with the ability to filter scores by topic and/or user.
+// List is a GET-method that is accessible to any admin. It lists all events,
+// sorted by date ascending.
+//
+// Users can view the events while admins have the ability to edit or delete an
+// event, as well as to create a new one.
 func (handler *EventHandler) List() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
-		Topic  backend.Topic
-		Events []backend.Event
+		Topic  jahreszahlen.Topic
+		Events []jahreszahlen.Event
 	}
 
 	// Parse HTML-templates
@@ -77,15 +80,16 @@ func (handler *EventHandler) List() http.HandlerFunc {
 	}
 }
 
-// Create is a GET-method that any admin can call. It displays a form, in which
-// values for a new event can be entered.
+// Create is a GET-method that is accessible to any admin.
+//
+// It displays a form, in which values for a new event can be entered.
 func (handler *EventHandler) Create() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
-		Topic backend.Topic
+		Topic jahreszahlen.Topic
 	}
 
 	// Parse HTML-templates
@@ -99,7 +103,7 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 
 		// Check if an admin is logged in
 		user := req.Context().Value("user")
-		if user == nil || !user.(backend.User).Admin {
+		if user == nil || !user.(jahreszahlen.User).Admin {
 			// If no user is logged in or logged in user isn't an admin,
 			// then redirect back with flash message
 			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
@@ -133,10 +137,11 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 	}
 }
 
-// CreateStore is a POST-method. It validates the form from Create and
-// redirects to Create in case of an invalid input with corresponding error
-// message. In case of valid form, it stores the new event in the database and
-// redirects to the edit-page of the event's topic.
+// CreateStore is a POST-method that is accessible to anyone after Create.
+//
+// It validates the form from Create and redirects to Create in case of an
+// invalid input with the corresponding error message. In case of valid form,
+// it stores the new event in the database and redirects to the List.
 func (handler *EventHandler) CreateStore() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -160,7 +165,7 @@ func (handler *EventHandler) CreateStore() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to create an event
-		if err := handler.store.CreateEvent(&backend.Event{
+		if err := handler.store.CreateEvent(&jahreszahlen.Event{
 			TopicID: topicID,
 			Name:    form.Name,
 			Year:    form.Year,
@@ -177,8 +182,9 @@ func (handler *EventHandler) CreateStore() http.HandlerFunc {
 	}
 }
 
-// Delete is a POST-method. It deletes an event and redirects to the list of
-// events.
+// Delete is a POST-method that is accessible to any admin after List.
+//
+// It deletes an event and redirects to List.
 func (handler *EventHandler) Delete() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -200,15 +206,17 @@ func (handler *EventHandler) Delete() http.HandlerFunc {
 	}
 }
 
-// Edit is a GET-method that any admin can call. It displays a form in which
-// values for updating the current event can be entered.
+// Edit is a GET-method that is accessible to any admin.
+//
+// It displays a form in which values for modifying the current event can be
+// entered.
 func (handler *EventHandler) Edit() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
-		Event backend.Event
+		Event jahreszahlen.Event
 	}
 
 	// Parse HTML-templates
@@ -222,7 +230,7 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 
 		// Check if an admin is logged in
 		user := req.Context().Value("user")
-		if user == nil || !user.(backend.User).Admin {
+		if user == nil || !user.(jahreszahlen.User).Admin {
 			// If no user is logged in or logged in user isn't an admin,
 			// then redirect back with flash message
 			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
@@ -256,9 +264,11 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 	}
 }
 
-// EditStore is a POST-method. It validates the form from Edit and redirects to
-// Edit in case of an invalid input with corresponding error message. In case
-// of valid form, it stores the topic in the database and redirects to List.
+// EditStore is a POST-method that is accessible to any admin after Edit.
+//
+// It validates the form from Edit and redirects to Edit in case of an invalid
+// input with the corresponding error message. In case of valid form, it stores
+// the topic in the database and redirects to List.
 func (handler *EventHandler) EditStore() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -282,7 +292,7 @@ func (handler *EventHandler) EditStore() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to update event
-		if err := handler.store.UpdateEvent(&backend.Event{
+		if err := handler.store.UpdateEvent(&jahreszahlen.Event{
 			TopicID: topicID,
 			Name:    form.Name,
 			Year:    form.Year,

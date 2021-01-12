@@ -1,6 +1,9 @@
-package web
+// The pivot of all HTTP-handlers functions, which is responsible for
+// initializing a web handler, consisting of a multiplexer, a database store
+// and a session manager. It also contains middleware and singled out HTTP-
+// handler functions.
 
-// Contains HTTP-router and path to all HTTP-handlers.
+package web
 
 import (
 	"context"
@@ -11,7 +14,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
+	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
 
 const (
@@ -19,7 +22,7 @@ const (
 )
 
 // NewHandler initializes HTTP-handlers, including router and middleware.
-func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
+func NewHandler(store jahreszahlen.Store, sessions *scs.SessionManager) *Handler {
 	handler := &Handler{
 		Mux:      chi.NewMux(),
 		store:    store,
@@ -106,17 +109,19 @@ func NewHandler(store backend.Store, sessions *scs.SessionManager) *Handler {
 // Handler consists of the chi-multiplexer, a store interface and sessions.
 type Handler struct {
 	*chi.Mux
-	store    backend.Store
+	store    jahreszahlen.Store
 	sessions *scs.SessionManager
 }
 
-// Home is a GET-method. It displays the home-page.
+// Home is a GET-method that is accessible to anyone.
+//
+// It displays the home-page.
 func (handler *Handler) Home() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
-		Topics []backend.Topic
+		Topics []jahreszahlen.Topic
 	}
 
 	// Parse HTML-templates

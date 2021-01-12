@@ -1,8 +1,8 @@
-package database
+// The pivot of all database stores, which is responsible for initializing a
+// database connection and combining all existing store objects into one single
+// store object to be accesses throughout the HTTP-handlers.
 
-/*
- * The Pivot of all database stores.
- */
+package database
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-// NewStore connects to database and initializes new store objects.
+// NewStore connects to database and initializes new store objects
 func NewStore(dataSourceName string) (*Store, error) {
 	// Open database connection
 	db, err := sqlx.Open("mysql", dataSourceName+"?parseTime=true")

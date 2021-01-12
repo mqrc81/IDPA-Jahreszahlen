@@ -1,8 +1,8 @@
-package web
+// The web handler evolving around topics, with HTTP-handler functions
+// consisting of "GET"- and "POST"-methods. It utilizes session management and
+// database access.
 
-/*
- * Contains all HTTP-handler functions for pages evolving around topics.
- */
+package web
 
 import (
 	"html/template"
@@ -12,23 +12,27 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
+	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
 
 // TopicHandler is the object for handlers to access sessions and database.
 type TopicHandler struct {
-	store    backend.Store
+	store    jahreszahlen.Store
 	sessions *scs.SessionManager
 }
 
-// List is a GET-method. It lists all topics.
+// List is a GET-method is accessible to anyone.
+//
+// It lists all topics. Users can only view them or show a specific topic,
+// while admins have the ability to create a new topic, as well as to edit and
+// delete an existing one.
 func (handler *TopicHandler) List() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
-		Topics []backend.Topic
+		Topics []jahreszahlen.Topic
 	}
 
 	// Parse HTML-templates
@@ -58,8 +62,9 @@ func (handler *TopicHandler) List() http.HandlerFunc {
 	}
 }
 
-// Create is a GET-method that any admin can call. It displays a form, in which
-// values for a new topic can be entered.
+// Create is a GET-method that is accessible to any admin.
+//
+// It displays a form, in which values for a new topic can be entered.
 func (handler *TopicHandler) Create() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
@@ -78,7 +83,7 @@ func (handler *TopicHandler) Create() http.HandlerFunc {
 
 		// Check if an admin is logged in
 		user := req.Context().Value("user")
-		if user == nil || !user.(backend.User).Admin {
+		if user == nil || !user.(jahreszahlen.User).Admin {
 			// If no user is logged in or logged in user isn't an admin,
 			// then redirect back with flash message
 			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
@@ -97,10 +102,11 @@ func (handler *TopicHandler) Create() http.HandlerFunc {
 	}
 }
 
-// CreateStore is a POST-method. It validates the form from Create and
-// redirects to Create in case of an invalid input with corresponding error
-// message. In case of valid form, it stores the new topic in the database and
-// redirects to List.
+// CreateStore is a POST-method is accessible to.
+//
+// It validates the form from Create and redirects to Create in case of an
+// invalid input with corresponding error message. In case of valid form, it
+// stores the new topic in the database and redirects to List.
 func (handler *TopicHandler) CreateStore() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -123,7 +129,7 @@ func (handler *TopicHandler) CreateStore() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to create a topic
-		if err := handler.store.CreateTopic(&backend.Topic{
+		if err := handler.store.CreateTopic(&jahreszahlen.Topic{
 			Name:        form.Name,
 			StartYear:   form.StartYear,
 			EndYear:     form.EndYear,
@@ -141,7 +147,9 @@ func (handler *TopicHandler) CreateStore() http.HandlerFunc {
 	}
 }
 
-// Delete is a POST-method. It deletes a certain topic and redirects to Show.
+// Delete is a POST-method is accessible to any admin.
+//
+// It deletes a certain topic and redirects to List.
 func (handler *TopicHandler) Delete() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -162,16 +170,18 @@ func (handler *TopicHandler) Delete() http.HandlerFunc {
 	}
 }
 
-// Edit is a GET-method that any admin can call. It displays a form in which
-// values for updating the current topic can be entered.
+// Edit is a GET-method that is accessible to any admin.
+//
+// It displays a form in which values for modifying the current topic can be
+// entered.
 func (handler *TopicHandler) Edit() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
-		Topic  backend.Topic
-		Events []backend.Event
+		Topic  jahreszahlen.Topic
+		Events []jahreszahlen.Event
 	}
 
 	// Parse HTML-templates
@@ -185,7 +195,7 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 
 		// Check if an admin is logged in
 		user := req.Context().Value("user")
-		if user == nil || !user.(backend.User).Admin {
+		if user == nil || !user.(jahreszahlen.User).Admin {
 			// If no user is logged in or logged in user isn't an admin,
 			// then redirect back with flash message
 			handler.sessions.Put(req.Context(), "flash_error",
@@ -219,9 +229,11 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 	}
 }
 
-// EditStore is a POST-method. It validates the form from Edit and redirects to
-// Edit in case of an invalid input with corresponding error message. In case
-// of valid form, it stores the topic in the database and redirects to Show.
+// EditStore is a POST-method is accessible to any admin.
+//
+// It validates the form from Edit and redirects to Edit in case of an invalid
+// input with corresponding error message. In case of valid form, it stores the
+// topic in the database and redirects to Show.
 func (handler *TopicHandler) EditStore() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -248,7 +260,7 @@ func (handler *TopicHandler) EditStore() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to update a topic
-		if err := handler.store.UpdateTopic(&backend.Topic{
+		if err := handler.store.UpdateTopic(&jahreszahlen.Topic{
 			TopicID:     topicID,
 			Name:        form.Name,
 			StartYear:   form.StartYear,
@@ -267,15 +279,18 @@ func (handler *TopicHandler) EditStore() http.HandlerFunc {
 	}
 }
 
-// Show is a GET-method. It displays details of the topic with the options to
-// play the quiz, to edit the topic and to edit the events.
+// Show is a GET-method is accessible to anyone.
+//
+// It displays details of the topic. Anyone can view the topic, while users
+// have the ability to play the quiz and admins have the ability to edit or
+// delete the topic.
 func (handler *TopicHandler) Show() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
 
-		Topic backend.Topic
+		Topic jahreszahlen.Topic
 	}
 
 	// Parse HTML-templates

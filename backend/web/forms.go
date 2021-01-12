@@ -1,8 +1,9 @@
-package web
+// The collection of form validation for various HTTP-handler functions. Once a
+// form gets submitted, it gets validated here. The form gets returned,
+// including potential error messages to be displayed in the form, after
+// being redirected back to the form.
 
-/*
- * Contains form validation for all relevant HTTP-handlers.
- */
+package web
 
 import (
 	"encoding/gob"

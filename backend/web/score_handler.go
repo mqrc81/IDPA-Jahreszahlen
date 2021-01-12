@@ -1,8 +1,8 @@
-package web
+// The web handler evolving around scores, with HTTP-handler functions
+// consisting of "GET"- and "POST"-methods. It utilizes session management and
+// database access.
 
-/*
- * Contains all HTTP-handler functions for pages evolving around scores.
- */
+package web
 
 import (
 	"html/template"
@@ -12,17 +12,24 @@ import (
 
 	"github.com/alexedwards/scs/v2"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
+	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
 
 // ScoreHandler is the object for handlers to access sessions and database.
 type ScoreHandler struct {
-	store    backend.Store
+	store    jahreszahlen.Store
 	sessions *scs.SessionManager
 }
 
-// List is a GET-method that any user can call. It lists all scores, ranked by
-// points, with the ability to filter scores by topic and/or user.
+// List is a GET-method that is accessible to any user.
+//
+// It lists all scores and displays it as a leaderboard table, ranked by
+// points, with the ability to limit scores to a single topic and to only the
+// active user, as well as to choose how many entries are shown at a time and
+// switch move to the previous or next page.
+//
+// The leaderboard contains of a rank, name of user, name of topic, date and
+// points of a score.
 func (handler *ScoreHandler) List() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
@@ -55,16 +62,16 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
-		user := userInf.(backend.User)
+		user := userInf.(jahreszahlen.User)
 
-		var scores []backend.Score
+		var scores []jahreszahlen.Score
 
 		// Retrieve URL query parameters for filtering the leaderboard from URL
 		topicID, _ := strconv.Atoi(req.URL.Query().Get("topic"))   // if topic query is empty or invalid -> topicID = 0
 		userFilter := strings.ToLower(req.URL.Query().Get("user")) // usually "me" or empty
-		limit, _ := strconv.Atoi(req.URL.Query().Get("show"))      // if show query is empty or invalid -> limit = 25
-		if limit == 0 {
-			limit = 25
+		show, _ := strconv.Atoi(req.URL.Query().Get("show"))       // if show query is empty or invalid -> show = 25
+		if show == 0 {
+			show = 25
 		}
 		page, err := strconv.Atoi(req.URL.Query().Get("page"))
 		if err != nil {
@@ -98,7 +105,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 				return
 			}
 			scores = scoresByUser
-		} else { // No topic or user specified in URL parameters
+		} else { // Neither topic nor user specified in URL parameters
 			// Execute SQL statement to get scores
 			scoresAll, err := handler.store.GetScores()
 			if err != nil {
@@ -108,15 +115,16 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 			scores = scoresAll
 		}
 
-		// Adjust offset, if the leaderboard rows would be out of bounds of
+		// Adjust page, if the leaderboard rows would be out of bounds of
 		// scores array
-		// Example: limit = 10, offset = 5, len(scores) = 13 => offset = 2
-		// => scores[10:20] => scores[10:12] gets shown (in bounds of array)
-		page -= (page*limit - (len(scores) + 1)) / limit
+		// Example: show=10, page=5, len(scores)=13 => page=2 => scores[10:20]
+		// => scores[10:13] (ranks 11-13) gets shown (in bounds of array)
+		page -= (page*show - (len(scores) + 1)) / show
 
 		// Create table of scores for the current page & show size
-		// Example: page/offset = 3 & show/limit = 15 => scores[30:45] (31-45)
-		leaderboard := createLeaderboardRows(scores, limit, page)
+		// Example: page=3, show=15 => scores[30:45] (ranks 31-45)
+		// However, if len(scores)=33 => scores[30:33] (ranks 31-33)
+		leaderboard := createLeaderboardRows(scores, show, page)
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
@@ -125,7 +133,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 			Topic:       topicID,
 			User:        allUsers,
 			Page:        page,
-			Show:        limit,
+			Show:        show,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -143,9 +151,9 @@ type leaderboardRow struct {
 }
 
 // createLeaderboardRows generates all rows of the leaderboard
-func createLeaderboardRows(scores []backend.Score, limit int, offset int) []leaderboardRow {
+func createLeaderboardRows(scores []jahreszahlen.Score, show int, page int) []leaderboardRow {
 	var leaderboard []leaderboardRow
-	for i := limit * (offset - 1); i < len(scores) && i < limit*offset; i++ {
+	for i := show * (page - 1); i < len(scores) && i < show*page; i++ {
 		leaderboard = append(leaderboard, leaderboardRow{
 			Rank:      i + 1,
 			UserName:  scores[i].UserName,

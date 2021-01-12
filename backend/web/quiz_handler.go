@@ -1,9 +1,8 @@
-package web
+// The web handler evolving around playing a quiz, with HTTP-handler functions
+// consisting of "GET"- and "POST"-methods. It utilizes session management and
+// database access.
 
-/*
- * Contains all HTTP-handler functions for pages evolving around playing a
- * quiz.
- */
+package web
 
 import (
 	"encoding/gob"
@@ -17,7 +16,7 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend"
+	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
 
 const (
@@ -40,9 +39,9 @@ const (
 // (int, bool, string, etc.).
 func init() {
 	gob.Register(QuizData{})
-	gob.Register(backend.Topic{})
-	gob.Register([]backend.Event{})
-	gob.Register(backend.Event{})
+	gob.Register(jahreszahlen.Topic{})
+	gob.Register([]jahreszahlen.Event{})
+	gob.Register(jahreszahlen.Event{})
 	gob.Register([]phase1Question{})
 	gob.Register(phase1Question{})
 	gob.Register([]int{})
@@ -54,7 +53,7 @@ func init() {
 
 // QuizHandler is the object for handlers to access sessions and database.
 type QuizHandler struct {
-	store    backend.Store
+	store    jahreszahlen.Store
 	sessions *scs.SessionManager
 }
 
@@ -63,7 +62,7 @@ type QuizHandler struct {
 // time expiry and current phase) in order to validate the correct playing
 // order of a quiz.
 type QuizData struct {
-	Topic          backend.Topic // contains topic ID for validation and events for playing the quiz
+	Topic          jahreszahlen.Topic // contains topic ID for validation and events for playing the quiz
 	Points         int
 	CorrectGuesses int
 
@@ -74,9 +73,10 @@ type QuizData struct {
 	TimeStamp time.Time // ensures a user can't return to a quiz after n minutes
 }
 
-// Phase1 is a GET-method that any user can call. It consists of a form with 3
-// multiple-choice questions, where the user has to guess the year of a given
-// event.
+// Phase1 is a GET-method that is accessible to any user.
+//
+// It consists of a form with 3 multiple-choice questions, where the user has
+// to guess the year of a given event.
 func (handler *QuizHandler) Phase1() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
@@ -149,8 +149,9 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 	}
 }
 
-// Phase1Submit is a POST-method. It calculates the points and redirects to
-// Phase1Review.
+// Phase1Submit is a POST-method that is accessible to any user after Phase1.
+//
+// It calculates the points and redirects to Phase1Review.
 func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -191,8 +192,9 @@ func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
 	}
 }
 
-// Phase1Review is a GET-method that any user can call after Phase1. It
-// displays a correction of the questions.
+// Phase1Review is a GET-method that is accessible to any user after Phase1.
+//
+// It displays a correction of the questions.
 func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
@@ -260,10 +262,12 @@ func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 	}
 }
 
-// Phase2Prepare is a POST-method that any user can call after
-// Phase1Review. It prepares the questions to be used in Phase2 and updates the
-// quiz data for future validation. This method allows user to refresh Phase2,
-// without quiz data becoming invalid or questions changing.
+// Phase2Prepare is a POST-method that is accessible to any user after
+// Phase1Review.
+//
+// It prepares the questions to be used in Phase2 and updates the quiz data for
+// future validation. This method allows user to refresh Phase2, without quiz
+// data becoming invalid or questions changing.
 func (handler *QuizHandler) Phase2Prepare() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -290,9 +294,10 @@ func (handler *QuizHandler) Phase2Prepare() http.HandlerFunc {
 	}
 }
 
-// Phase2 is a GET-method that any user can call after Phase1Review. It
-// consists of a form with 4 questions, where the user has to guess the year of
-// a given event.
+// Phase2 is a GET-method that is accessible to any user after Phase1Review.
+//
+// It consists of a form with 4 questions, where the user has to guess the
+// exact year of a given event.
 func (handler *QuizHandler) Phase2() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
@@ -360,8 +365,9 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 	}
 }
 
-// Phase2Submit is a POST-method that any user can call after Phase2. It
-// calculates the points and redirects to Phase2Review.
+// Phase2Submit is a POST-method that is accessible to any user after Phase2.
+//
+// It calculates the points and redirects to Phase2Review.
 func (handler *QuizHandler) Phase2Submit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -413,8 +419,9 @@ func (handler *QuizHandler) Phase2Submit() http.HandlerFunc {
 	}
 }
 
-// Phase2Review is a GET-method that any user can call after Phase2. It
-// displays a correction of the questions.
+// Phase2Review is a GET-method that is accessible to any user after Phase2.
+//
+// It displays a correction of the questions.
 func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
@@ -482,10 +489,12 @@ func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 	}
 }
 
-// Phase3Prepare is a POST-method that any user can call after
-// Phase2Review. It prepares the questions to be used in Phase3 and updates the
-// quiz data for future validation. This method allows user to refresh Phase3,
-// without quiz data becoming invalid or questions changing.
+// Phase3Prepare is a POST-method that is accessible to any user after
+// Phase2Review.
+//
+// It prepares the questions to be used in Phase3 and updates the quiz data for
+// future validation. This method allows user to refresh Phase3, without quiz
+// data becoming invalid or questions changing.
 func (handler *QuizHandler) Phase3Prepare() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -514,9 +523,10 @@ func (handler *QuizHandler) Phase3Prepare() http.HandlerFunc {
 	}
 }
 
-// Phase3 is a GET-method that any user can call after Phase2Review. It
-// consists of a form with all events of the topic, where the user has to put
-// the events in chronological order.
+// Phase3 is a GET-method that is accessible to any user after Phase2Review.
+//
+// It consists of a form with all events of the topic, where the user has to
+// put the events in chronological order.
 func (handler *QuizHandler) Phase3() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
@@ -583,9 +593,10 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 	}
 }
 
-// Phase3Submit is a POST-method that any user can call after Phase3. It
-// calculates the points and redirects to Phase3Review. It also creates a new
-// score object and stores it in the database.
+// Phase3Submit is a POST-method that is accessible to any user after Phase3.
+//
+// It calculates the points and redirects to Phase3Review. It also creates a
+// new score object which is stored in the database.
 func (handler *QuizHandler) Phase3Submit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -632,10 +643,10 @@ func (handler *QuizHandler) Phase3Submit() http.HandlerFunc {
 		}
 
 		// Retrieve user from session
-		user := req.Context().Value("user").(backend.User)
+		user := req.Context().Value("user").(jahreszahlen.User)
 
 		// Add score of quiz to database
-		if err := handler.store.CreateScore(&backend.Score{
+		if err := handler.store.CreateScore(&jahreszahlen.Score{
 			TopicID: quiz.Topic.TopicID,
 			UserID:  user.UserID,
 			Points:  quiz.Points,
@@ -649,8 +660,9 @@ func (handler *QuizHandler) Phase3Submit() http.HandlerFunc {
 	}
 }
 
-// Phase3Review is a GET-method that any user can call after Phase3. It
-// displays a correction of the questions.
+// Phase3Review is a GET-method that is accessible to any user after Phase3.
+//
+// It displays a correction of the questions.
 func (handler *QuizHandler) Phase3Review() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
@@ -718,8 +730,9 @@ func (handler *QuizHandler) Phase3Review() http.HandlerFunc {
 	}
 }
 
-// Summary is a GET-method that any user can call after Phase3Review. It
-// summarizes the quiz completed.
+// Summary is a GET-method that is accessible to any user after Phase3Review.
+//
+// It summarizes the quiz completed.
 func (handler *QuizHandler) Summary() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
@@ -857,7 +870,7 @@ type phase1Question struct {
 
 // createPhase1Questions generates 3 phase1Question structures by generating
 // 2 random years for each of the first 3 events in the array.
-func createPhase1Questions(events []backend.Event) []phase1Question {
+func createPhase1Questions(events []jahreszahlen.Event) []phase1Question {
 	var questions []phase1Question
 
 	// Set seed to generate random numbers from
@@ -917,7 +930,7 @@ type phase2Question struct {
 
 // createPhase2Questions generates 4 phase2Question structures for events 3-7
 // respectively of the array of events of the topic.
-func createPhase2Questions(events []backend.Event) []phase2Question {
+func createPhase2Questions(events []jahreszahlen.Event) []phase2Question {
 	var questions []phase2Question
 
 	// Loop through events 3-7 and turn them into questions
@@ -944,7 +957,7 @@ type phase3Question struct {
 
 // createPhase3Questions generates a phase3Question structure for all events of
 // the topic.
-func createPhase3Questions(events []backend.Event) []phase3Question {
+func createPhase3Questions(events []jahreszahlen.Event) []phase3Question {
 	var questions []phase3Question
 
 	// Sort array of events by year, in order to add 'order' value to questions
