@@ -38,7 +38,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 	}
 
 	// Parse HTML-templates
-	tmpl := template.Must(template.New("").ParseFiles(
+	tmpl := template.Must(template.ParseFiles(
 		"frontend/layout.html",
 		"frontend/css/css.html",
 		"frontend/pages/scores_list.html",
@@ -105,9 +105,18 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 			scores = scoresAll
 		}
 
+		for (offset-1)*limit > len(scores) {
+			offset--
+		}
+
+		// Adjust offset, if the leaderboard rows would be out of bounds of
+		// scores array
+		// limit: 10, offset: 5, len(scores): 10
+		offset -= (offset*limit - (len(scores) + 1)) / limit
+
 		// Create table of scores for the current page & show size
-		// Example: page = 3 & show = 15 => scores[30:45] (31-45)
-		leaderboard := createLeaderboardRows(scores[limit*(offset-1):limit*offset], offset)
+		// Example: page/offset = 3 & show/limit = 15 => scores[30:45] (31-45)
+		leaderboard := createLeaderboardRows(scores, limit, offset)
 
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
@@ -134,16 +143,16 @@ type leaderboardRow struct {
 }
 
 // createLeaderboardRows generates all rows of the leaderboard
-func createLeaderboardRows(scores []backend.Score, offset int) []leaderboardRow {
+func createLeaderboardRows(scores []backend.Score, limit int, offset int) []leaderboardRow {
 	var leaderboard []leaderboardRow
 
-	for index, score := range scores {
+	for i := limit * (offset - 1); i < len(scores) && i < limit*offset; i++ {
 		leaderboard = append(leaderboard, leaderboardRow{
-			Rank:      index + offset + 1,
-			UserName:  score.UserName,
-			TopicName: score.TopicName,
-			Date:      score.Date.Format("02.01.06"), // date formatted as 'dd.mm.yy'
-			Points:    score.Points,
+			Rank:      i + 1,
+			UserName:  scores[i].UserName,
+			TopicName: scores[i].TopicName,
+			Date:      scores[i].Date.Format("02.01.06"), // date formatted as 'dd.mm.yy'
+			Points:    scores[i].Points,
 		})
 	}
 
