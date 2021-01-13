@@ -973,9 +973,9 @@ type phase3Question struct {
 func createPhase3Questions(events []jahreszahlen.Event) []phase3Question {
 	var questions []phase3Question
 
-	// Sort array of events by year, in order to add 'order' value to questions
+	// Sort array of events by date, in order to add 'order' value to questions
 	sort.Slice(events, func(n1, n2 int) bool {
-		return events[n1].Year < events[n2].Year
+		return events[n1].Date.Unix() < events[n2].Date.Unix()
 	})
 
 	// Loop through all events and turn them into questions

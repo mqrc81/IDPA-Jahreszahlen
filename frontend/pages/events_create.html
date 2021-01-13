@@ -29,9 +29,9 @@
         <h5><br></h5>
         <label>Jahr*</label>
         <div class="form-group">
-            <input type="number" name="year"
+            <input type="text" name="year"
                    class="form-control {{with .Form.Errors.Year}}is-invalid{{end}}"
-                   placeholder="Jahr des Geschehens"
+                   placeholder="Jahr/Datum des Geschehens"
                    value="{{with .Form.Year}}{{.}}{{end}}">
         </div>
 

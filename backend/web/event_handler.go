@@ -154,10 +154,9 @@ func (handler *EventHandler) CreateStore() http.HandlerFunc {
 		topicID, _ := strconv.Atoi(topicIDstr)
 
 		// Retrieve variables from form (Create)
-		year, _ := strconv.Atoi(req.FormValue("year"))
 		form := EventForm{
-			Name: req.FormValue("name"),
-			Year: year,
+			Name:       req.FormValue("name"),
+			YearOrDate: req.FormValue("year"),
 		}
 
 		// Validate form
@@ -172,6 +171,7 @@ func (handler *EventHandler) CreateStore() http.HandlerFunc {
 			TopicID: topicID,
 			Name:    form.Name,
 			Year:    form.Year,
+			Date:    form.Date,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -281,10 +281,9 @@ func (handler *EventHandler) EditStore() http.HandlerFunc {
 		topicID, _ := strconv.Atoi(topicIDstr)
 
 		// Retrieve values from form (Edit)
-		year, _ := strconv.Atoi(req.FormValue("year"))
 		form := EventForm{
-			Name: req.FormValue("name"),
-			Year: year,
+			Name:       req.FormValue("name"),
+			YearOrDate: req.FormValue("year"),
 		}
 
 		// Validate form

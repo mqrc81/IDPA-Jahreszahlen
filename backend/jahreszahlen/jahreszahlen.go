@@ -25,10 +25,11 @@ type Topic struct {
 
 // Event represents a historical event associated with a specific year.
 type Event struct {
-	EventID int    `db:"event_id"`
-	TopicID int    `db:"topic_id"`
-	Name    string `db:"name"`
-	Year    int    `db:"year"`
+	EventID int       `db:"event_id"`
+	TopicID int       `db:"topic_id"`
+	Name    string    `db:"name"`
+	Year    int       `db:"year"`
+	Date    time.Time `db:"date"` // only relevant for sorting the events by date, if 2 events are in the same year
 }
 
 // User represents a person's account.

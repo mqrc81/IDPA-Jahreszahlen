@@ -38,7 +38,8 @@ func (store *TopicStore) GetTopic(topicID int) (jahreszahlen.Topic, error) {
 	query = `
 		SELECT * 
 		FROM events 
-		WHERE topic_id = ?
+		WHERE topic_id = ? 
+		ORDER BY date
 		`
 	if err := store.Select(&topic.Events, query, topicID); err != nil {
 		return jahreszahlen.Topic{}, fmt.Errorf("error getting events of topic: %w", err)

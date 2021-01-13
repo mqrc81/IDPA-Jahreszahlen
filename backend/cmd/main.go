@@ -5,6 +5,7 @@ package main
 
 import (
 	"crypto/rand"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -19,6 +20,8 @@ import (
 // connection to the database and the server. It also obtains session
 // management and CSRF-protection.
 func main() {
+	fmt.Println("Starting application...")
+
 	// Access global environment variables
 	if err := godotenv.Load("backend/.env"); err != nil {
 		log.Fatal(err)

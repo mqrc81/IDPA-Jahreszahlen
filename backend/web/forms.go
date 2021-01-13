@@ -7,8 +7,10 @@ package web
 
 import (
 	"encoding/gob"
+	"fmt"
 	"log"
 	"regexp"
+	"strconv"
 	"time"
 )
 
@@ -75,8 +77,10 @@ func (form *TopicForm) Validate() bool {
 
 // EventForm holds values of the form input when creating or editing an event.
 type EventForm struct {
-	Name string
-	Year int
+	Name       string
+	Year       int
+	Date       time.Time
+	YearOrDate string
 
 	Errors FormErrors
 }
@@ -92,13 +96,39 @@ func (form *EventForm) Validate() bool {
 		form.Errors["Name"] = "Titel darf 110 Zeichen nicht überschreiten."
 	}
 
-	// Validate year
-	if form.Year == 0 {
-		form.Errors["Year"] = "Jahr darf nicht leer sein."
-	} else if form.Year <= 0 {
-		form.Errors["Year"] = "Jahr muss positiv sein."
-	} else if form.Year > time.Now().Year() {
-		form.Errors["Year"] = "Wird hier die Zukunft vorausgesagt?"
+	// Validate date or year
+	year, err := strconv.Atoi(form.YearOrDate) // convert to int; if error occurs, admin entered a date, not a year
+	if err == nil {                            // admin entered a year
+		form.Year = year
+		form.Date, _ = time.Parse("2006", form.YearOrDate) // date = year + default values (e.g. 1969-01-01 00:00:00)
+
+		// Validate year
+		if form.Year == 0 {
+			form.Errors["Year"] = "Jahr darf nicht leer sein."
+		} else if form.Year <= 0 {
+			form.Errors["Year"] = "Jahr muss positiv sein."
+		} else if form.Year > time.Now().Year() {
+			form.Errors["Year"] = "Wird hier die Zukunft vorausgesagt?"
+		}
+	} else { // admin entered (day, ) month & year (e.g. 08.1969 or 13.19.69)
+
+		date, err := time.Parse("02.01.2006", form.YearOrDate) // check if admin entered valid date as 'dd.mm.yyyy'
+		if err != nil {
+			date, err = time.Parse("01.2006", form.YearOrDate) // check if admin entered valid date as 'mm.yy'
+			if err != nil {
+				now := time.Now()
+				form.Errors["Year"] = fmt.Sprintf("Ungültiges Format. Erlaubte Formate: '%v', '%s', '%s'",
+					now.Year(), now.Format("01.2006"), now.Format("02.01.2006"))
+			}
+		}
+
+		if form.Errors["Year"] == "" { // admin entered valid date
+			if date.Unix() > time.Now().Unix() {
+				form.Errors["Year"] = "Wird hier die Zukunft vorausgesagt?"
+			}
+			form.Date = date
+			form.Year = date.Year()
+		}
 	}
 
 	return len(form.Errors) == 0

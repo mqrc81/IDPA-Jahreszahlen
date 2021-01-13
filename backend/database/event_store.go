@@ -54,12 +54,13 @@ func (store *EventStore) CreateEvent(event *jahreszahlen.Event) error {
 
 	// Execute prepared statement
 	query := `
-		INSERT INTO events(topic_id, name, year) 
-		VALUES (?, ?, ?)
+		INSERT INTO events(topic_id, name, year, date) 
+		VALUES (?, ?, ?, ?)
 		`
 	if _, err := store.Exec(query,
 		event.TopicID,
 		event.Name,
+		event.Year,
 		event.Year); err != nil {
 		return fmt.Errorf("error creating event: %w", err)
 	}
@@ -74,12 +75,14 @@ func (store *EventStore) UpdateEvent(event *jahreszahlen.Event) error {
 	query := `
 		UPDATE events 
 		SET name = ?, 
-		    year = ? 
+		    year = ?,
+		    date = ?
 		WHERE event_id = ?
 		`
 	if _, err := store.Exec(query,
 		event.Name,
 		event.Year,
+		event.Date,
 		event.EventID); err != nil {
 		return fmt.Errorf("error updating event: %w", err)
 	}
