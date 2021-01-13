@@ -69,7 +69,7 @@ func (form *TopicForm) Validate() bool {
 
 	// Validate description
 	if len(form.Description) > 500 {
-		form.Errors["Description"] = "Beschreibung darf nicht leer sein."
+		form.Errors["Description"] = "Beschreibung darf 500 Buchstaben nicht überschreiten."
 	}
 
 	return len(form.Errors) == 0

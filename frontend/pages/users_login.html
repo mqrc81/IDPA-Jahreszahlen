@@ -18,7 +18,7 @@
         </div>
 
         {{with .Form.Errors.Username}}
-            <div style="color:#dc3545;font-size:14px">{{.}}</div>
+            <div class="x-invalid-form">{{.}}</div>
         {{end}}
 
         <h5><br></h5>
@@ -32,7 +32,7 @@
         </div>
 
         {{with .Form.Errors.Password}}
-            <div style="color:#dc3545;font-size:14px">{{.}}</div>
+            <div class="x-invalid-form">{{.}}</div>
         {{end}}
 
         <h5><br></h5>
