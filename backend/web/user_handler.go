@@ -36,13 +36,6 @@ func (handler *UserHandler) Register() http.HandlerFunc {
 		CSRF template.HTML
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/users_register.html",
-	))
-
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Check if a user is logged in
@@ -56,7 +49,7 @@ func (handler *UserHandler) Register() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["users_register"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 		}); err != nil {
@@ -134,13 +127,6 @@ func (handler *UserHandler) Login() http.HandlerFunc {
 		CSRF template.HTML
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/users_login.html",
-	))
-
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Check if a user is logged in
@@ -154,7 +140,7 @@ func (handler *UserHandler) Login() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["users_login"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 		}); err != nil {
@@ -253,13 +239,6 @@ func (handler *UserHandler) Profile() http.HandlerFunc {
 		User jahreszahlen.User
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/users_profile.html",
-	))
-
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Get user logged in
@@ -274,7 +253,7 @@ func (handler *UserHandler) Profile() http.HandlerFunc {
 		user := userInf.(jahreszahlen.User)
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["users_profile"].Execute(res, data{
 			User:        user,
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
@@ -297,13 +276,6 @@ func (handler *UserHandler) List() http.HandlerFunc {
 		Users []jahreszahlen.User
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/users_list.html",
-	))
-
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Check if an admin is logged in
@@ -325,7 +297,7 @@ func (handler *UserHandler) List() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["users_list"].Execute(res, data{
 			Users:       users,
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
@@ -346,13 +318,6 @@ func (handler *UserHandler) EditUsername() http.HandlerFunc {
 		SessionData
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/users_edit_username.html",
-	))
-
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Check if a user is logged in
@@ -366,7 +331,7 @@ func (handler *UserHandler) EditUsername() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["users_edit_username"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -436,13 +401,6 @@ func (handler *UserHandler) EditPassword() http.HandlerFunc {
 		SessionData
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/users_edit_password.html",
-	))
-
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Check if a user is logged in
@@ -456,7 +414,7 @@ func (handler *UserHandler) EditPassword() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["users_edit_password"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)

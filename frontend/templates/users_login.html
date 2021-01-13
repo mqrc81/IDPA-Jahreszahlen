@@ -9,9 +9,9 @@
 {{define "content"}}
     <form action="/users/login" method="POST" class="form">
         {{.CSRF}}
-        <label>Username*</label>
+        <label for="username">Username</label>
         <div class="form-group">
-            <input type="text" name="username"
+            <input type="text" name="username" id="username"
                    class="form-control {{with .Form.Errors.Username}}is-invalid{{end}}"
                    placeholder="Benutzername"
                    value="{{with .Form.Username}}{{.}}{{end}}">
@@ -23,9 +23,9 @@
 
         <h5><br></h5>
 
-        <label>Passwort*</label>
+        <label for="password">Passwort</label>
         <div class="form-group">
-            <input type="password" name="password"
+            <input type="password" name="password" id="password"
                    class="form-control {{with .Form.Errors.Password}}is-invalid{{end}}"
                    placeholder="Passwort"
                    value="{{with .Form.Password}}{{.}}{{end}}">

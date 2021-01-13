@@ -9,9 +9,10 @@
 {{define "content"}}
     <form action="/topics" method="POST" class="form">
         {{.CSRF}}
-        <label>Titel*</label>
+
+        <label for="name">Thema</label>
         <div class="form-group">
-            <input type="text" name="name"
+            <input type="text" name="name" id="name" required
                    class="form-control {{with .Form.Errors.Name}}is-invalid{{end}}"
                    placeholder="Titel des Themas"
                    value="{{with .Form.Name}}{{.}}{{end}}">
@@ -22,17 +23,17 @@
         {{end}}
 
         <h5><br></h5>
-        <label>Zeitspanne*</label>
+        <label for="year">Zeitspanne</label>
         <div class="row">
             <div class="col">
-                <input type="number" name="start_year"
+                <input type="number" name="start_year" id="year"
                        class="form-control {{with .Form.Errors.Year}}is-invalid{{end}}"
                        placeholder="Von"
                        value="{{with .Form.StartYear}}{{.}}{{end}}">
             </div>
             _
             <div class="col">
-                <input type="number" name="end_year"
+                <input type="number" name="end_year" id="year"
                        class="form-control {{with .Form.Errors.Year}}is-invalid{{end}}"
                        placeholder="Bis"
                        value="{{with .Form.EndYear}}{{.}}{{end}}">
@@ -44,9 +45,9 @@
         {{end}}
 
         <h5><br></h5>
-        <label>Beschreibung</label>
+        <label for="description">Beschreibung</label>
         <div class="form-group">
-            <textarea name="description" rows="3"
+            <textarea name="description" id="description" rows="3"
                       class="form-control {{with .Form.Errors.Description}}is-invalid{{end}}"
                       placeholder="Optionale Beschreibung des Themas">
                 {{- with .Form.Description}}{{.}}{{end -}}

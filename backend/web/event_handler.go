@@ -37,13 +37,6 @@ func (handler *EventHandler) List() http.HandlerFunc {
 		Events []jahreszahlen.Event
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/events_list.html",
-	))
-
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Check if a user is logged in
@@ -71,7 +64,7 @@ func (handler *EventHandler) List() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["events_list"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topic:       topic,
 		}); err != nil {
@@ -93,13 +86,6 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 
 		Topic jahreszahlen.Topic
 	}
-
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/events_create.html",
-	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -129,7 +115,7 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["events_create"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Topic:       topic,
@@ -222,13 +208,6 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 		Event jahreszahlen.Event
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/events_edit.html",
-	))
-
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Check if an admin is logged in
@@ -257,7 +236,7 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["events_edit"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Event:       event,
 		}); err != nil {

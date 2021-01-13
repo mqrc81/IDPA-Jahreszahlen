@@ -5,7 +5,6 @@
 package web
 
 import (
-	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
@@ -43,13 +42,6 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 		Page  int
 		Show  int
 	}
-
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/scores_list.html",
-	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -127,7 +119,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 		leaderboard := createLeaderboardRows(scores, show, page)
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["scores_list"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Leaderboard: leaderboard,
 			Topic:       topicID,

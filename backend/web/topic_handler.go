@@ -36,13 +36,6 @@ func (handler *TopicHandler) List() http.HandlerFunc {
 		Topics []jahreszahlen.Topic
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/topics_list.html",
-	))
-
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Execute SQL statement to get topics
@@ -53,7 +46,7 @@ func (handler *TopicHandler) List() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["topics_list"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topics:      topics,
 		}); err != nil {
@@ -74,13 +67,6 @@ func (handler *TopicHandler) Create() http.HandlerFunc {
 		CSRF template.HTML
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/topics_create.html",
-	))
-
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Check if an admin is logged in
@@ -95,7 +81,7 @@ func (handler *TopicHandler) Create() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["topics_create"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 		}); err != nil {
@@ -187,13 +173,6 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 		Events []jahreszahlen.Event
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/topics_edit.html",
-	))
-
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Check if an admin is logged in
@@ -222,7 +201,7 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["topics_edit"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topic:       topic,
 		}); err != nil {
@@ -296,13 +275,6 @@ func (handler *TopicHandler) Show() http.HandlerFunc {
 		Topic jahreszahlen.Topic
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/topics_show.html",
-	))
-
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Retrieve TopicID from URL parameters
@@ -320,7 +292,7 @@ func (handler *TopicHandler) Show() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["topics_show"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topic:       topic,
 		}); err != nil {

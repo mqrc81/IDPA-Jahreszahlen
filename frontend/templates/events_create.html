@@ -14,9 +14,9 @@
 
     <form action="/topics/{{.Topic.TopicID}}/events" method="POST" class="form">
         {{.CSRF}}
-        <label>Titel*</label>
+        <label for="name">Ereignis</label>
         <div class="form-group">
-            <input type="text" name="name"
+            <input type="text" name="name" id="name"
                    class="form-control {{with .Form.Errors.Name}}is-invalid{{end}}"
                    placeholder="Titel des Ereignisses"
                    value="{{with .Form.Name}}{{.}}{{end}}">
@@ -27,9 +27,9 @@
         {{end}}
 
         <h5><br></h5>
-        <label>Jahr*</label>
+        <label for="year">Jahr</label>
         <div class="form-group">
-            <input type="text" name="year"
+            <input type="text" name="year" id="year"
                    class="form-control {{with .Form.Errors.Year}}is-invalid{{end}}"
                    placeholder="Jahr/Datum des Geschehens"
                    value="{{with .Form.Year}}{{.}}{{end}}">

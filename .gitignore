@@ -20,4 +20,5 @@
 *.xml
 *.iml
 migrations
+*.sql
 .env

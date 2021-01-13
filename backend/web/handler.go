@@ -22,6 +22,61 @@ const (
 	DefaultPassword = "pw123" // Used when admin manually resets a user's password
 )
 
+var (
+	// Parsed HTML-templates to be executed in their respective HTTP-handler
+	// functions when needed
+	Templates = make(map[string]*template.Template)
+
+	// A map of custom functions to be used in a HTML-template
+	funcMap = template.FuncMap{
+		"row-is-even": func(rank int) bool {
+			return rank%2 == 0
+		},
+	}
+)
+
+// init gets initialized with the package.
+//
+// All HTML-templates get parsed once and added to a map to be executed when
+// needed. This is way more efficient than parsing the HTML-templates every
+// time a request is sent.
+func init() {
+	path := "frontend/templates/"
+	layout := "frontend/layout.html"
+	css := "frontend/css/css.html"
+
+	Templates["home"] = template.Must(template.ParseFiles(layout, css, path+"home.html"))
+	Templates["http_not_found"] = template.Must(template.ParseFiles(layout, css, path+"http_not_found.html"))
+
+	Templates["topics_list"] = template.Must(template.ParseFiles(layout, css, path+"topics_list.html"))
+	Templates["topics_create"] = template.Must(template.ParseFiles(layout, css, path+"topics_create.html"))
+	Templates["topics_edit"] = template.Must(template.ParseFiles(layout, css, path+"topics_edit.html"))
+	Templates["topics_show"] = template.Must(template.ParseFiles(layout, css, path+"topics_show.html"))
+
+	Templates["events_list"] = template.Must(template.ParseFiles(layout, css, path+"events_list.html"))
+	Templates["events_create"] = template.Must(template.ParseFiles(layout, css, path+"events_create.html"))
+	Templates["events_edit"] = template.Must(template.ParseFiles(layout, css, path+"events_edit.html"))
+
+	Templates["scores_list"] = template.Must(template.
+		New("layout.html").Funcs(funcMap). // add custom functions to use in HTML-templates
+		ParseFiles(layout, css, path+"scores_list.html"))
+
+	Templates["quiz_phase1"] = template.Must(template.ParseFiles(layout, css, path+"quiz_phase1.html"))
+	Templates["quiz_phase1_review"] = template.Must(template.ParseFiles(layout, css, path+"quiz_phase1_review.html"))
+	Templates["quiz_phase2"] = template.Must(template.ParseFiles(layout, css, path+"quiz_phase2.html"))
+	Templates["quiz_phase2_review"] = template.Must(template.ParseFiles(layout, css, path+"quiz_phase2_review.html"))
+	Templates["quiz_phase3"] = template.Must(template.ParseFiles(layout, css, path+"quiz_phase3.html"))
+	Templates["quiz_phase3_review"] = template.Must(template.ParseFiles(layout, css, path+"quiz_phase3_review.html"))
+	Templates["quiz_summary"] = template.Must(template.ParseFiles(layout, css, path+"quiz_summary.html"))
+
+	Templates["users_register"] = template.Must(template.ParseFiles(layout, css, path+"users_register.html"))
+	Templates["users_login"] = template.Must(template.ParseFiles(layout, css, path+"users_login.html"))
+	Templates["users_profile"] = template.Must(template.ParseFiles(layout, css, path+"users_profile.html"))
+	Templates["users_list"] = template.Must(template.ParseFiles(layout, css, path+"users_list.html"))
+	Templates["users_edit_password"] = template.Must(template.ParseFiles(layout, css, path+"users_edit_password.html"))
+	Templates["users_edit_username"] = template.Must(template.ParseFiles(layout, css, path+"users_edit_username.html"))
+}
+
 // NewHandler initializes HTTP-handlers, including router and middleware.
 func NewHandler(store jahreszahlen.Store, sessions *scs.SessionManager, csrfKey []byte) *Handler {
 	handler := &Handler{
@@ -127,13 +182,6 @@ func (handler *Handler) Home() http.HandlerFunc {
 		Topics []jahreszahlen.Topic
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/home.html",
-	))
-
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute SQL statement to get topics
 		topics, err := handler.store.GetTopics()
@@ -143,7 +191,7 @@ func (handler *Handler) Home() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["home"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			Topics:      topics,
 		}); err != nil {
@@ -186,14 +234,8 @@ func (handler *Handler) NotFound404() http.HandlerFunc {
 		SessionData
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/http_not_found.html",
-	))
 	return func(res http.ResponseWriter, req *http.Request) {
-		if err := tmpl.Execute(res, data{
+		if err := Templates["http_not_found"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)

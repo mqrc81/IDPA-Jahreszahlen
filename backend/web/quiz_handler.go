@@ -35,7 +35,9 @@ const (
 	p3Points = 5
 )
 
-// init gets initialized with the package. It registers certain types to the
+// init gets initialized with the package.
+//
+// It registers certain types to the
 // session, because by default the session can only contain basic data types
 // (int, bool, string, etc.).
 func init() {
@@ -89,13 +91,6 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 		Questions []phase1Question
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/quiz_phase1.html",
-	))
-
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Retrieve topic ID from URL parameters
@@ -140,7 +135,7 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 		})
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["quiz_phase1"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			TopicID:     topicID,
@@ -208,13 +203,6 @@ func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 		Questions []phase1Question
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/quiz_phase1_review.html",
-	))
-
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Retrieve topic ID from URL parameters
@@ -256,7 +244,7 @@ func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 		handler.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["quiz_phase1_review"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Questions:   quiz.Questions.([]phase1Question),
@@ -313,13 +301,6 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 		Questions []phase2Question
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/quiz_phase2.html",
-	))
-
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Retrieve topic ID from URL parameters
@@ -361,7 +342,7 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 		handler.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["quiz_phase2"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Questions:   quiz.Questions.([]phase2Question),
@@ -439,13 +420,6 @@ func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 		Questions []phase2Question
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/quiz_phase2_review.html",
-	))
-
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Retrieve topic ID from URL parameters
@@ -487,7 +461,7 @@ func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 		handler.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["quiz_phase2_review"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Questions:   quiz.Questions.([]phase2Question),
@@ -545,13 +519,6 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 		Questions []phase3Question
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/quiz_phase3.html",
-	))
-
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Retrieve topic ID from URL parameters
@@ -593,7 +560,7 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 		handler.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["quiz_phase3"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Questions:   quiz.Questions.([]phase3Question),
@@ -684,13 +651,6 @@ func (handler *QuizHandler) Phase3Review() http.HandlerFunc {
 		Questions []phase3Question
 	}
 
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/quiz_phase3_review.html",
-	))
-
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Retrieve topic ID from URL parameters
@@ -732,7 +692,7 @@ func (handler *QuizHandler) Phase3Review() http.HandlerFunc {
 		handler.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["quiz_phase3_review"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Questions:   quiz.Questions.([]phase3Question),
@@ -757,13 +717,6 @@ func (handler *QuizHandler) Summary() http.HandlerFunc {
 		AverageComparison int
 		OverAverage       bool
 	}
-
-	// Parse HTML-templates
-	tmpl := template.Must(template.ParseFiles(
-		"frontend/layout.html",
-		"frontend/css/css.html",
-		"frontend/pages/quiz_summary.html",
-	))
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -809,7 +762,7 @@ func (handler *QuizHandler) Summary() http.HandlerFunc {
 		averageComparison := (under + 1) * 100 / (len(scores) + 1)
 
 		// Execute HTML-templates with data
-		if err := tmpl.Execute(res, data{
+		if err := Templates["quiz_summary"].Execute(res, data{
 			SessionData:       GetSessionData(handler.sessions, req.Context()),
 			Quiz:              quiz,
 			QuestionsCount:    p1Questions + p2Questions + len(quiz.Topic.Events),
