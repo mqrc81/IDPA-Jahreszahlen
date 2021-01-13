@@ -12,6 +12,7 @@ import (
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi"
+	"github.com/gorilla/csrf"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
@@ -32,6 +33,7 @@ func (handler *UserHandler) Register() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
+		CSRF template.HTML
 	}
 
 	// Parse HTML-templates
@@ -56,6 +58,7 @@ func (handler *UserHandler) Register() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
+			CSRF:        csrf.TemplateField(req),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -128,6 +131,7 @@ func (handler *UserHandler) Login() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
+		CSRF template.HTML
 	}
 
 	// Parse HTML-templates
@@ -152,6 +156,7 @@ func (handler *UserHandler) Login() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
+			CSRF:        csrf.TemplateField(req),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return

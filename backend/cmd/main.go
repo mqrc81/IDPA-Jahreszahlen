@@ -4,6 +4,7 @@
 package main
 
 import (
+	"crypto/rand"
 	"log"
 	"net/http"
 	"os"
@@ -38,8 +39,15 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Generate random 32-byte key for CSRF-protection
+	csrfKey := make([]byte, 32)
+	_, err = rand.Read(csrfKey)
+	if err != nil {
+		log.Fatalf("error generating csrf-protection csrfKey: %e", err)
+	}
+
 	// Initialize HTTP-handlers, including router and middleware
-	handler := web.NewHandler(store, sessions)
+	handler := web.NewHandler(store, sessions, csrfKey)
 
 	// Listen on the TCP network address and call Serve with handler to handle
 	// requests on incoming connections

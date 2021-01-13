@@ -11,6 +11,7 @@ import (
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi"
+	"github.com/gorilla/csrf"
 
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
@@ -88,6 +89,7 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
+		CSRF template.HTML
 
 		Topic jahreszahlen.Topic
 	}
@@ -129,6 +131,7 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
+			CSRF:        csrf.TemplateField(req),
 			Topic:       topic,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)

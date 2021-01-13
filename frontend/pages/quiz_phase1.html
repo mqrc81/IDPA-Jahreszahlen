@@ -9,6 +9,7 @@
 {{define "content"}}
 
     <form action="/topics/{{.TopicID}}/quiz/1" method="POST" class="form">
+        {{.CSRF}}
         {{range .Questions}}
 
             <h5>{{.EventName}}</h5>

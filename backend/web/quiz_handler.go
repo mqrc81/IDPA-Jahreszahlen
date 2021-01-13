@@ -15,6 +15,7 @@ import (
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi"
+	"github.com/gorilla/csrf"
 
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
@@ -82,6 +83,7 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
+		CSRF template.HTML
 
 		TopicID   int
 		Questions []phase1Question
@@ -140,6 +142,7 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
+			CSRF:        csrf.TemplateField(req),
 			TopicID:     topicID,
 			Questions:   questions,
 		}); err != nil {
@@ -200,6 +203,7 @@ func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
+		CSRF template.HTML
 
 		Questions []phase1Question
 	}
@@ -254,6 +258,7 @@ func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
+			CSRF:        csrf.TemplateField(req),
 			Questions:   quiz.Questions.([]phase1Question),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -303,6 +308,7 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
+		CSRF template.HTML
 
 		Questions []phase2Question
 	}
@@ -357,6 +363,7 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
+			CSRF:        csrf.TemplateField(req),
 			Questions:   quiz.Questions.([]phase2Question),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -427,6 +434,7 @@ func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
+		CSRF template.HTML
 
 		Questions []phase2Question
 	}
@@ -481,6 +489,7 @@ func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
+			CSRF:        csrf.TemplateField(req),
 			Questions:   quiz.Questions.([]phase2Question),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -531,6 +540,7 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
+		CSRF template.HTML
 
 		Questions []phase3Question
 	}
@@ -585,6 +595,7 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
+			CSRF:        csrf.TemplateField(req),
 			Questions:   quiz.Questions.([]phase3Question),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -668,6 +679,7 @@ func (handler *QuizHandler) Phase3Review() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
+		CSRF template.HTML
 
 		Questions []phase3Question
 	}
@@ -722,6 +734,7 @@ func (handler *QuizHandler) Phase3Review() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := tmpl.Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
+			CSRF:        csrf.TemplateField(req),
 			Questions:   quiz.Questions.([]phase3Question),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
