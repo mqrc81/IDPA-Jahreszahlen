@@ -24,27 +24,35 @@
         <p> Es gibt <b>{{.Topic.EventsCount}}</b> Ereignisse zu diesem Thema
             und es wurde schon <b>{{.Topic.ScoresCount}}</b> Mal gespielt.</p>
     </div>
-    <button class="x-button">
-        <a href="/"><i class="fas fa-hourglass-start"></i> Quiz beginnen</a>
-    </button>
-    <button class="x-button">
-        <a href="/"><i class="fas fa-list"></i> Ereignisse anzeigen</a>
-    </button>
-
-    {{if .User.Admin}}
-
-        <button class="edit-icon">
-            <a href="/topics/{{.Topic.TopicID}}/edit"></a>
-            <i class="far fa-edit"></i>
-        </button>
-
-        <form action="/topics/{{.Topic.TopicID}}/delete" method="POST">
-            {{.CSRF}}
-            <button type="submit" class="delete-icon">
-                <i class="far fa-trash-alt"></i>
+    <div class="row">
+        <div class="col-3">
+            <button class="x-button">
+                <a href="/"><i class="fas fa-hourglass-start"></i> Quiz beginnen</a>
             </button>
-        </form>
-    {{end}}
+        </div>
+        <div class="col-3">
+            <button class="x-button">
+                <a href="/"><i class="fas fa-list"></i> Ereignisse anzeigen</a>
+            </button>
+        </div>
+
+        {{if .User.Admin}}
+        <div class="col-3">
+            <button class="edit-icon">
+                <a href="/topics/{{.Topic.TopicID}}/edit"></a>
+                <i class="far fa-edit"></i>
+            </button>
+        </div>
+        <div class="col-3">
+            <form action="/topics/{{.Topic.TopicID}}/delete" method="POST">
+                {{.CSRF}}
+                <button type="submit" class="delete-icon">
+                    <i class="far fa-trash-alt"></i>
+                </button>
+            </form>
+        </div>
+        {{end}}
+    </div>
 {{end}}
 
 {{define "sidebar"}}
