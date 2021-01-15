@@ -88,6 +88,7 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 		CSRF template.HTML
 
 		TopicID   int
+		TopicName string
 		Questions []phase1Question
 	}
 
@@ -139,6 +140,7 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			TopicID:     topicID,
+			TopicName:   topic.Name,
 			Questions:   questions,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -200,6 +202,8 @@ func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 		SessionData
 		CSRF template.HTML
 
+		TopicID   int
+		TopicName string
 		Questions []phase1Question
 	}
 
@@ -247,6 +251,8 @@ func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 		if err := Templates["quiz_phase1_review"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
+			TopicID:     topicID,
+			TopicName:   quiz.Topic.Name,
 			Questions:   quiz.Questions.([]phase1Question),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -298,6 +304,8 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 		SessionData
 		CSRF template.HTML
 
+		TopicID   int
+		TopicName string
 		Questions []phase2Question
 	}
 
@@ -345,6 +353,8 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 		if err := Templates["quiz_phase2"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
+			TopicID:     topicID,
+			TopicName:   quiz.Topic.Name,
 			Questions:   quiz.Questions.([]phase2Question),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -417,6 +427,8 @@ func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 		SessionData
 		CSRF template.HTML
 
+		TopicID   int
+		TopicName string
 		Questions []phase2Question
 	}
 
@@ -464,6 +476,8 @@ func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 		if err := Templates["quiz_phase2_review"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
+			TopicID:     topicID,
+			TopicName:   quiz.Topic.Name,
 			Questions:   quiz.Questions.([]phase2Question),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -516,6 +530,8 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 		SessionData
 		CSRF template.HTML
 
+		TopicID   int
+		TopicName string
 		Questions []phase3Question
 	}
 
@@ -563,6 +579,8 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 		if err := Templates["quiz_phase3"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
+			TopicID:     topicID,
+			TopicName:   quiz.Topic.Name,
 			Questions:   quiz.Questions.([]phase3Question),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -648,6 +666,8 @@ func (handler *QuizHandler) Phase3Review() http.HandlerFunc {
 		SessionData
 		CSRF template.HTML
 
+		TopicID   int
+		TopicName string
 		Questions []phase3Question
 	}
 
