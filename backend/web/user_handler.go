@@ -617,3 +617,20 @@ func (handler *UserHandler) ForgotPassword() http.HandlerFunc {
 		}
 	}
 }
+
+func (handler *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
+
+	return func(res http.ResponseWriter, req *http.Request) {
+		form := ForgotPasswordForm{
+			Email: strings.ToLower(req.FormValue("email")),
+		}
+
+		if !form.Validate() {
+			handler.sessions.Put(req.Context(), "form", form)
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+
+		// TODO send email with link
+	}
+}
