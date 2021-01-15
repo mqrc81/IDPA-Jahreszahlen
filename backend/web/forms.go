@@ -189,7 +189,7 @@ func (form *LoginForm) Validate() bool {
 	if form.UsernameOrEmail == "" {
 		form.Errors["UsernameOrEmail"] = "Bitte Benutzernamen order Email eingeben."
 	} else if form.IncorrectUsernameOrEmail {
-		form.Errors["UsernameOrEmail"] = "Ungültiger Benutzername oder ungültiges Email."
+		form.Errors["UsernameOrEmail"] = "Ungültiger Benutzername oder Email."
 	}
 
 	// Validate password
@@ -233,11 +233,11 @@ func (form *UsernameForm) Validate() bool {
 	return len(form.Errors) == 0
 }
 
-// EmailForm holds values of the form input when editing a username.
+// EmailForm holds values of the form input when editing an email.
 type EmailForm struct {
-	NewUsername       string
+	NewEmail          string
 	Password          string
-	UsernameTaken     bool
+	EmailTaken        bool
 	IncorrectPassword bool
 
 	Errors FormErrors
@@ -248,10 +248,10 @@ func (form *EmailForm) Validate() bool {
 	form.Errors = FormErrors{}
 
 	// Validate new username
-	if form.UsernameTaken {
-		form.Errors["Username"] = "Benutzername ist bereits vergeben."
+	if form.EmailTaken {
+		form.Errors["Email"] = "Email ist bereits vergeben."
 	} else {
-		form.Errors.validateUsername(form.NewUsername)
+		form.Errors.validateEmail(form.NewEmail)
 	}
 
 	// Validate password
@@ -292,7 +292,9 @@ func (form *PasswordForm) Validate() bool {
 
 // validateUsername validates a username.
 func (errors *FormErrors) validateUsername(username string) {
-	if len(username) < 3 {
+	if username == "" {
+		(*errors)["Username"] = "Bitte geben Sie einen Benutzernamen an."
+	} else if len(username) < 3 {
 		(*errors)["Username"] = "Benutzername muss mindestens 3 Zeichen lang sein."
 	} else if len(username) > 20 {
 		(*errors)["Username"] = "Benutzername darf höchstens 20 Zeichen lang sein."
@@ -311,19 +313,22 @@ func (errors *FormErrors) validateUsername(username string) {
 
 // validateEmail validates an email.
 func (errors *FormErrors) validateEmail(email string) {
-	if len(email) < 3 {
+	if email == "" {
+		(*errors)["Email"] = "Bitte geben Sie eine Email an."
+	} else if len(email) < 3 {
 		(*errors)["Email"] = "Email muss mindestens 3 Zeichen lang sein."
 	} else if len(email) > 100 {
 		(*errors)["Email"] = "Email darf höchstens 100 Zeichen lang sein."
-	} else if !regex(email, "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])"+
-		"?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$") {
+	} else if !regex(email, "^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,4}$") {
 		(*errors)["Email"] = "Ungültiges Email-Format."
 	}
 }
 
 // validatePassword validates a password.
 func (errors *FormErrors) validatePassword(password string, errorName string) {
-	if len(password) < 8 {
+	if password == "" {
+		(*errors)[errorName] = "Bitte geben Sie ein Passwort an."
+	} else if len(password) < 8 {
 		(*errors)[errorName] = "Passwort muss mindestens 8 Zeichen lang sein."
 	} else if !regex(password, "[!@#$%^&*]") {
 		(*errors)[errorName] = "Passwort muss ein Sonderzeichen enthalten (!@#$%^&*)."

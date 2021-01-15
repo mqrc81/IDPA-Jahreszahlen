@@ -271,6 +271,7 @@ func (handler *TopicHandler) Show() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
+		CSRF template.HTML
 
 		Topic jahreszahlen.Topic
 	}
@@ -294,6 +295,7 @@ func (handler *TopicHandler) Show() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := Templates["topics_show"].Execute(res, data{
 			SessionData: GetSessionData(handler.sessions, req.Context()),
+			CSRF:        csrf.TemplateField(req),
 			Topic:       topic,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
