@@ -37,10 +37,12 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 
 		Leaderboard []leaderboardRow
 
-		Topic int
-		User  bool
-		Page  int
-		Show  int
+		Topic        int
+		User         bool
+		Page         int
+		Show         int
+		NextPage     bool
+		PreviousPage bool
 	}
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -66,7 +68,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 			show = 25
 		}
 		page, err := strconv.Atoi(req.URL.Query().Get("page"))
-		if err != nil {
+		if err != nil || page < 1 {
 			page = 1
 		}
 		allUsers := userFilter != "me"
@@ -120,12 +122,14 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := Templates["scores_list"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
-			Leaderboard: leaderboard,
-			Topic:       topicID,
-			User:        allUsers,
-			Page:        page,
-			Show:        show,
+			SessionData:  GetSessionData(handler.sessions, req.Context()),
+			Leaderboard:  leaderboard,
+			Topic:        topicID,
+			User:         allUsers,
+			Page:         page,
+			Show:         show,
+			PreviousPage: page != 1,
+			NextPage:     page-1 < (len(scores)-1)/show,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return

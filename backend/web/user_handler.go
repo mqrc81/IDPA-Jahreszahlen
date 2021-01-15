@@ -582,3 +582,38 @@ func (handler *UserHandler) ResetPassword() http.HandlerFunc {
 		http.Redirect(res, req, "/users", http.StatusFound)
 	}
 }
+
+// ForgotPassword is a GET-method that is accessible to anyone not logged in.
+//
+// It displays a form, in which the user can receive an email with a link and
+// token to reset the password by specifying his/her email.
+func (handler *UserHandler) ForgotPassword() http.HandlerFunc {
+
+	// Data to pass to HTML-templates
+	type data struct {
+		SessionData
+		CSRF template.HTML
+	}
+
+	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Check if a user is logged in
+		user := req.Context().Value("user")
+		if user != nil {
+			// If a user is already logged in, then redirect back with flash
+			// message
+			handler.sessions.Put(req.Context(), "flash_error", "Sie sind bereits eingeloggt.")
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+
+		// Execute HTML-templates with data
+		if err := Templates["users_forgot_password"].Execute(res, data{
+			SessionData: GetSessionData(handler.sessions, req.Context()),
+			CSRF:        csrf.TemplateField(req),
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}

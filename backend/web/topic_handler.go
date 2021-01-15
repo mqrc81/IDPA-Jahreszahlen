@@ -22,7 +22,7 @@ type TopicHandler struct {
 	sessions *scs.SessionManager
 }
 
-// List is a GET-method is accessible to anyone.
+// List is a GET-method that is accessible to anyone.
 //
 // It lists all topics. Users can only view them or show a specific topic,
 // while admins have the ability to create a new topic, as well as to edit and
@@ -91,7 +91,7 @@ func (handler *TopicHandler) Create() http.HandlerFunc {
 	}
 }
 
-// CreateStore is a POST-method is accessible to.
+// CreateStore is a POST-method that is accessible to.
 //
 // It validates the form from Create and redirects to Create in case of an
 // invalid input with corresponding error message. In case of valid form, it
@@ -136,7 +136,7 @@ func (handler *TopicHandler) CreateStore() http.HandlerFunc {
 	}
 }
 
-// Delete is a POST-method is accessible to any admin.
+// Delete is a POST-method that is accessible to any admin.
 //
 // It deletes a certain topic and redirects to List.
 func (handler *TopicHandler) Delete() http.HandlerFunc {
@@ -211,7 +211,7 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 	}
 }
 
-// EditStore is a POST-method is accessible to any admin.
+// EditStore is a POST-method that is accessible to any admin.
 //
 // It validates the form from Edit and redirects to Edit in case of an invalid
 // input with corresponding error message. In case of valid form, it stores the
@@ -261,7 +261,7 @@ func (handler *TopicHandler) EditStore() http.HandlerFunc {
 	}
 }
 
-// Show is a GET-method is accessible to anyone.
+// Show is a GET-method that is accessible to anyone.
 //
 // It displays details of the topic. Anyone can view the topic, while users
 // have the ability to play the quiz and admins have the ability to edit or

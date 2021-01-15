@@ -81,6 +81,8 @@ func init() {
 	Templates["users_list"] = template.Must(template.ParseFiles(layout, css, path+"users_list.html"))
 	Templates["users_edit_password"] = template.Must(template.ParseFiles(layout, css, path+"users_edit_password.html"))
 	Templates["users_edit_username"] = template.Must(template.ParseFiles(layout, css, path+"users_edit_username.html"))
+	Templates["users_forgot_password"] = template.Must(template.ParseFiles(layout, css,
+		path+"users_forgot_password.html"))
 }
 
 // NewHandler initializes HTTP-handlers, including router and middleware.
@@ -161,6 +163,7 @@ func NewHandler(store jahreszahlen.Store, sessions *scs.SessionManager, csrfKey 
 		router.Post("/{userID}/delete", users.Delete())
 		router.Post("/{userID}/promote", users.Promote())
 		router.Post("/{userID}/reset/password", users.ResetPassword())
+		router.Get("/forgot/password", users.ForgotPassword())
 	})
 
 	// Handler for when a non-existing URL is called
