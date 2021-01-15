@@ -1,10 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{{define "title"}}
+    <title>Ereignis bearbeiten - Jahreszahlen</title>
+{{end}}
 
-</body>
-</html>
+{{define "header"}}
+    <h1 class="mb-0">Ereignis bearbeiten</h1>
+{{end}}
+
+{{define "content"}}
+
+    <h5>Ereignis '{{.Event.Name}}' bearbeiten
+        <br><br>
+    </h5>
+
+    <form action="/topics/{{.Topic.TopicID}}/events" method="UPDATE" class="form">
+        {{.CSRF}}
+        <label for="name">Ereignis:</label>
+        <div class="form-group">
+            <input type="text" name="name" id="name"
+                   class="form-control {{with .Form.Errors.Name}}is-invalid{{end}}"
+                   placeholder="Titel des Ereignisses"
+                   value="{{with .Form.Name}}{{.}}{{end}}">
+        </div>
+
+        {{with .Form.Errors.Name}}
+            <div class="x-invalid-form">{{.}}</div>
+        {{end}}
+
+        <h5><br></h5>
+        <label for="year">Jahr:</label>
+        <div class="form-group">
+            <input type="text" name="year" id="year"
+                   class="form-control {{with .Form.Errors.Year}}is-invalid{{end}}"
+                   placeholder="Jahr/Datum des Geschehens"
+                   value="{{with .Form.Year}}{{.}}{{end}}">
+        </div>
+
+        {{with .Form.Errors.Year}}
+            <div class="x-invalid-form">{{.}}</div>
+        {{end}}
+
+        <h5><br></h5>
+        <button type="submit" class="x-button">Ereignis erstellen</button>
+    </form>
+{{end}}

@@ -8,7 +8,7 @@
 
 {{define "content"}}
     {{range .Topics}}
-        <div class="card mb-4">
+        <div class="x-card">
             <div class="card-body">
                 <p>
                     <a href="#" class="d-block card-title text-body mt-1 h5">
@@ -18,7 +18,7 @@
                 <p class="card-text">{{.Description}}</p>
                 <p class="card-text">{{.EventsCount}} Ereignisse<br>
                     {{.ScoresCount}}x gespielt</p>
-                <a href="/topics/{{.TopicID}}" class="btn btn-primary">Thema anschauen</a>
+                <a href="/topics/{{.TopicID}}" class="x-button">Thema anschauen</a>
             </div>
         </div>
     {{end}}
@@ -26,13 +26,13 @@
 
 {{define "sidebar"}}
     {{if .User.Admin}}
-        <div class="card mb-4">
+        <div class="x-card">
             <div class="card-body">
                 <h5 class="card-title">Neues Thema erstellen</h5>
                 <p class="card-text">
                     Erstellen Sie ein neues Thema mitsamt ihren Ereignissen.
                 </p>
-                <a href="/topics/new" class="btn btn-primary btn-block">Neues Thema</a>
+                <a href="/topics/new" class="x-button">Neues Thema</a>
             </div>
         </div>
     {{end}}

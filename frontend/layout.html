@@ -13,27 +13,39 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
 
+    <!-- binding icons -->
+    <script src="https://kit.fontawesome.com/3f16c4f907.js" crossorigin="anonymous"></script>
+
+
     {{block "css" .}}{{end}}
 
 </head>
 
 <body>
-<header class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
-    <p class="h5 my-0 me-md-auto fw-normal">Jahreszahlen</p>
-    <nav class="my-2 my-md-0 me-md-3">
-        <a class="p-2 text-dark" href="/">Home</a>
-        <a class="p-2 text-dark" href="/topics">Themen</a>
-        <a class="p-2 text-dark" href="/scores">Leaderboard</a>
-        <a class="p-2 text-dark" href="/users/profile">Profil</a>
-    </nav>
-    {{if .LoggedIn}}
-        <a class="btn btn-outline-primary" href="/users/logout">Logout</a>
-    {{else}}
-        <a class="btn btn-outline-primary" href="/users/login">Login</a>
-    {{end}}
+<header class="x-header">
+    <div class="row">
+        <div class="col-5">
+            <h3>Jahreszahlen</h3>
+        </div>
+        <div class="col-7">
+            <nav class="my-2 my-md-0 me-md-3">
+                <a class="nav-item" href="/">Home</a>
+                <a class="nav-item" href="/topics">Themen</a>
+                <a class="nav-item" href="/scores">Leaderboard</a>
+                <a class="nav-item" href="/users/profile">Profil</a>
+            {{if .LoggedIn}}
+
+                <a class="nav-item" href="/users/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            {{else}}
+
+                <a class="nav-item" href="/users/login"><i class="fas fa-sign-in-alt"></i> Login</a>
+            {{end}}
+            </nav>
+        </div>
+    </div>
 </header>
 
-<div class="header bg-light border-bottom border-top py-5">
+<div class="x-headerblock">
     <div class="container">
 
         {{block "header" .}}{{end}}
