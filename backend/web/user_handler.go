@@ -71,8 +71,10 @@ func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
 		// Retrieve values from form (Register)
 		form := RegisterForm{
 			Username:      strings.ToLower(req.FormValue("username")),
+			Email:         strings.ToLower(req.FormValue("username")),
 			Password:      req.FormValue("password"),
 			UsernameTaken: false,
+			EmailTaken:    false,
 		}
 
 		// Check if username is taken

@@ -139,8 +139,10 @@ func (form *EventForm) Validate() bool {
 // RegisterForm holds values of the form input when registering.
 type RegisterForm struct {
 	Username      string
+	Email         string
 	Password      string
 	UsernameTaken bool
+	EmailTaken    bool
 
 	Errors FormErrors
 }
@@ -167,6 +169,7 @@ type LoginForm struct {
 	Username          string
 	Password          string
 	IncorrectUsername bool
+	IncorrectEmail    bool
 	IncorrectPassword bool
 
 	Errors FormErrors
@@ -205,6 +208,37 @@ type UsernameForm struct {
 
 // Validate validates the form input when editing a password.
 func (form *UsernameForm) Validate() bool {
+	form.Errors = FormErrors{}
+
+	// Validate new username
+	if form.UsernameTaken {
+		form.Errors["Username"] = "Benutzername ist bereits vergeben."
+	} else {
+		form.Errors = validateUsername(form.NewUsername, form.Errors)
+	}
+
+	// Validate password
+	if form.Password == "" {
+		form.Errors["OldPassword"] = "Geben Sie Ihr Passwort ein."
+	} else if form.IncorrectPassword {
+		form.Errors["OldPassword"] = "Passwort ist inkorrekt."
+	}
+
+	return len(form.Errors) == 0
+}
+
+// EmailForm holds values of the form input when editing a username.
+type EmailForm struct {
+	NewUsername       string
+	Password          string
+	UsernameTaken     bool
+	IncorrectPassword bool
+
+	Errors FormErrors
+}
+
+// Validate validates the form input when editing a password.
+func (form *EmailForm) Validate() bool {
 	form.Errors = FormErrors{}
 
 	// Validate new username

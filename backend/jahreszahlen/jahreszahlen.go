@@ -36,6 +36,7 @@ type Event struct {
 type User struct {
 	UserID      int    `db:"user_id"`
 	Username    string `db:"username"`
+	Email       string `db:"email"`
 	Password    string `db:"password"`
 	Admin       bool   `db:"admin"`
 	ScoresCount int    `db:"scores_count"`
@@ -76,6 +77,7 @@ type EventStore interface {
 type UserStore interface {
 	GetUser(userID int) (User, error)
 	GetUserByUsername(username string) (User, error)
+	GetUserByEmail(email string) (User, error)
 	GetUsers() ([]User, error)
 	CountUsers() (int, error) // unused
 	CreateUser(user *User) error

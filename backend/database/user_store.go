@@ -35,7 +35,7 @@ func (store UserStore) GetUser(userID int) (jahreszahlen.User, error) {
 	return user, nil
 }
 
-// GetUserByUsername gets a user by username.
+// GetUserByUsername gets a user by its username.
 func (store UserStore) GetUserByUsername(username string) (jahreszahlen.User, error) {
 	var user jahreszahlen.User
 
@@ -48,6 +48,25 @@ func (store UserStore) GetUserByUsername(username string) (jahreszahlen.User, er
 		WHERE u.username = ?
 		`
 	if err := store.Get(&user, query, username); err != nil {
+		return jahreszahlen.User{}, fmt.Errorf("error getting user: %w", err)
+	}
+
+	return user, nil
+}
+
+// GetUserByEmail gets a user by its email.
+func (store UserStore) GetUserByEmail(email string) (jahreszahlen.User, error) {
+	var user jahreszahlen.User
+
+	// Execute prepared statement
+	query := `
+		SELECT u.*, 
+		       COUNT(DISTINCT s.score_id) AS scores_count
+		FROM users u 
+		    LEFT JOIN scores s ON s.user_id = u.user_id
+		WHERE u.email = ?
+		`
+	if err := store.Get(&user, query, email); err != nil {
 		return jahreszahlen.User{}, fmt.Errorf("error getting user: %w", err)
 	}
 
