@@ -27,7 +27,7 @@ var (
 	// functions when needed
 	Templates = make(map[string]*template.Template)
 
-	// A map of custom functions to be used in a HTML-template
+	// A map of custom functions to be used in an HTML-template
 	funcMap = template.FuncMap{
 		"is_even": func(num int) bool {
 			return num%2 == 0

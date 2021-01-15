@@ -9,15 +9,15 @@
 {{define "content"}}
     <form action="/users/login" method="POST" class="form">
         {{.CSRF}}
-        <label for="username">Username</label>
+        <label for="username">Benutzername/Email</label>
         <div class="form-group">
             <input type="text" name="username" id="username"
-                   class="form-control {{with .Form.Errors.Username}}is-invalid{{end}}"
+                   class="form-control {{with .Form.Errors.UsernameOrEmail}}is-invalid{{end}}"
                    placeholder="Benutzername"
-                   value="{{with .Form.Username}}{{.}}{{end}}">
+                   value="{{with .Form.UsernameOrEmail}}{{.}}{{end}}">
         </div>
 
-        {{with .Form.Errors.Username}}
+        {{with .Form.Errors.UsernameOrEmail}}
             <div class="x-invalid-form">{{.}}</div>
         {{end}}
 

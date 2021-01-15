@@ -9,15 +9,29 @@
 {{define "content"}}
     <form action="/users/register" method="POST" class="form">
         {{.CSRF}}
-        <label for="username">Username</label>
+        <label for="username">Benutzername</label>
         <div class="form-group">
             <input type="text" name="username" id="username"
                    class="form-control {{with .Form.Errors.Username}}is-invalid{{end}}"
-                   placeholder="Benutzername"
+                   placeholder="Username"
                    value="{{with .Form.Username}}{{.}}{{end}}">
         </div>
 
         {{with .Form.Errors.Username}}
+            <div class="x-invalid-form">{{.}}</div>
+        {{end}}
+
+        <h5><br></h5>
+
+        <label for="email">Email</label>
+        <div class="form-group">
+            <input type="text" name="email" id="email"
+                   class="form-control {{with .Form.Errors.Email}}is-invalid{{end}}"
+                   placeholder="Email"
+                   value="{{with .Form.Email}}{{.}}{{end}}">
+        </div>
+
+        {{with .Form.Errors.Email}}
             <div class="x-invalid-form">{{.}}</div>
         {{end}}
 

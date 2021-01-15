@@ -151,26 +151,32 @@ type RegisterForm struct {
 func (form *RegisterForm) Validate() bool {
 	form.Errors = FormErrors{}
 
-	// Validate new password
+	// Validate username
 	if form.UsernameTaken {
 		form.Errors["Username"] = "Benutzername ist bereits vergeben."
 	} else {
-		form.Errors = validateUsername(form.Username, form.Errors)
+		form.Errors.validateUsername(form.Username)
+	}
+
+	// Validate email
+	if form.EmailTaken {
+		form.Errors["Email"] = "Email ist bereits vergeben."
+	} else {
+		form.Errors.validateEmail(form.Email)
 	}
 
 	// Validate password
-	form.Errors = validatePassword(form.Password, form.Errors, "Password")
+	form.Errors.validatePassword(form.Password, "Password")
 
 	return len(form.Errors) == 0
 }
 
 // LoginForm holds values of the form input when logging in.
 type LoginForm struct {
-	Username          string
-	Password          string
-	IncorrectUsername bool
-	IncorrectEmail    bool
-	IncorrectPassword bool
+	UsernameOrEmail          string
+	Password                 string
+	IncorrectUsernameOrEmail bool
+	IncorrectPassword        bool
 
 	Errors FormErrors
 }
@@ -179,11 +185,11 @@ type LoginForm struct {
 func (form *LoginForm) Validate() bool {
 	form.Errors = FormErrors{}
 
-	// Validate username
-	if form.Username == "" {
-		form.Errors["Username"] = "Bitte Benutzernamen eingeben."
-	} else if form.IncorrectUsername {
-		form.Errors["Username"] = "Ungültiger Benutzername."
+	// Validate username or email
+	if form.UsernameOrEmail == "" {
+		form.Errors["UsernameOrEmail"] = "Bitte Benutzernamen order Email eingeben."
+	} else if form.IncorrectUsernameOrEmail {
+		form.Errors["UsernameOrEmail"] = "Ungültiger Benutzername oder ungültiges Email."
 	}
 
 	// Validate password
@@ -214,7 +220,7 @@ func (form *UsernameForm) Validate() bool {
 	if form.UsernameTaken {
 		form.Errors["Username"] = "Benutzername ist bereits vergeben."
 	} else {
-		form.Errors = validateUsername(form.NewUsername, form.Errors)
+		form.Errors.validateUsername(form.NewUsername)
 	}
 
 	// Validate password
@@ -245,7 +251,7 @@ func (form *EmailForm) Validate() bool {
 	if form.UsernameTaken {
 		form.Errors["Username"] = "Benutzername ist bereits vergeben."
 	} else {
-		form.Errors = validateUsername(form.NewUsername, form.Errors)
+		form.Errors.validateUsername(form.NewUsername)
 	}
 
 	// Validate password
@@ -279,47 +285,55 @@ func (form *PasswordForm) Validate() bool {
 	}
 
 	// Validate new password
-	form.Errors = validatePassword(form.NewPassword, form.Errors, "NewPassword")
+	form.Errors.validatePassword(form.NewPassword, "NewPassword")
 
 	return len(form.Errors) == 0
 }
 
 // validateUsername validates a username.
-func validateUsername(username string, errors FormErrors) FormErrors {
+func (errors *FormErrors) validateUsername(username string) {
 	if len(username) < 3 {
-		errors["Username"] = "Benutzername muss mindestens 3 Zeichen lang sein."
+		(*errors)["Username"] = "Benutzername muss mindestens 3 Zeichen lang sein."
 	} else if len(username) > 20 {
-		errors["Username"] = "Benutzername darf höchstens 20 Zeichen lang sein."
+		(*errors)["Username"] = "Benutzername darf höchstens 20 Zeichen lang sein."
 	} else if !regex(username, "^[a-zA-Z0-9._]*$") {
-		errors["Username"] = "Benutzername darf nur Buchstaben, Zahlen, '.' und '_' enthalten."
+		(*errors)["Username"] = "Benutzername darf nur Buchstaben, Zahlen, '.' und '_' enthalten."
 	} else if !regex(username, "\\D") {
-		errors["Username"] = "Benutzername muss mindestens 1 Buchstaben enthalten."
+		(*errors)["Username"] = "Benutzername muss mindestens 1 Buchstaben enthalten."
 	} else if regex(username, "^[._]") {
-		errors["Username"] = "Benutzername darf nicht mit '.' oder '_' beginnen."
+		(*errors)["Username"] = "Benutzername darf nicht mit '.' oder '_' beginnen."
 	} else if regex(username, "[._]$") {
-		errors["Username"] = "Benutzername darf nicht mit '.' oder '_' enden."
+		(*errors)["Username"] = "Benutzername darf nicht mit '.' oder '_' enden."
 	} else if regex(username, "[_.]{2}") {
-		errors["Username"] = "Benutzername darf '.' und '_' nicht aufeinanderfolgend haben."
+		(*errors)["Username"] = "Benutzername darf '.' und '_' nicht aufeinanderfolgend haben."
 	}
+}
 
-	return errors
+// validateEmail validates an email.
+func (errors *FormErrors) validateEmail(email string) {
+	if len(email) < 3 {
+		(*errors)["Email"] = "Email muss mindestens 3 Zeichen lang sein."
+	} else if len(email) > 100 {
+		(*errors)["Email"] = "Email darf höchstens 100 Zeichen lang sein."
+	} else if !regex(email, "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])"+
+		"?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$") {
+		(*errors)["Email"] = "Ungültiges Email-Format."
+	}
 }
 
 // validatePassword validates a password.
-func validatePassword(password string, errors FormErrors, errorName string) FormErrors {
+func (errors *FormErrors) validatePassword(password string, errorName string) {
 	if len(password) < 8 {
-		errors[errorName] = "Passwort muss mindestens 8 Zeichen lang sein."
+		(*errors)[errorName] = "Passwort muss mindestens 8 Zeichen lang sein."
 	} else if !regex(password, "[!@#$%^&*]") {
-		errors[errorName] = "Passwort muss ein Sonderzeichen enthalten (!@#$%^&*)."
+		(*errors)[errorName] = "Passwort muss ein Sonderzeichen enthalten (!@#$%^&*)."
 	} else if !regex(password, "[a-z]") {
-		errors[errorName] = "Passwort muss mindestens ein Kleinbuchstaben enthalten."
+		(*errors)[errorName] = "Passwort muss mindestens ein Kleinbuchstaben enthalten."
 	} else if !regex(password, "[A-Z]") {
-		errors[errorName] = "Passwort muss mindestens ein Grossbuchstaben enthalten."
+		(*errors)[errorName] = "Passwort muss mindestens ein Grossbuchstaben enthalten."
 	} else if !regex(password, "\\d") {
-		errors[errorName] = "Passwort muss mindestens eine Zahl enthalten."
+		(*errors)[errorName] = "Passwort muss mindestens eine Zahl enthalten."
 	}
-
-	return errors
 }
 
 // regex checks if a certain regular expression matches a certain string.

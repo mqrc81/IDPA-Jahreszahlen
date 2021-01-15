@@ -1,9 +1,7 @@
 // The collection of all global structures and interfaces to be used throughout
 // the application. The structures are not equivalent to the database tables,
 // as 1:n relationships may be stored directly in the structure of the primary
-// object (e.g topic containing array of events).
-// Go enforces inexplicit inheritance through method declaration in interfaces
-// (almost like "duck-typing").
+// object for the sake of practicality (e.g topic containing array of events).
 
 package jahreszahlen
 

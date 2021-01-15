@@ -71,7 +71,7 @@ func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
 		// Retrieve values from form (Register)
 		form := RegisterForm{
 			Username:      strings.ToLower(req.FormValue("username")),
-			Email:         strings.ToLower(req.FormValue("username")),
+			Email:         strings.ToLower(req.FormValue("email")),
 			Password:      req.FormValue("password"),
 			UsernameTaken: false,
 			EmailTaken:    false,
@@ -83,6 +83,14 @@ func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
 			// If error is nil, a user with that username was found, which
 			// means the username is already taken
 			form.UsernameTaken = true
+		}
+
+		// Check if email is taken
+		_, err = handler.store.GetUserByEmail(form.Email)
+		if err == nil {
+			// If error is nil, a user with that email was found, which means
+			// the email is already taken
+			form.EmailTaken = true
 		}
 
 		// Validate form
@@ -164,20 +172,28 @@ func (handler *UserHandler) LoginSubmit() http.HandlerFunc {
 
 		// Retrieve values from form
 		form := LoginForm{
-			Username:          strings.ToLower(req.FormValue("username")),
-			Password:          req.FormValue("password"),
-			IncorrectUsername: false,
-			IncorrectPassword: false,
+			UsernameOrEmail:          strings.ToLower(req.FormValue("username")),
+			Password:                 req.FormValue("password"),
+			IncorrectUsernameOrEmail: false,
+			IncorrectPassword:        false,
 		}
 
 		// Execute SQL statement to get a user
-		user, err := handler.store.GetUserByUsername(form.Username)
+		user, err := handler.store.GetUserByUsername(form.UsernameOrEmail) // check if username is correct
 		if err != nil {
 			// In case of an error, the username doesn't exist
-			form.IncorrectUsername = true
-		} else {
-			// Else, check if password is correct
-			err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password))
+			// Execute SQL statement to get a user
+			user, err = handler.store.GetUserByEmail(form.UsernameOrEmail) // check if email is correct
+
+			// In case of an error, the email doesn't exist, which means
+			// username and email are both incorrect
+			form.IncorrectUsernameOrEmail = err != nil
+
+		}
+		if err == nil {
+			// If username or email is correct, check if password is correct
+			err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password))
+
 			// If error is nil, the password matches the hash, which means it
 			// is correct.
 			form.IncorrectPassword = err != nil
@@ -194,7 +210,7 @@ func (handler *UserHandler) LoginSubmit() http.HandlerFunc {
 		handler.sessions.Put(req.Context(), "user_id", user.UserID)
 
 		// Add flash message to session
-		handler.sessions.Put(req.Context(), "flash_success", "Hallo "+form.Username+"! Sie sind nun eingeloggt.")
+		handler.sessions.Put(req.Context(), "flash_success", "Hallo "+user.Username+"! Sie sind nun eingeloggt.")
 
 		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)
