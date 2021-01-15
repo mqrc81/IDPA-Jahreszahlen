@@ -1,15 +1,53 @@
 {{define "title"}}
-    <title>Title</title>
+    <title>{{.Topic.Name}}</title>
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Header</h1>
+    <h1 class="mb-0">Thema '{{.Topic.Name}}'</h1>
 {{end}}
 
 {{define "content"}}
 
+    <div class="x-card">
+        <div class="card-body">
+            <p>
+                <a href="#" class="d-block card-title text-body mt-1 h5">
+                    {{.Topic.Name}} ({{.Topic.StartYear}} - {{.Topic.EndYear}})
+                </a>
+            </p>
+            <textfield>
+                {{.Topic.Description}}
+            </textfield>
+        </div>
+    </div>
+    <div class="x-card">
+        <p> Es gibt <b>{{.Topic.EventsCount}}</b> Ereignisse zu diesem Thema
+            und es wurde schon <b>{{.Topic.ScoresCount}}</b> Mal gespielt.</p>
+    </div>
+    <button class="x-button">
+        <a href="/"><i class="fas fa-hourglass-start"></i> Quiz beginnen</a>
+    </button>
+    <button class="x-button">
+        <a href="/"><i class="fas fa-list"></i> Ereignisse anzeigen</a>
+    </button>
+
+    {{if .User.Admin}}
+
+        <button class="edit-icon">
+            <a href="/topics/{{.Topic.TopicID}}/edit"></a>
+            <i class="far fa-edit"></i>
+        </button>
+
+        <form action="/topics/{{.Topic.TopicID}}/delete" method="POST">
+            {{.CSRF}}
+            <button type="submit" class="delete-icon">
+                <i class="far fa-trash-alt"></i>
+            </button>
+        </form>
+    {{end}}
 {{end}}
 
 {{define "sidebar"}}
+
 
 {{end}}

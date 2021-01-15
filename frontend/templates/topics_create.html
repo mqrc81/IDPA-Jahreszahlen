@@ -10,7 +10,7 @@
     <form action="/topics" method="POST" class="form">
         {{.CSRF}}
 
-        <label for="name">Thema</label>
+        <label for="name">Thema:</label>
         <div class="form-group">
             <input type="text" name="name" id="name" required
                    class="form-control {{with .Form.Errors.Name}}is-invalid{{end}}"
@@ -23,7 +23,7 @@
         {{end}}
 
         <h5><br></h5>
-        <label for="year">Zeitspanne</label>
+        <label for="year">Zeitspanne:</label>
         <div class="row">
             <div class="col">
                 <input type="number" name="start_year" id="year"
@@ -45,7 +45,7 @@
         {{end}}
 
         <h5><br></h5>
-        <label for="description">Beschreibung</label>
+        <label for="description">Beschreibung:</label>
         <div class="form-group">
             <textarea name="description" id="description" rows="3"
                       class="form-control {{with .Form.Errors.Description}}is-invalid{{end}}"
@@ -59,6 +59,6 @@
         {{end}}
 
         <h5><br></h5>
-        <button type="submit" class="btn btn-primary">Thema erstellen</button>
+        <button type="submit" class="x-button">Thema erstellen</button>
     </form>
 {{end}}

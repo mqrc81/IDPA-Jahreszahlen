@@ -3,18 +3,18 @@
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Header</h1>
+    <h1 class="mb-0">{{.TopicName}}</h1>
 {{end}}
 
 {{define "content"}}
 
-    <form action="/topics/{{.TopicID}}/quiz/1" method="POST" class="form">
+    <fom action="/topics/{{.TopicID}}/quiz/1" method="POST" class="form">
         {{.CSRF}}
         {{range .Questions}}
-
+        <div class="x-card">
             <h5>{{.EventName}}</h5>
 
-            <div class="card mb-4 card-body">
+            <div class="card-body">
                 {{$id := .ID}}
                 {{range .Choices}}
                     <div class="form-check">
@@ -25,11 +25,12 @@
                     </div>
                 {{end}}
             </div>
+        </div>
         {{end}}
 
         <h5><br></h5>
-        <button type="submit" class="btn btn-primary">Überprüfen</button>
-    </form>
+        <button type="submit" class="x-button">Überprüfen</button>
+    </fom>
 {{end}}
 
 {{define "sidebar"}}

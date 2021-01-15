@@ -8,14 +8,28 @@
 
 {{define "content"}}
     {{range .Topic.Events}}
-        <div class="card mb-4">
+        <div class="x-card">
             <div class="card-body">
-                <p>
-                    <a href="/topics/{{$.Topic.TopicID}}/events/{{.EventID}}" class="d-block card-title text-body mt-1
-                    h5">
-                        {{.Name}} ({{.Year}})
-                    </a>
-                </p>
+                <div class="row">
+                    <div class="col-8">
+                        <p>
+                            <a href="/topics/{{$.Topic.TopicID}}/events/{{.EventID}}" class="d-block card-title text-body mt-1
+                            h5">
+                                {{.Name}} ({{.Year}})
+                            </a>
+                        </p>
+                    </div>
+                    <div class="col-4">
+                        <button class="edit-icon">
+                            <a href=""></a>
+                            <i class="far fa-edit"></i>
+                        </button>
+                        <button class="delete-icon">
+                            <a href=""></a>
+                            <i class="far fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     {{end}}
@@ -23,13 +37,13 @@
 
 {{define "sidebar"}}
     {{if .User.Admin}}
-        <div class="card mb-4">
+        <div class="x-card">
             <div class="card-body">
                 <h5 class="card-title">Neues Ereignis erstellen</h5>
                 <p class="card-text">
                     Erstellen Sie ein neues Ereignis.
                 </p>
-                <a href="/topics/{{.Topic.TopicID}}/events/new" class="btn btn-primary btn-block">Neues Ereignis</a>
+                <a href="/topics/{{.Topic.TopicID}}/events/new" class="x-button">Neues Ereignis</a>
             </div>
         </div>
     {{end}}
