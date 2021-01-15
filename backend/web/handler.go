@@ -29,8 +29,14 @@ var (
 
 	// A map of custom functions to be used in a HTML-template
 	funcMap = template.FuncMap{
-		"row-is-even": func(rank int) bool {
-			return rank%2 == 0
+		"is_even": func(num int) bool {
+			return num%2 == 0
+		},
+		"increment": func(num int) int {
+			return num + 1
+		},
+		"decrement": func(num int) int {
+			return num - 1
 		},
 	}
 )

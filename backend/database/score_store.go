@@ -109,6 +109,7 @@ func (store ScoreStore) GetScoresByTopicAndUser(topicID int, userID int) ([]jahr
 
 // CreateScore creates a new score.
 func (store ScoreStore) CreateScore(score *jahreszahlen.Score) error {
+
 	// Execute prepared statement
 	query := `
 		INSERT INTO scores(topic_id, user_id, points, date) 

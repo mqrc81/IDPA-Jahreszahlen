@@ -5,7 +5,6 @@ package main
 
 import (
 	"crypto/rand"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -16,11 +15,16 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/web"
 )
 
+const (
+	Yellow = string("\033[33m")
+	Reset  = string("\033[0m")
+)
+
 // main is the initial starting point of the program, which acquires a
 // connection to the database and the server. It also obtains session
 // management and CSRF-protection.
 func main() {
-	fmt.Println("Starting application...")
+	log.Println("Starting application...")
 
 	// Access global environment variables
 	if err := godotenv.Load("backend/.env"); err != nil {
@@ -54,6 +58,7 @@ func main() {
 
 	// Listen on the TCP network address and call Serve with handler to handle
 	// requests on incoming connections
+	log.Println("Listening on port 3000...")
 	if err := http.ListenAndServe(":3000", handler); err != nil {
 		log.Fatal(err)
 	}
