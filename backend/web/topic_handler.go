@@ -47,7 +47,7 @@ func (h *TopicHandler) List() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := Templates["topics_list"].Execute(res, data{
+		if err = Templates["topics_list"].Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Topics:      topics,
@@ -204,7 +204,7 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := Templates["topics_edit"].Execute(res, data{
+		if err = Templates["topics_edit"].Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Topic:       topic,
@@ -297,7 +297,7 @@ func (h *TopicHandler) Show() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := Templates["topics_show"].Execute(res, data{
+		if err = Templates["topics_show"].Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Topic:       topic,

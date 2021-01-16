@@ -22,6 +22,10 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
 
+// init gets initialized with the package.
+//
+// It registers certain types to the session, because by default the session
+// can only contain basic data types (int, bool, string, etc.).
 func init() {
 	gob.Register(jahreszahlen.Token{})
 }
@@ -581,6 +585,12 @@ func (h *UserHandler) ResetPasswordSubmit() http.HandlerFunc {
 
 		// Execute SQL statement to update user
 		if err = h.store.UpdateUser(&user); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Execute SQL statement to delete tokens
+		if err = h.store.DeleteTokensByUser(user.UserID); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}

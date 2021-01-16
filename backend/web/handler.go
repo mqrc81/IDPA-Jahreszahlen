@@ -154,16 +154,21 @@ func NewHandler(store jahreszahlen.Store, sessions *scs.SessionManager, csrfKey 
 		router.Get("/logout", users.Logout())
 		router.Get("/profile", users.Profile())
 		router.Get("/", users.List())
-		router.Get("/{userID}/edit/username", users.EditUsername())
-		router.Post("/{userID}/edit/username", users.EditUsernameSubmit())
-		router.Get("/{userID}/edit/password", users.EditPassword())
-		router.Post("/{userID}/edit/password", users.EditPasswordSubmit())
 		router.Post("/{userID}/delete", users.Delete())
 		router.Post("/{userID}/promote", users.Promote())
+
+		router.Get("/edit/username", users.EditUsername())
+		router.Post("/edit/username", users.EditUsernameSubmit())
+		router.Get("/edit/email", users.EditEmail())
+		router.Post("/edit/email", users.EditEmailSubmit())
+		router.Get("/edit/password", users.EditPassword())
+		router.Post("/edit/password", users.EditPasswordSubmit())
+
+		// TODO router.Post("/verify/email", users.VerifyEmail())
 		router.Get("/forgot/password", users.ForgotPassword())
 		router.Post("/forgot/password", users.ForgotPasswordSubmit())
 		router.Get("/reset/password", users.ResetPassword())
-		router.Post("/forgot/password/reset", users.ResetPasswordSubmit())
+		router.Post("/reset/password", users.ResetPasswordSubmit())
 	})
 
 	// Handler for when a non-existing URL is called

@@ -1,5 +1,5 @@
-// A branch of the user handler (for a better overview), which deals with editing
-// a user's username, email and password.
+// A branch of the user handler (for a better overview), which contains HTTP-
+// handlers that deal with editing a user's username, email and password.
 
 package web
 

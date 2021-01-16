@@ -20,7 +20,7 @@ func NewStore(dataSourceName string) (*Store, error) {
 	}
 
 	// Ping database connection
-	if err := db.Ping(); err != nil {
+	if err = db.Ping(); err != nil {
 		return nil, fmt.Errorf("error pinging database: %w", err)
 	}
 

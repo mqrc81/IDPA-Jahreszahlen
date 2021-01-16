@@ -16,9 +16,8 @@ import (
 
 // init gets initialized with the package.
 //
-// It registers certain types to the
-// session, because by default the session can only contain basic data types
-// (int, bool, string, etc.).
+// It registers certain types to the session, because by default the session
+// can only contain basic data types (int, bool, string, etc.).
 func init() {
 	gob.Register(TopicForm{})
 	gob.Register(EventForm{})

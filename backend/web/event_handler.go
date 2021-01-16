@@ -65,7 +65,7 @@ func (h *EventHandler) List() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := Templates["events_list"].Execute(res, data{
+		if err = Templates["events_list"].Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Topic:       topic,
@@ -117,7 +117,7 @@ func (h *EventHandler) Create() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := Templates["events_create"].Execute(res, data{
+		if err = Templates["events_create"].Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Topic:       topic,
@@ -239,7 +239,7 @@ func (h *EventHandler) Edit() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := Templates["events_edit"].Execute(res, data{
+		if err = Templates["events_edit"].Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Event:       event,

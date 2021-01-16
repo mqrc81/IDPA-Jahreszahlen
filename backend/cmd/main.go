@@ -54,7 +54,7 @@ func main() {
 	// Listen on the TCP network address and call Serve with handler to handle
 	// requests on incoming connections
 	log.Println("Listening on port 3000...")
-	if err := http.ListenAndServe(":3000", handler); err != nil {
+	if err = http.ListenAndServe(":3000", handler); err != nil {
 		log.Fatal(err)
 	}
 }
