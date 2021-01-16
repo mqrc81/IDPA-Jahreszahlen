@@ -32,6 +32,7 @@ func (h *EventHandler) List() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
+		CSRF template.HTML
 
 		Topic  jahreszahlen.Topic
 		Events []jahreszahlen.Event
@@ -66,6 +67,7 @@ func (h *EventHandler) List() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := Templates["events_list"].Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
+			CSRF:        csrf.TemplateField(req),
 			Topic:       topic,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -135,11 +137,7 @@ func (h *EventHandler) CreateStore() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
-		// Retrieve topic ID from URL parameters
-		topicIDstr := chi.URLParam(req, "topicID")
-		topicID, _ := strconv.Atoi(topicIDstr)
-
-		// Retrieve variables from form (Create)
+		// Retrieve values from form
 		form := EventForm{
 			Name:       req.FormValue("name"),
 			YearOrDate: req.FormValue("year"),
@@ -151,6 +149,10 @@ func (h *EventHandler) CreateStore() http.HandlerFunc {
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
+
+		// Retrieve topic ID from URL parameters
+		topicIDstr := chi.URLParam(req, "topicID")
+		topicID, _ := strconv.Atoi(topicIDstr)
 
 		// Execute SQL statement to create an event
 		if err := h.store.CreateEvent(&jahreszahlen.Event{
@@ -204,6 +206,7 @@ func (h *EventHandler) Edit() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
+		CSRF template.HTML
 
 		Event jahreszahlen.Event
 	}
@@ -238,6 +241,7 @@ func (h *EventHandler) Edit() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := Templates["events_edit"].Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
+			CSRF:        csrf.TemplateField(req),
 			Event:       event,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -259,7 +263,7 @@ func (h *EventHandler) EditStore() http.HandlerFunc {
 		topicIDstr := chi.URLParam(req, "topicID")
 		topicID, _ := strconv.Atoi(topicIDstr)
 
-		// Retrieve values from form (Edit)
+		// Retrieve values from form
 		form := EventForm{
 			Name:       req.FormValue("name"),
 			YearOrDate: req.FormValue("year"),

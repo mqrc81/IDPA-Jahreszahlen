@@ -5,11 +5,13 @@
 package web
 
 import (
+	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/alexedwards/scs/v2"
+	"github.com/gorilla/csrf"
 
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
@@ -34,9 +36,9 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
+		CSRF template.HTML
 
-		Leaderboard []leaderboardRow
-
+		Leaderboard  []leaderboardRow
 		Topic        int
 		User         bool
 		Page         int
@@ -123,6 +125,7 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := Templates["scores_list"].Execute(res, data{
 			SessionData:  GetSessionData(h.sessions, req.Context()),
+			CSRF:         csrf.TemplateField(req),
 			Leaderboard:  leaderboard,
 			Topic:        topicID,
 			User:         allUsers,

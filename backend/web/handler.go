@@ -18,10 +18,6 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
 
-const (
-	DefaultPassword = "pw123" // Used when admin manually resets a user's password
-)
-
 var (
 	// Parsed HTML-templates to be executed in their respective HTTP-handler
 	// functions when needed

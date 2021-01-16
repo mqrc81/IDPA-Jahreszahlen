@@ -32,6 +32,7 @@ func (h *TopicHandler) List() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
+		CSRF template.HTML
 
 		Topics []jahreszahlen.Topic
 	}
@@ -48,6 +49,7 @@ func (h *TopicHandler) List() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := Templates["topics_list"].Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
+			CSRF:        csrf.TemplateField(req),
 			Topics:      topics,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -100,7 +102,7 @@ func (h *TopicHandler) CreateStore() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
-		// Retrieve variables from form (Create)
+		// Retrieve values from form
 		startYear, _ := strconv.Atoi(req.FormValue("start_year"))
 		endYear, _ := strconv.Atoi(req.FormValue("end_year"))
 		form := TopicForm{
@@ -168,6 +170,7 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
+		CSRF template.HTML
 
 		Topic  jahreszahlen.Topic
 		Events []jahreszahlen.Event
@@ -203,6 +206,7 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := Templates["topics_edit"].Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
+			CSRF:        csrf.TemplateField(req),
 			Topic:       topic,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -220,11 +224,7 @@ func (h *TopicHandler) EditStore() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
-		// Retrieve topic ID from URL
-		topicIDstr := req.URL.Query().Get("topicID")
-		topicID, _ := strconv.Atoi(topicIDstr)
-
-		// Retrieve values from form (Edit)
+		// Retrieve values from form
 		startYear, _ := strconv.Atoi(req.FormValue("start_year"))
 		endYear, _ := strconv.Atoi(req.FormValue("end_year"))
 		form := TopicForm{
@@ -240,6 +240,10 @@ func (h *TopicHandler) EditStore() http.HandlerFunc {
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
+
+		// Retrieve topic ID from URL
+		topicIDstr := req.URL.Query().Get("topicID")
+		topicID, _ := strconv.Atoi(topicIDstr)
 
 		// Execute SQL statement to update a topic
 		if err := h.store.UpdateTopic(&jahreszahlen.Topic{

@@ -24,9 +24,9 @@ func init() {
 	gob.Register(EventForm{})
 	gob.Register(RegisterForm{})
 	gob.Register(LoginForm{})
-	gob.Register(UsernameForm{})
-	gob.Register(EmailForm{})
-	gob.Register(PasswordForm{})
+	gob.Register(EditUsernameForm{})
+	gob.Register(EditEmailForm{})
+	gob.Register(EditPasswordForm{})
 	gob.Register(ForgotPasswordForm{})
 	gob.Register(FormErrors{})
 }
@@ -204,8 +204,8 @@ func (form *LoginForm) Validate() bool {
 	return len(form.Errors) == 0
 }
 
-// UsernameForm holds values of the form input when editing a username.
-type UsernameForm struct {
+// EditUsernameForm holds values of the form input when editing a username.
+type EditUsernameForm struct {
 	NewUsername       string
 	Password          string
 	UsernameTaken     bool
@@ -215,7 +215,7 @@ type UsernameForm struct {
 }
 
 // Validate validates the form input when editing a password.
-func (form *UsernameForm) Validate() bool {
+func (form *EditUsernameForm) Validate() bool {
 	form.Errors = FormErrors{}
 
 	// Validate new username
@@ -235,8 +235,8 @@ func (form *UsernameForm) Validate() bool {
 	return len(form.Errors) == 0
 }
 
-// EmailForm holds values of the form input when editing an email.
-type EmailForm struct {
+// EditEmailForm holds values of the form input when editing an email.
+type EditEmailForm struct {
 	NewEmail          string
 	Password          string
 	EmailTaken        bool
@@ -246,7 +246,7 @@ type EmailForm struct {
 }
 
 // Validate validates the form input when editing a password.
-func (form *EmailForm) Validate() bool {
+func (form *EditEmailForm) Validate() bool {
 	form.Errors = FormErrors{}
 
 	// Validate new username
@@ -266,8 +266,8 @@ func (form *EmailForm) Validate() bool {
 	return len(form.Errors) == 0
 }
 
-// PasswordForm holds values of the form input when editing a password.
-type PasswordForm struct {
+// EditPasswordForm holds values of the form input when editing a password.
+type EditPasswordForm struct {
 	NewPassword          string
 	OldPassword          string
 	IncorrectOldPassword bool
@@ -276,7 +276,7 @@ type PasswordForm struct {
 }
 
 // Validate validates the form input when editing a password.
-func (form *PasswordForm) Validate() bool {
+func (form *EditPasswordForm) Validate() bool {
 	form.Errors = FormErrors{}
 
 	// Validate old password

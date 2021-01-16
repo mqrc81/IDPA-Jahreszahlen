@@ -76,7 +76,8 @@ func (h *UserHandler) Register() http.HandlerFunc {
 func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
-		// Retrieve values from form (Register)
+
+		// Retrieve values from form
 		form := RegisterForm{
 			Username:      strings.ToLower(req.FormValue("username")),
 			Email:         strings.ToLower(req.FormValue("email")),
@@ -298,6 +299,7 @@ func (h *UserHandler) List() http.HandlerFunc {
 	// Data to pass to HTML-template
 	type data struct {
 		SessionData
+		CSRF template.HTML
 
 		Users []jahreszahlen.User
 	}
@@ -326,180 +328,11 @@ func (h *UserHandler) List() http.HandlerFunc {
 		if err := Templates["users_list"].Execute(res, data{
 			Users:       users,
 			SessionData: GetSessionData(h.sessions, req.Context()),
+			CSRF:        csrf.TemplateField(req),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusFound)
 			return
 		}
-	}
-}
-
-// EditUsername is a GET-method that is accessible to any user.
-//
-// It displays a form in which values for modifying the current username can be
-// entered.
-func (h *UserHandler) EditUsername() http.HandlerFunc {
-
-	// Data to pass to HTML-templates
-	type data struct {
-		SessionData
-	}
-
-	return func(res http.ResponseWriter, req *http.Request) {
-
-		// Check if a user is logged in
-		user := req.Context().Value("user")
-		if user == nil {
-			// If no user is logged in, then redirect back with flash message
-			h.sessions.Put(req.Context(), "flash_error",
-				"Unzureichende Berechtigung. Loggen Sie sich zuerst ein, um Ihr Benutzernamen zu ändern.")
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
-			return
-		}
-
-		// Execute HTML-templates with data
-		if err := Templates["users_edit_username"].Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
-		}); err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-}
-
-// EditUsernameSubmit is a POST-method that is accessible to any user after
-// EditUsername.
-//
-// It validates the form from EditUsername and redirects to EditUsername in
-// case of an invalid input with corresponding error messages. In case of a
-// valid form, it stores the user in the database and redirects to Profile.
-func (h *UserHandler) EditUsernameSubmit() http.HandlerFunc {
-
-	return func(res http.ResponseWriter, req *http.Request) {
-
-		// Retrieve values from form
-		form := UsernameForm{
-			NewUsername:       strings.ToLower(req.FormValue("username")),
-			Password:          req.FormValue("password"),
-			UsernameTaken:     false,
-			IncorrectPassword: false,
-		}
-
-		// Check if username is taken
-		_, err := h.store.GetUserByUsername(form.NewUsername)
-		// If error is nil, a user with that username was found, which means
-		// the username is already taken.
-		form.UsernameTaken = err == nil
-
-		// Retrieve user from session
-		user := req.Context().Value("user").(jahreszahlen.User)
-
-		// Check if password is correct
-		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password))
-		// If error is nil, the password matches the hash, which means it is
-		// correct
-		form.IncorrectPassword = err != nil
-
-		if !form.Validate() {
-			h.sessions.Put(req.Context(), "form", form)
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
-			return
-		}
-
-		// CreateStore user ID in session
-		h.sessions.Put(req.Context(), "user_id", user.UserID)
-
-		// Add flash message to session
-		h.sessions.Put(req.Context(), "flash_success", "Ihr Benutzername wurde erfolgreich geändert.")
-
-		// Redirect to Home
-		http.Redirect(res, req, "/profile", http.StatusFound)
-	}
-}
-
-// EditPassword is a GET-method that is accessible to any user.
-//
-// It displays a form in which values for modifying the current password can
-// be entered.
-func (h *UserHandler) EditPassword() http.HandlerFunc {
-
-	// Data to pass to HTML-templates
-	type data struct {
-		SessionData
-	}
-
-	return func(res http.ResponseWriter, req *http.Request) {
-
-		// Check if a user is logged in
-		user := req.Context().Value("user")
-		if user == nil {
-			// If no user is logged in, then redirect back with flash message
-			h.sessions.Put(req.Context(), "flash_error",
-				"Unzureichende Berechtigung. Loggen Sie sich zuerst ein, um Ihr Passwort zu ändern.")
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
-			return
-		}
-
-		// Execute HTML-templates with data
-		if err := Templates["users_edit_password"].Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
-		}); err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-}
-
-// EditPasswordSubmit is a POST-method that is accessible to any user after
-// EditPassword.
-//
-// It validates the form from EditPassword and redirects to EditPassword in
-// case of an invalid input with corresponding error messages. In case of a
-// valid form, it stores the user in the database and redirects to Profile.
-func (h *UserHandler) EditPasswordSubmit() http.HandlerFunc {
-
-	return func(res http.ResponseWriter, req *http.Request) {
-
-		// Retrieve values from form
-		form := PasswordForm{
-			NewPassword:          req.FormValue("new_password"),
-			OldPassword:          req.FormValue("old_password"),
-			IncorrectOldPassword: false,
-		}
-
-		// Retrieve user from session
-		user := req.Context().Value("user").(jahreszahlen.User)
-
-		// Compare user's password with "old password" from form
-		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.OldPassword)); err != nil {
-			form.IncorrectOldPassword = true
-		}
-
-		// Validate form
-		if !form.Validate() {
-			h.sessions.Put(req.Context(), "form", form)
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
-			return
-		}
-
-		// Encrypt password to hash
-		password, err := bcrypt.GenerateFromPassword([]byte(form.NewPassword), bcrypt.DefaultCost)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Execute SQL statement to update a user
-		if err := h.store.UpdateUser(&jahreszahlen.User{
-			UserID:   user.UserID,
-			Username: user.Username,
-			Password: string(password),
-		}); err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Redirect to user's profile
-		http.Redirect(res, req, "/users/profile", http.StatusFound)
 	}
 }
 
@@ -598,6 +431,8 @@ func (h *UserHandler) ForgotPassword() http.HandlerFunc {
 func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Retrieve email from form
 		form := ForgotPasswordForm{
 			Email: strings.ToLower(req.FormValue("email")),
 		}
