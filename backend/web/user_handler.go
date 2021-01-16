@@ -476,7 +476,7 @@ func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 
 		// Add flash message to session
 		h.sessions.Put(req.Context(), "form",
-			"Eine Email zum Zurücksetzen des Passworts wurde an "+form.Email+" versandt.")
+			"Eine Email zum Zurücksetzen Ihres Passworts wurde an "+form.Email+" versandt.")
 
 		// Redirect to home-page
 		http.Redirect(res, req, "/", http.StatusFound)
