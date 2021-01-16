@@ -390,6 +390,58 @@ func (h *UserHandler) Promote() http.HandlerFunc {
 	}
 }
 
+// VerifyEmail is a POST-method that is accessible to anyone.
+//
+// It verifies a user's email, which allows the user to later on reset their
+// password if necessary and removes the reoccurring flash message when logging
+// in.
+func (h *UserHandler) VerifyEmail() http.HandlerFunc {
+
+	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Retrieve token from URL query
+		tokenID := req.URL.Query().Get("token")
+
+		// Execute SQL statement to get token
+		token, err := h.store.GetToken(tokenID)
+		if err != nil {
+			// If token doesn't exist, then redirect to home-page with flash
+			// message.
+			h.sessions.Put(req.Context(), "flash_error", "Ihr Token zum Zurücksetzen des Passworts ist ungültig.")
+			http.Redirect(res, req, "/", http.StatusFound)
+			return
+		}
+
+		// Execute SQL statement to get user
+		user, err := h.store.GetUser(token.UserID)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Update user
+		user.Verified = true
+
+		// Execute SQL statement to update user
+		if err = h.store.UpdateUser(&user); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Execute SQL statement to delete tokens
+		if err = h.store.DeleteTokensByUser(token.UserID); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Add flash message to session
+		h.sessions.Put(req.Context(), "flash_success", "Ihre Email wurde erfolgreich verifiziert.")
+
+		// Redirect to home-page
+		http.Redirect(res, req, "/", http.StatusFound)
+	}
+}
+
 // ForgotPassword is a GET-method that is accessible to anyone not logged in.
 //
 // It displays a form, in which the user can receive an email with a link and
@@ -535,9 +587,11 @@ func (h *UserHandler) ResetPassword() http.HandlerFunc {
 			return
 		}
 
+		// Add token to session
 		h.sessions.Put(req.Context(), "token", token)
 
-		if err := Templates["users_reset_password"].Execute(res, data{
+		// Execute HTML-templates with data
+		if err = Templates["users_reset_password"].Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 		}); err != nil {
@@ -547,6 +601,10 @@ func (h *UserHandler) ResetPassword() http.HandlerFunc {
 	}
 }
 
+// ResetPasswordSubmit is a POST-method that is accessible to anyone not logged
+// in.
+//
+// It changes a user's password, and deletes all of the user's tokens.
 func (h *UserHandler) ResetPasswordSubmit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
