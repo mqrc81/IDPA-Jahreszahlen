@@ -1,58 +1,61 @@
 // Responsible for creating and sending out emails for various purposes, such as resetting of a
-// password or verifying of a user. This email service is provided thanks to MailGun.
+// password or verifying of a user. This email service is provided by SendGrid.
 
 package web
 
 import (
 	"log"
-	"net/smtp"
 	"os"
+
+	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
 
+const (
+	fromName    = "Jahreszahlen"
+	fromAddress = "jahreszahlenapp@gmail.com"
+
+	passwordResetSubject     = "Passwort Zurücksetzen - " + fromName
+	emailVerificationSubject = "Email Verifizieren - " + fromName
+)
+
 var (
-	// server is the smtp email server
-	server = smtpServer{
-		host: "api.gmail.com",
-		port: "587",
-	}
-
-	// sender is the current email address of the application's email service
-	sender = "jahreszahlen@idpa.com"
-
-	auth smtp.Auth
+	client *sendgrid.Client
+	from   *mail.Email
 )
 
 // init gets initialized with the package.
 func init() {
-	// Authenticate email server
-	auth = smtp.PlainAuth("", sender, os.Getenv("SMTP_PASSWORD"), server.host)
-}
-
-// smtpServer represents an smtp email server.
-type smtpServer struct {
-	host string
-	port string
+	client = sendgrid.NewSendClient(os.Getenv("SG_APIKEY"))
+	from = mail.NewEmail(fromName, fromAddress)
 }
 
 // Email consists of data for an email to be sent out.
 type Email struct {
-	From    string
-	To      []string
-	Message string
+	From    *mail.Email
+	To      *mail.Email
+	Subject string
+	Body    string
 }
 
 // Send sends an email to a user.
 func (email Email) Send() {
 
-	// Send Email
-	address := server.host + ":" + server.port
-	msg := []byte(email.Message)
-	if err := smtp.SendMail(address, auth, email.From, email.To, msg); err != nil {
-		log.Fatal(err)
-	}
+	// Create new email instance
+	singleEmail := mail.NewSingleEmail(
+		email.From,
+		email.Subject,
+		email.To,
+		email.Body,
+		email.Body,
+	)
 
+	// Send email to user
+	if _, err := client.Send(singleEmail); err != nil {
+		log.Fatalf("error sending email to "+email.To.Name+" <"+email.To.Address+">: %v", err)
+	}
 }
 
 // PasswordResetEmail creates an email for resetting the user's password to be
@@ -60,17 +63,16 @@ func (email Email) Send() {
 func PasswordResetEmail(user jahreszahlen.User, token string) Email {
 
 	// Create email message
-	msg := "To: " + user.Email + "\r\n" +
-		"Subject: Passwort Zurücksetzen - Jahreszahlen\r\n" +
-		"\r\n" +
-		"Hallo " + user.Username + ",\r\n" +
-		"Klicken Sie diesen Link, um Ihr Passwort zurückzusetzen: \r\n" +
-		"www.heroku.com/users/reset/password?token=" + token + "\r\n"
+	body := "Hallo " + user.Username + ",\n" +
+		"\n" +
+		"Klicken Sie auf diesen Link, um Ihr Passwort zurückzusetzen:\n" +
+		"jahreszahlen.heroku.com/users/password/reset?token=" + token
 
 	return Email{
-		From:    sender,
-		To:      []string{user.Email},
-		Message: msg,
+		From:    from,
+		To:      mail.NewEmail(user.Username, user.Email),
+		Subject: passwordResetSubject,
+		Body:    body,
 	}
 }
 
@@ -79,16 +81,15 @@ func PasswordResetEmail(user jahreszahlen.User, token string) Email {
 func EmailVerificationEmail(user jahreszahlen.User, token string) Email {
 
 	// Create email message
-	msg := "To: " + user.Email + "\r\n" +
-		"Subject: Email Bestätigen - Jahreszahlen\r\n" +
-		"\r\n" +
-		"Hallo " + user.Username + ",\r\n" +
-		"Klicken Sie diesen Link, um Ihre Email-Adresse zu bestätigen: \r\n" +
-		"www.heroku.com/users/verify/email?token=" + token + "\r\n"
+	body := "Hallo " + user.Username + ",\n" +
+		"\n" +
+		"Klicken Sie auf diesen Link, um Ihre Email zu bestätigen:\n" +
+		"jahreszahlen.heroku.com/users/email/verify?token=" + token
 
 	return Email{
-		From:    sender,
-		To:      []string{user.Email},
-		Message: msg,
+		From:    from,
+		To:      mail.NewEmail(user.Username, user.Email),
+		Subject: emailVerificationSubject,
+		Body:    body,
 	}
 }

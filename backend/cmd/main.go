@@ -45,7 +45,7 @@ func main() {
 	csrfKey := make([]byte, 32)
 	_, err = rand.Read(csrfKey)
 	if err != nil {
-		log.Fatalf("error generating csrf-protection key: %e", err)
+		log.Fatalf("error generating csrf-protection key: %v", err)
 	}
 
 	// Initialize HTTP-handlers, including router and middleware
