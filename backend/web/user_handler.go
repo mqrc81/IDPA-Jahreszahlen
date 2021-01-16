@@ -7,11 +7,11 @@ package web
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi"
@@ -548,44 +548,6 @@ func (h *UserHandler) Promote() http.HandlerFunc {
 	}
 }
 
-// ResetPassword is a POST-method that is accessible to any admin.
-//
-// It resets a user's password to the default value and redirects to List.
-func (h *UserHandler) ResetPassword() http.HandlerFunc {
-
-	return func(res http.ResponseWriter, req *http.Request) {
-
-		// Retrieve user ID from URL parameters
-		userID, _ := strconv.Atoi(chi.URLParam(req, "userID"))
-
-		// Execute SQL statement to get user
-		user, err := h.store.GetUser(userID)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Hash password
-		password, err := bcrypt.GenerateFromPassword([]byte(DefaultPassword), bcrypt.DefaultCost)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Change user's password
-		user.Password = string(password)
-
-		// Execute SQL statement to update user
-		if err := h.store.UpdateUser(&user); err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Redirect to list of users
-		http.Redirect(res, req, "/users", http.StatusFound)
-	}
-}
-
 // ForgotPassword is a GET-method that is accessible to anyone not logged in.
 //
 // It displays a form, in which the user can receive an email with a link and
@@ -655,10 +617,10 @@ func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 		tokenKey := make([]byte, 32)
 		_, err = rand.Read(tokenKey)
 		if err != nil {
-			http.Error(res, fmt.Errorf("error creating token key: %w", err).Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		tokenID := base64.URLEncoding.EncodeToString(tokenKey)
+		tokenID := base64.URLEncoding.EncodeToString(tokenKey)[:43]
 
 		// Execute SQL statement to create new token
 		if err := h.store.CreateToken(&jahreszahlen.Token{
@@ -674,9 +636,67 @@ func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 
 		// Add flash message to session
 		h.sessions.Put(req.Context(), "form",
-			"Eine Email zum Zurücksetzen des Passworts wurde an "+form.Email+"versandt.")
+			"Eine Email zum Zurücksetzen des Passworts wurde an "+form.Email+" versandt.")
 
 		// Redirect to home-page
 		http.Redirect(res, req, "/", http.StatusInternalServerError)
+	}
+}
+
+// ResetPassword is a GET-method that is accessible to any user not
+// logged in after opening a link with a valid token received via email.
+//
+// It a verifies the token and displays a form, in which the user can enter a
+// new password.
+func (h *UserHandler) ResetPassword() http.HandlerFunc {
+
+	// Data to pass to HTML-templates
+	type data struct {
+		SessionData
+		CSRF template.HTML
+	}
+
+	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Check if a userInf is logged in
+		userInf := req.Context().Value("userInf")
+		if userInf != nil {
+			// If a user is already logged in, then redirect back with flash
+			// message
+			h.sessions.Put(req.Context(), "flash_error", "Sie sind bereits eingeloggt.")
+			http.Redirect(res, req, "/", http.StatusFound)
+			return
+		}
+
+		// Retrieve token from URL query
+		tokenID := req.URL.Query().Get("token")
+
+		// Execute SQL statement to get token
+		token, err := h.store.GetToken(tokenID)
+		if err != nil {
+			// If token doesn't exist, then redirect to home-page with flash
+			// message.
+			h.sessions.Put(req.Context(), "flash_error", "Ihr Token zum Zurücksetzen des Passworts ist ungültig.")
+			http.Redirect(res, req, "/", http.StatusInternalServerError)
+			return
+		}
+
+		// Validate expiration time of token
+		if token.Expiry.After(time.Now()) {
+			// If the token has expired (after 1 hour), then redirect back with
+			// flash message
+			h.sessions.Put(req.Context(), "flash_error", "Der Token ist abgelaufen. Sie haben jeweils 1 Stunde Zeit, "+
+				"um Ihr Passwort zurückzusetzen.")
+			http.Redirect(res, req, "/", http.StatusFound)
+			return
+		}
+
+		if err := Templates["users_reset_password"].Execute(res, data{
+			SessionData: GetSessionData(h.sessions, req.Context()),
+			CSRF:        csrf.TemplateField(req),
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }

@@ -15,7 +15,7 @@ type TokenStore struct {
 }
 
 // GetToken gets a token by ID.
-func (store *TokenStore) GetToken(tokenID int) (jahreszahlen.Token, error) {
+func (store *TokenStore) GetToken(tokenID string) (jahreszahlen.Token, error) {
 	var token jahreszahlen.Token
 
 	// Execute prepared statement
@@ -42,7 +42,7 @@ func (store *TokenStore) CreateToken(token *jahreszahlen.Token) error {
 	if _, err := store.Exec(query,
 		token.TokenID,
 		token.UserID,
-		time.Now()); err != nil {
+		time.Now().Add(time.Hour)); err != nil {
 		return fmt.Errorf("error creating token: %w", err)
 	}
 

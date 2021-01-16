@@ -831,7 +831,7 @@ func validateQuizToken(quizInf interface{}, phase int, reviewed bool, topicID in
 	// Check for invalid time stamp. Unix() displays the time passed in seconds
 	// since a specific date. By adding the time stamp of the quiz data to the
 	// expiry time, we can check if it was surpassed by the current time
-	if time.Now().Unix() > quiz.TimeStamp.Unix()+timeExpiry*60 {
+	if time.Now().After(quiz.TimeStamp.Add(time.Minute * timeExpiry)) {
 		// Occurs when a user refreshes URL or comes back to URL of a active
 		// quiz after 20 minutes have passed
 		// A user can still take more than the 20 minutes in a phase however

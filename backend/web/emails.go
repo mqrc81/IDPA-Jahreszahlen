@@ -1,3 +1,6 @@
+// Responsible for creating and sending out emails for various purposes, such as resetting of a
+// password or verifying of a user. This email service is provided thanks to MailGun.
+
 package web
 
 import (

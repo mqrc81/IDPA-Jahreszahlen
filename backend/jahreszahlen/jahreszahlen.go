@@ -103,7 +103,7 @@ type ScoreStore interface {
 
 // TokenStore stores functions using tokens for the database-layer.
 type TokenStore interface {
-	GetToken(tokenID int) (Token, error)
+	GetToken(tokenID string) (Token, error)
 	CreateToken(token *Token) error
 	DeleteTokensByUser(userID int) error
 }

@@ -117,17 +117,17 @@ func (form *EventForm) Validate() bool {
 	} else { // admin entered (day, ) month & year (e.g. 08.1969 or 13.19.69)
 
 		date, err := time.Parse("02.01.2006", form.YearOrDate) // check if admin entered valid date as 'dd.mm.yyyy'
+		now := time.Now()
 		if err != nil {
 			date, err = time.Parse("01.2006", form.YearOrDate) // check if admin entered valid date as 'mm.yy'
 			if err != nil {
-				now := time.Now()
 				form.Errors["Year"] = fmt.Sprintf("Ungültiges Format. Erlaubte Formate: '%v', '%s', '%s'",
 					now.Year(), now.Format("01.2006"), now.Format("02.01.2006"))
 			}
 		}
 
 		if form.Errors["Year"] == "" { // admin entered valid date
-			if date.Unix() > time.Now().Unix() {
+			if date.After(now) {
 				form.Errors["Year"] = "Wird hier die Zukunft vorausgesagt?"
 			}
 			form.Date = date

@@ -1,4 +1,6 @@
-//
+// Contains session management, which is responsible for authentication and
+// verification of users and transporting forms, flash messages and other
+// structures such as quiz data.
 
 package web
 
