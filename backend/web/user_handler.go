@@ -7,6 +7,7 @@ package web
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/gob"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -20,6 +21,10 @@ import (
 
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
+
+func init() {
+	gob.Register(jahreszahlen.Token{})
+}
 
 // UserHandler is the object for handlers to access sessions and database.
 type UserHandler struct {
@@ -103,7 +108,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 			return
 		}
 
-		// Hash password
+		// Encrypt password to hash
 		password, err := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.DefaultCost)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -476,7 +481,7 @@ func (h *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 			return
 		}
 
-		// Hash password
+		// Encrypt password to hash
 		password, err := bcrypt.GenerateFromPassword([]byte(form.NewPassword), bcrypt.DefaultCost)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -639,7 +644,7 @@ func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 			"Eine Email zum Zurücksetzen des Passworts wurde an "+form.Email+" versandt.")
 
 		// Redirect to home-page
-		http.Redirect(res, req, "/", http.StatusInternalServerError)
+		http.Redirect(res, req, "/", http.StatusFound)
 	}
 }
 
@@ -677,7 +682,7 @@ func (h *UserHandler) ResetPassword() http.HandlerFunc {
 			// If token doesn't exist, then redirect to home-page with flash
 			// message.
 			h.sessions.Put(req.Context(), "flash_error", "Ihr Token zum Zurücksetzen des Passworts ist ungültig.")
-			http.Redirect(res, req, "/", http.StatusInternalServerError)
+			http.Redirect(res, req, "/", http.StatusFound)
 			return
 		}
 
@@ -691,6 +696,8 @@ func (h *UserHandler) ResetPassword() http.HandlerFunc {
 			return
 		}
 
+		h.sessions.Put(req.Context(), "token", token)
+
 		if err := Templates["users_reset_password"].Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
@@ -698,5 +705,56 @@ func (h *UserHandler) ResetPassword() http.HandlerFunc {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+func (h *UserHandler) ResetPasswordSubmit() http.HandlerFunc {
+
+	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Retrieve new password from form
+		form := ResetPasswordForm{
+			Password: req.FormValue("password"),
+		}
+
+		// Validate form
+		if !form.Validate() {
+			h.sessions.Put(req.Context(), "form", form)
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			return
+		}
+
+		// Retrieve token from session
+		token := h.sessions.Get(req.Context(), "token").(jahreszahlen.Token)
+
+		// Execute SQL statement to get user
+		user, err := h.store.GetUser(token.UserID)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Encrypt password to hash
+		password, err := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.DefaultCost)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Update user's password
+		user.Password = string(password)
+
+		// Execute SQL statement to update user
+		if err = h.store.UpdateUser(&user); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Add flash message to session
+		h.sessions.Put(req.Context(), "flash_success", "Ihr Passwort wurde erfolgreich geändert. "+
+			"Bitte loggen Sie sich ein.")
+
+		// Redirect to login
+		http.Redirect(res, req, "/users/login", http.StatusNotFound)
 	}
 }

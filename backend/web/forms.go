@@ -292,6 +292,8 @@ func (form *PasswordForm) Validate() bool {
 	return len(form.Errors) == 0
 }
 
+// ForgotPasswordForm holds values of the form input when entering an email to
+// reset a password.
 type ForgotPasswordForm struct {
 	Email           string
 	IncorrectEmail  bool
@@ -300,6 +302,7 @@ type ForgotPasswordForm struct {
 	Errors FormErrors
 }
 
+// Validate validates the form input when entering an email to reset a password.
 func (form *ForgotPasswordForm) Validate() bool {
 	form.Errors = FormErrors{}
 
@@ -311,6 +314,23 @@ func (form *ForgotPasswordForm) Validate() bool {
 	} else if form.UnverifiedEmail {
 		form.Errors["Email"] = "Ihre Email wurde nie bestätigt. Sie können derzeit das Passwort nicht zurücksetzen."
 	}
+
+	return len(form.Errors) == 0
+}
+
+// ResetPasswordForm hold values of the form input when resetting a password.
+type ResetPasswordForm struct {
+	Password string
+
+	Errors FormErrors
+}
+
+// Validate validates the form input when resetting a password.
+func (form *ResetPasswordForm) Validate() bool {
+	form.Errors = FormErrors{}
+
+	// Validate password
+	form.Errors.validatePassword(form.Password, "Password")
 
 	return len(form.Errors) == 0
 }
