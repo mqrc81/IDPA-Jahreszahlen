@@ -11,13 +11,13 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
 
-// UserStore is the database access object
+// UserStore is the database access object.
 type UserStore struct {
 	*sqlx.DB
 }
 
 // GetUser gets a user by ID.
-func (store UserStore) GetUser(userID int) (jahreszahlen.User, error) {
+func (store *UserStore) GetUser(userID int) (jahreszahlen.User, error) {
 	var user jahreszahlen.User
 
 	// Execute prepared statement
@@ -36,7 +36,7 @@ func (store UserStore) GetUser(userID int) (jahreszahlen.User, error) {
 }
 
 // GetUserByUsername gets a user by its username.
-func (store UserStore) GetUserByUsername(username string) (jahreszahlen.User, error) {
+func (store *UserStore) GetUserByUsername(username string) (jahreszahlen.User, error) {
 	var user jahreszahlen.User
 
 	// Execute prepared statement
@@ -55,7 +55,7 @@ func (store UserStore) GetUserByUsername(username string) (jahreszahlen.User, er
 }
 
 // GetUserByEmail gets a user by its email.
-func (store UserStore) GetUserByEmail(email string) (jahreszahlen.User, error) {
+func (store *UserStore) GetUserByEmail(email string) (jahreszahlen.User, error) {
 	var user jahreszahlen.User
 
 	// Execute prepared statement
@@ -74,7 +74,7 @@ func (store UserStore) GetUserByEmail(email string) (jahreszahlen.User, error) {
 }
 
 // GetUsers gets all users.
-func (store UserStore) GetUsers() ([]jahreszahlen.User, error) {
+func (store *UserStore) GetUsers() ([]jahreszahlen.User, error) {
 	var users []jahreszahlen.User
 
 	// Execute prepared statement
@@ -110,14 +110,15 @@ func (store *UserStore) CountUsers() (int, error) {
 }
 
 // CreateUser creates a new user.
-func (store UserStore) CreateUser(user *jahreszahlen.User) error {
+func (store *UserStore) CreateUser(user *jahreszahlen.User) error {
 	// Execute prepared statement
 	query := `
-		INSERT INTO users(username, password, admin) 
-		VALUES (?, ?, ?)
+		INSERT INTO users(username, email, password, admin) 
+		VALUES (?, ?, ?, ?)
 		`
 	if _, err := store.Exec(query,
 		user.Username,
+		user.Email,
 		user.Password,
 		user.Admin); err != nil {
 		return fmt.Errorf("error creating user: %w", err)
@@ -127,17 +128,18 @@ func (store UserStore) CreateUser(user *jahreszahlen.User) error {
 }
 
 // UpdateUser updates an existing user.
-func (store UserStore) UpdateUser(user *jahreszahlen.User) error {
+func (store *UserStore) UpdateUser(user *jahreszahlen.User) error {
 	// Execute prepared statement
 	query := `
 		UPDATE users 
-		SET password = ?, username = ?, admin = ? 
+		SET password = ?, username = ?, admin = ?, verified = ? 
 		WHERE user_id = ?
 		`
 	if _, err := store.Exec(query,
 		user.Password,
 		user.Username,
 		user.Admin,
+		user.Verified,
 		user.UserID); err != nil {
 		return fmt.Errorf("error updating user: %w", err)
 	}
@@ -146,7 +148,7 @@ func (store UserStore) UpdateUser(user *jahreszahlen.User) error {
 }
 
 // DeleteUser deletes an existing user.
-func (store UserStore) DeleteUser(userID int) error {
+func (store *UserStore) DeleteUser(userID int) error {
 	// Execute prepared statement
 	query := `
 		DELETE FROM users 
@@ -155,5 +157,6 @@ func (store UserStore) DeleteUser(userID int) error {
 	if _, err := store.Exec(query, userID); err != nil {
 		return fmt.Errorf("error deleting user: %w", err)
 	}
+
 	return nil
 }

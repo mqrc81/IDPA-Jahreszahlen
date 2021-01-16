@@ -5,6 +5,9 @@
 package web
 
 import (
+	"crypto/rand"
+	"encoding/base64"
+	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -28,7 +31,7 @@ type UserHandler struct {
 //
 // It displays a form, in which values for registering as a new user can be
 // entered.
-func (handler *UserHandler) Register() http.HandlerFunc {
+func (h *UserHandler) Register() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -43,14 +46,14 @@ func (handler *UserHandler) Register() http.HandlerFunc {
 		if user != nil {
 			// If a user is already logged in, then redirect back with flash
 			// message
-			handler.sessions.Put(req.Context(), "flash_error", "Sie sind bereits eingeloggt.")
+			h.sessions.Put(req.Context(), "flash_error", "Sie sind bereits eingeloggt.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
 		// Execute HTML-templates with data
 		if err := Templates["users_register"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -65,7 +68,7 @@ func (handler *UserHandler) Register() http.HandlerFunc {
 // It validates the form from Register and redirects to Register in case of an
 // invalid input with corresponding error messages. In case of a valid form, it
 // stores the new user in the database and redirects to the home-page.
-func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
+func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve values from form (Register)
@@ -78,7 +81,7 @@ func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
 		}
 
 		// Check if username is taken
-		_, err := handler.store.GetUserByUsername(form.Username)
+		_, err := h.store.GetUserByUsername(form.Username)
 		if err == nil {
 			// If error is nil, a user with that username was found, which
 			// means the username is already taken
@@ -86,7 +89,7 @@ func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
 		}
 
 		// Check if email is taken
-		_, err = handler.store.GetUserByEmail(form.Email)
+		_, err = h.store.GetUserByEmail(form.Email)
 		if err == nil {
 			// If error is nil, a user with that email was found, which means
 			// the email is already taken
@@ -95,7 +98,7 @@ func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
 
 		// Validate form
 		if !form.Validate() {
-			handler.sessions.Put(req.Context(), "form", form)
+			h.sessions.Put(req.Context(), "form", form)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
@@ -108,7 +111,7 @@ func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to create a user
-		if err := handler.store.CreateUser(&jahreszahlen.User{
+		if err := h.store.CreateUser(&jahreszahlen.User{
 			Username: form.Username,
 			Password: string(password),
 		}); err != nil {
@@ -117,7 +120,7 @@ func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
 		}
 
 		// Add flash message
-		handler.sessions.Put(req.Context(), "flash_success",
+		h.sessions.Put(req.Context(), "flash_success",
 			"Willkommen "+form.Username+"! Ihre Registrierung war erfolgreich. Loggen Sie sich bitte ein.")
 
 		// Redirect to Home
@@ -129,7 +132,7 @@ func (handler *UserHandler) RegisterSubmit() http.HandlerFunc {
 //
 // It displays a form in which values for logging in as a returning user can be
 // entered.
-func (handler *UserHandler) Login() http.HandlerFunc {
+func (h *UserHandler) Login() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -144,14 +147,14 @@ func (handler *UserHandler) Login() http.HandlerFunc {
 		if user != nil {
 			// If a user is already logged in, then redirect back with flash
 			// message
-			handler.sessions.Put(req.Context(), "flash_error", "Sie sind bereits eingeloggt.")
+			h.sessions.Put(req.Context(), "flash_error", "Sie sind bereits eingeloggt.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
 		// Execute HTML-templates with data
 		if err := Templates["users_login"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -166,7 +169,7 @@ func (handler *UserHandler) Login() http.HandlerFunc {
 // It validates the form from Login and redirects to Login in case of an
 // invalid input with corresponding error messages. In case of a valid form,
 // it stores the user in the session and redirects to the home-page.
-func (handler *UserHandler) LoginSubmit() http.HandlerFunc {
+func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -179,11 +182,11 @@ func (handler *UserHandler) LoginSubmit() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to get a user
-		user, err := handler.store.GetUserByUsername(form.UsernameOrEmail) // check if username is correct
+		user, err := h.store.GetUserByUsername(form.UsernameOrEmail) // check if username is correct
 		if err != nil {
 			// In case of an error, the username doesn't exist
 			// Execute SQL statement to get a user
-			user, err = handler.store.GetUserByEmail(form.UsernameOrEmail) // check if email is correct
+			user, err = h.store.GetUserByEmail(form.UsernameOrEmail) // check if email is correct
 
 			// In case of an error, the email doesn't exist, which means
 			// username and email are both incorrect
@@ -201,16 +204,16 @@ func (handler *UserHandler) LoginSubmit() http.HandlerFunc {
 
 		// Validate form
 		if !form.Validate() {
-			handler.sessions.Put(req.Context(), "form", form)
+			h.sessions.Put(req.Context(), "form", form)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
 		// Store user ID in session
-		handler.sessions.Put(req.Context(), "user_id", user.UserID)
+		h.sessions.Put(req.Context(), "user_id", user.UserID)
 
 		// Add flash message to session
-		handler.sessions.Put(req.Context(), "flash_success", "Hallo "+user.Username+"! Sie sind nun eingeloggt.")
+		h.sessions.Put(req.Context(), "flash_success", "Hallo "+user.Username+"! Sie sind nun eingeloggt.")
 
 		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)
@@ -220,7 +223,7 @@ func (handler *UserHandler) LoginSubmit() http.HandlerFunc {
 // Logout is a GET-method that is accessible to any user.
 //
 // It removes user from the session and redirects to the home-page.
-func (handler *UserHandler) Logout() http.HandlerFunc {
+func (h *UserHandler) Logout() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -228,16 +231,16 @@ func (handler *UserHandler) Logout() http.HandlerFunc {
 		user := req.Context().Value("user")
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error", "Sie sind gar nicht eingeloggt.")
+			h.sessions.Put(req.Context(), "flash_error", "Sie sind gar nicht eingeloggt.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
 		// Remove user ID from session
-		handler.sessions.Remove(req.Context(), "user_id")
+		h.sessions.Remove(req.Context(), "user_id")
 
 		// Add flash message to session
-		handler.sessions.Put(req.Context(), "flash_success", "Sie wurden erfolgreich ausgeloggt.")
+		h.sessions.Put(req.Context(), "flash_success", "Sie wurden erfolgreich ausgeloggt.")
 
 		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)
@@ -248,7 +251,7 @@ func (handler *UserHandler) Logout() http.HandlerFunc {
 //
 // It displays a user's username and statistics, with the ability to change
 // username or password.
-func (handler *UserHandler) Profile() http.HandlerFunc {
+func (h *UserHandler) Profile() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -263,7 +266,7 @@ func (handler *UserHandler) Profile() http.HandlerFunc {
 		userInf := req.Context().Value("user")
 		if userInf == nil {
 			// If no user is logged in, then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error",
+			h.sessions.Put(req.Context(), "flash_error",
 				"Unzureichende Berechtigung. Loggen Sie sich zuerst ein, um Ihr Profil zu betrachten.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
@@ -273,7 +276,7 @@ func (handler *UserHandler) Profile() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := Templates["users_profile"].Execute(res, data{
 			User:        user,
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -285,7 +288,7 @@ func (handler *UserHandler) Profile() http.HandlerFunc {
 //
 // It lists all users with the ability to delete a user, to promote a user to
 // admin, or to reset a user's password.
-func (handler *UserHandler) List() http.HandlerFunc {
+func (h *UserHandler) List() http.HandlerFunc {
 
 	// Data to pass to HTML-template
 	type data struct {
@@ -301,14 +304,14 @@ func (handler *UserHandler) List() http.HandlerFunc {
 		if user == nil || !user.(jahreszahlen.User).Admin {
 			// If no user is logged in or user logged in isn't an admin, then
 			// redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error",
+			h.sessions.Put(req.Context(), "flash_error",
 				"Unzureichende Berechtigung. Sie müssen als Admin eingeloggt sein, um alle Benutzer aufzulisten.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
 		// Execute SQL statement to get users
-		users, err := handler.store.GetUsers()
+		users, err := h.store.GetUsers()
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -317,7 +320,7 @@ func (handler *UserHandler) List() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err := Templates["users_list"].Execute(res, data{
 			Users:       users,
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusFound)
 			return
@@ -329,7 +332,7 @@ func (handler *UserHandler) List() http.HandlerFunc {
 //
 // It displays a form in which values for modifying the current username can be
 // entered.
-func (handler *UserHandler) EditUsername() http.HandlerFunc {
+func (h *UserHandler) EditUsername() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -342,7 +345,7 @@ func (handler *UserHandler) EditUsername() http.HandlerFunc {
 		user := req.Context().Value("user")
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error",
+			h.sessions.Put(req.Context(), "flash_error",
 				"Unzureichende Berechtigung. Loggen Sie sich zuerst ein, um Ihr Benutzernamen zu ändern.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
@@ -350,7 +353,7 @@ func (handler *UserHandler) EditUsername() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := Templates["users_edit_username"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -364,7 +367,7 @@ func (handler *UserHandler) EditUsername() http.HandlerFunc {
 // It validates the form from EditUsername and redirects to EditUsername in
 // case of an invalid input with corresponding error messages. In case of a
 // valid form, it stores the user in the database and redirects to Profile.
-func (handler *UserHandler) EditUsernameSubmit() http.HandlerFunc {
+func (h *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -377,7 +380,7 @@ func (handler *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 		}
 
 		// Check if username is taken
-		_, err := handler.store.GetUserByUsername(form.NewUsername)
+		_, err := h.store.GetUserByUsername(form.NewUsername)
 		// If error is nil, a user with that username was found, which means
 		// the username is already taken.
 		form.UsernameTaken = err == nil
@@ -392,16 +395,16 @@ func (handler *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 		form.IncorrectPassword = err != nil
 
 		if !form.Validate() {
-			handler.sessions.Put(req.Context(), "form", form)
+			h.sessions.Put(req.Context(), "form", form)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
 		// CreateStore user ID in session
-		handler.sessions.Put(req.Context(), "user_id", user.UserID)
+		h.sessions.Put(req.Context(), "user_id", user.UserID)
 
 		// Add flash message to session
-		handler.sessions.Put(req.Context(), "flash_success", "Ihr Benutzername wurde erfolgreich geändert.")
+		h.sessions.Put(req.Context(), "flash_success", "Ihr Benutzername wurde erfolgreich geändert.")
 
 		// Redirect to Home
 		http.Redirect(res, req, "/profile", http.StatusFound)
@@ -412,7 +415,7 @@ func (handler *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 //
 // It displays a form in which values for modifying the current password can
 // be entered.
-func (handler *UserHandler) EditPassword() http.HandlerFunc {
+func (h *UserHandler) EditPassword() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -425,7 +428,7 @@ func (handler *UserHandler) EditPassword() http.HandlerFunc {
 		user := req.Context().Value("user")
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error",
+			h.sessions.Put(req.Context(), "flash_error",
 				"Unzureichende Berechtigung. Loggen Sie sich zuerst ein, um Ihr Passwort zu ändern.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
@@ -433,7 +436,7 @@ func (handler *UserHandler) EditPassword() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := Templates["users_edit_password"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -447,7 +450,7 @@ func (handler *UserHandler) EditPassword() http.HandlerFunc {
 // It validates the form from EditPassword and redirects to EditPassword in
 // case of an invalid input with corresponding error messages. In case of a
 // valid form, it stores the user in the database and redirects to Profile.
-func (handler *UserHandler) EditPasswordSubmit() http.HandlerFunc {
+func (h *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -468,7 +471,7 @@ func (handler *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 
 		// Validate form
 		if !form.Validate() {
-			handler.sessions.Put(req.Context(), "form", form)
+			h.sessions.Put(req.Context(), "form", form)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
@@ -481,7 +484,7 @@ func (handler *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to update a user
-		if err := handler.store.UpdateUser(&jahreszahlen.User{
+		if err := h.store.UpdateUser(&jahreszahlen.User{
 			UserID:   user.UserID,
 			Username: user.Username,
 			Password: string(password),
@@ -498,7 +501,7 @@ func (handler *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 // Delete is a POST-method that is accessible to any admin.
 //
 // It deletes the user and redirects to List.
-func (handler *UserHandler) Delete() http.HandlerFunc {
+func (h *UserHandler) Delete() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -506,7 +509,7 @@ func (handler *UserHandler) Delete() http.HandlerFunc {
 		userID, _ := strconv.Atoi(chi.URLParam(req, "userID"))
 
 		// Execute SQL statement to delete a user
-		err := handler.store.DeleteUser(userID)
+		err := h.store.DeleteUser(userID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -517,7 +520,7 @@ func (handler *UserHandler) Delete() http.HandlerFunc {
 // Promote is a POST-method that is accessible to any admin.
 //
 // It promotes a user to an admin and redirects to List.
-func (handler *UserHandler) Promote() http.HandlerFunc {
+func (h *UserHandler) Promote() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -525,7 +528,7 @@ func (handler *UserHandler) Promote() http.HandlerFunc {
 		userID, _ := strconv.Atoi(chi.URLParam(req, "userID"))
 
 		// Execute SQL statement to get user
-		user, err := handler.store.GetUser(userID)
+		user, err := h.store.GetUser(userID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -535,7 +538,7 @@ func (handler *UserHandler) Promote() http.HandlerFunc {
 		user.Admin = true
 
 		// Execute SQL statement to update user
-		if err := handler.store.UpdateUser(&user); err != nil {
+		if err := h.store.UpdateUser(&user); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -548,7 +551,7 @@ func (handler *UserHandler) Promote() http.HandlerFunc {
 // ResetPassword is a POST-method that is accessible to any admin.
 //
 // It resets a user's password to the default value and redirects to List.
-func (handler *UserHandler) ResetPassword() http.HandlerFunc {
+func (h *UserHandler) ResetPassword() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -556,7 +559,7 @@ func (handler *UserHandler) ResetPassword() http.HandlerFunc {
 		userID, _ := strconv.Atoi(chi.URLParam(req, "userID"))
 
 		// Execute SQL statement to get user
-		user, err := handler.store.GetUser(userID)
+		user, err := h.store.GetUser(userID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -573,7 +576,7 @@ func (handler *UserHandler) ResetPassword() http.HandlerFunc {
 		user.Password = string(password)
 
 		// Execute SQL statement to update user
-		if err := handler.store.UpdateUser(&user); err != nil {
+		if err := h.store.UpdateUser(&user); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -587,7 +590,7 @@ func (handler *UserHandler) ResetPassword() http.HandlerFunc {
 //
 // It displays a form, in which the user can receive an email with a link and
 // token to reset the password by specifying his/her email.
-func (handler *UserHandler) ForgotPassword() http.HandlerFunc {
+func (h *UserHandler) ForgotPassword() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -602,14 +605,14 @@ func (handler *UserHandler) ForgotPassword() http.HandlerFunc {
 		if user != nil {
 			// If a user is already logged in, then redirect back with flash
 			// message
-			handler.sessions.Put(req.Context(), "flash_error", "Sie sind bereits eingeloggt.")
+			h.sessions.Put(req.Context(), "flash_error", "Sie sind bereits eingeloggt.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
 		// Execute HTML-templates with data
 		if err := Templates["users_forgot_password"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -618,19 +621,62 @@ func (handler *UserHandler) ForgotPassword() http.HandlerFunc {
 	}
 }
 
-func (handler *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
+// ForgotPasswordSubmit is a POST-method that is accessible to any user not
+// logged in after ForgotPassword.
+//
+// It validates the form from ForgotPassword and redirects to ForgotPassword in
+// case of an invalid input with corresponding error message. In case of a
+// valid form, it stores the new token in the database and redirects to the
+// home-page with a flash message.
+func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		form := ForgotPasswordForm{
 			Email: strings.ToLower(req.FormValue("email")),
 		}
 
+		// Check if email is valid
+		user, err := h.store.GetUserByEmail(form.Email)
+		// If error is nil, a user with that username was found, which means
+		// the username is already taken.
+		form.IncorrectEmail = err != nil
+		// If user's email isn't verified, he/she can't reset the password via
+		// email
+		form.UnverifiedEmail = !user.Verified
+
+		// Validate form
 		if !form.Validate() {
-			handler.sessions.Put(req.Context(), "form", form)
+			h.sessions.Put(req.Context(), "form", form)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
-		// TODO send email with link
+		// Generate secret token
+		tokenKey := make([]byte, 32)
+		_, err = rand.Read(tokenKey)
+		if err != nil {
+			http.Error(res, fmt.Errorf("error creating token key: %w", err).Error(), http.StatusInternalServerError)
+			return
+		}
+		tokenID := base64.URLEncoding.EncodeToString(tokenKey)
+
+		// Execute SQL statement to create new token
+		if err := h.store.CreateToken(&jahreszahlen.Token{
+			TokenID: tokenID,
+			UserID:  user.UserID,
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Send email
+		PasswordResetEmail(user, tokenID).Send()
+
+		// Add flash message to session
+		h.sessions.Put(req.Context(), "form",
+			"Eine Email zum Zurücksetzen des Passworts wurde an "+form.Email+"versandt.")
+
+		// Redirect to home-page
+		http.Redirect(res, req, "/", http.StatusInternalServerError)
 	}
 }

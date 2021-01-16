@@ -27,7 +27,7 @@ type EventHandler struct {
 //
 // Users can view the events while admins have the ability to edit or delete an
 // event, as well as to create a new one.
-func (handler *EventHandler) List() http.HandlerFunc {
+func (h *EventHandler) List() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -43,7 +43,7 @@ func (handler *EventHandler) List() http.HandlerFunc {
 		user := req.Context().Value("user")
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
+			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Benutzer eingeloggt sein, um all Ereignisse eines Themas aufzulisten.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
@@ -57,7 +57,7 @@ func (handler *EventHandler) List() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to get a topic
-		topic, err := handler.store.GetTopic(topicID)
+		topic, err := h.store.GetTopic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -65,7 +65,7 @@ func (handler *EventHandler) List() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := Templates["events_list"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			Topic:       topic,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -77,7 +77,7 @@ func (handler *EventHandler) List() http.HandlerFunc {
 // Create is a GET-method that is accessible to any admin.
 //
 // It displays a form, in which values for a new event can be entered.
-func (handler *EventHandler) Create() http.HandlerFunc {
+func (h *EventHandler) Create() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -94,7 +94,7 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 		if user == nil || !user.(jahreszahlen.User).Admin {
 			// If no user is logged in or logged in user isn't an admin,
 			// then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
+			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Admin eingeloggt sein, um ein neues Ereignis zu erstellen.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
@@ -108,7 +108,7 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to get a topic
-		topic, err := handler.store.GetTopic(topicID)
+		topic, err := h.store.GetTopic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -116,7 +116,7 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := Templates["events_create"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Topic:       topic,
 		}); err != nil {
@@ -131,7 +131,7 @@ func (handler *EventHandler) Create() http.HandlerFunc {
 // It validates the form from Create and redirects to Create in case of an
 // invalid input with the corresponding error message. In case of valid form,
 // it stores the new event in the database and redirects to the List.
-func (handler *EventHandler) CreateStore() http.HandlerFunc {
+func (h *EventHandler) CreateStore() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -147,13 +147,13 @@ func (handler *EventHandler) CreateStore() http.HandlerFunc {
 
 		// Validate form
 		if !form.Validate() {
-			handler.sessions.Put(req.Context(), "form", form)
+			h.sessions.Put(req.Context(), "form", form)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
 		// Execute SQL statement to create an event
-		if err := handler.store.CreateEvent(&jahreszahlen.Event{
+		if err := h.store.CreateEvent(&jahreszahlen.Event{
 			TopicID: topicID,
 			Name:    form.Name,
 			Year:    form.Year,
@@ -164,7 +164,7 @@ func (handler *EventHandler) CreateStore() http.HandlerFunc {
 		}
 
 		// Adds flash message
-		handler.sessions.Put(req.Context(), "flash_success", "Ereignis wurde erfolgreich erstellt.")
+		h.sessions.Put(req.Context(), "flash_success", "Ereignis wurde erfolgreich erstellt.")
 
 		// Redirect to list of topics
 		http.Redirect(res, req, "/topics/"+topicIDstr+"/events", http.StatusFound)
@@ -174,7 +174,7 @@ func (handler *EventHandler) CreateStore() http.HandlerFunc {
 // Delete is a POST-method that is accessible to any admin after List.
 //
 // It deletes an event and redirects to List.
-func (handler *EventHandler) Delete() http.HandlerFunc {
+func (h *EventHandler) Delete() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -185,7 +185,7 @@ func (handler *EventHandler) Delete() http.HandlerFunc {
 		eventID, _ := strconv.Atoi(chi.URLParam(req, "eventID"))
 
 		// Execute SQL statement to delete an event
-		if err := handler.store.DeleteEvent(eventID); err != nil {
+		if err := h.store.DeleteEvent(eventID); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -199,7 +199,7 @@ func (handler *EventHandler) Delete() http.HandlerFunc {
 //
 // It displays a form in which values for modifying the current event can be
 // entered.
-func (handler *EventHandler) Edit() http.HandlerFunc {
+func (h *EventHandler) Edit() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -215,7 +215,7 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 		if user == nil || !user.(jahreszahlen.User).Admin {
 			// If no user is logged in or logged in user isn't an admin,
 			// then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
+			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Admin eingeloggt sein, um ein Ereignis zu bearbeiten.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
@@ -229,7 +229,7 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to get topic
-		event, err := handler.store.GetEvent(eventID)
+		event, err := h.store.GetEvent(eventID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -237,7 +237,7 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := Templates["events_edit"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			Event:       event,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -251,7 +251,7 @@ func (handler *EventHandler) Edit() http.HandlerFunc {
 // It validates the form from Edit and redirects to Edit in case of an invalid
 // input with the corresponding error message. In case of valid form, it stores
 // the topic in the database and redirects to List.
-func (handler *EventHandler) EditStore() http.HandlerFunc {
+func (h *EventHandler) EditStore() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -267,13 +267,13 @@ func (handler *EventHandler) EditStore() http.HandlerFunc {
 
 		// Validate form
 		if !form.Validate() {
-			handler.sessions.Put(req.Context(), "form", form)
+			h.sessions.Put(req.Context(), "form", form)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
 		// Execute SQL statement to update event
-		if err := handler.store.UpdateEvent(&jahreszahlen.Event{
+		if err := h.store.UpdateEvent(&jahreszahlen.Event{
 			TopicID: topicID,
 			Name:    form.Name,
 			Year:    form.Year,
@@ -283,7 +283,7 @@ func (handler *EventHandler) EditStore() http.HandlerFunc {
 		}
 
 		// Add flash message to session
-		handler.sessions.Put(req.Context(), "flash_success", "Thema wurde erfolgreich bearbeitet.")
+		h.sessions.Put(req.Context(), "flash_success", "Thema wurde erfolgreich bearbeitet.")
 
 		// Redirect to list of events
 		http.Redirect(res, req, "/topics/"+topicIDstr+"/events", http.StatusFound)

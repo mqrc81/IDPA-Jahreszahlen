@@ -27,7 +27,7 @@ type TopicHandler struct {
 // It lists all topics. Users can only view them or show a specific topic,
 // while admins have the ability to create a new topic, as well as to edit and
 // delete an existing one.
-func (handler *TopicHandler) List() http.HandlerFunc {
+func (h *TopicHandler) List() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -39,7 +39,7 @@ func (handler *TopicHandler) List() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Execute SQL statement to get topics
-		topics, err := handler.store.GetTopics()
+		topics, err := h.store.GetTopics()
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -47,7 +47,7 @@ func (handler *TopicHandler) List() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := Templates["topics_list"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			Topics:      topics,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -59,7 +59,7 @@ func (handler *TopicHandler) List() http.HandlerFunc {
 // Create is a GET-method that is accessible to any admin.
 //
 // It displays a form, in which values for a new topic can be entered.
-func (handler *TopicHandler) Create() http.HandlerFunc {
+func (h *TopicHandler) Create() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -74,7 +74,7 @@ func (handler *TopicHandler) Create() http.HandlerFunc {
 		if user == nil || !user.(jahreszahlen.User).Admin {
 			// If no user is logged in or logged in user isn't an admin,
 			// then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
+			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Admin eingeloggt sein, um ein neues Thema zu erstellen.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
@@ -82,7 +82,7 @@ func (handler *TopicHandler) Create() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := Templates["topics_create"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -96,7 +96,7 @@ func (handler *TopicHandler) Create() http.HandlerFunc {
 // It validates the form from Create and redirects to Create in case of an
 // invalid input with corresponding error message. In case of valid form, it
 // stores the new topic in the database and redirects to List.
-func (handler *TopicHandler) CreateStore() http.HandlerFunc {
+func (h *TopicHandler) CreateStore() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -112,13 +112,13 @@ func (handler *TopicHandler) CreateStore() http.HandlerFunc {
 
 		// Validate form
 		if !form.Validate() {
-			handler.sessions.Put(req.Context(), "form", form)
+			h.sessions.Put(req.Context(), "form", form)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
 		// Execute SQL statement to create a topic
-		if err := handler.store.CreateTopic(&jahreszahlen.Topic{
+		if err := h.store.CreateTopic(&jahreszahlen.Topic{
 			Name:        form.Name,
 			StartYear:   form.StartYear,
 			EndYear:     form.EndYear,
@@ -129,7 +129,7 @@ func (handler *TopicHandler) CreateStore() http.HandlerFunc {
 		}
 
 		// Adds flash message
-		handler.sessions.Put(req.Context(), "flash_success", "Thema wurde erfolgreich erstellt.")
+		h.sessions.Put(req.Context(), "flash_success", "Thema wurde erfolgreich erstellt.")
 
 		// Redirects to list of topics
 		http.Redirect(res, req, "/topics", http.StatusFound)
@@ -139,7 +139,7 @@ func (handler *TopicHandler) CreateStore() http.HandlerFunc {
 // Delete is a POST-method that is accessible to any admin.
 //
 // It deletes a certain topic and redirects to List.
-func (handler *TopicHandler) Delete() http.HandlerFunc {
+func (h *TopicHandler) Delete() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -147,12 +147,12 @@ func (handler *TopicHandler) Delete() http.HandlerFunc {
 		topicID, _ := strconv.Atoi(chi.URLParam(req, "topicID"))
 
 		// Execute SQL statement to delete a topic
-		if err := handler.store.DeleteTopic(topicID); err != nil {
+		if err := h.store.DeleteTopic(topicID); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		// Add flash message
-		handler.sessions.Put(req.Context(), "flash_success", "Thema wurde erfolgreich gelöscht.")
+		h.sessions.Put(req.Context(), "flash_success", "Thema wurde erfolgreich gelöscht.")
 
 		// Redirect to list of topics
 		http.Redirect(res, req, "/topics", http.StatusFound)
@@ -163,7 +163,7 @@ func (handler *TopicHandler) Delete() http.HandlerFunc {
 //
 // It displays a form in which values for modifying the current topic can be
 // entered.
-func (handler *TopicHandler) Edit() http.HandlerFunc {
+func (h *TopicHandler) Edit() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -180,7 +180,7 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 		if user == nil || !user.(jahreszahlen.User).Admin {
 			// If no user is logged in or logged in user isn't an admin,
 			// then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error",
+			h.sessions.Put(req.Context(), "flash_error",
 				"Unzureichende Berechtigung. Sie müssen als Admin eingeloggt sein, um ein Thema zu bearbeiten.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
@@ -194,7 +194,7 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to get a topic
-		topic, err := handler.store.GetTopic(topicID)
+		topic, err := h.store.GetTopic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -202,7 +202,7 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := Templates["topics_edit"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			Topic:       topic,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -216,7 +216,7 @@ func (handler *TopicHandler) Edit() http.HandlerFunc {
 // It validates the form from Edit and redirects to Edit in case of an invalid
 // input with corresponding error message. In case of valid form, it stores the
 // topic in the database and redirects to Show.
-func (handler *TopicHandler) EditStore() http.HandlerFunc {
+func (h *TopicHandler) EditStore() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -236,13 +236,13 @@ func (handler *TopicHandler) EditStore() http.HandlerFunc {
 
 		// Validate form
 		if !form.Validate() {
-			handler.sessions.Put(req.Context(), "form", form)
+			h.sessions.Put(req.Context(), "form", form)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
 		// Execute SQL statement to update a topic
-		if err := handler.store.UpdateTopic(&jahreszahlen.Topic{
+		if err := h.store.UpdateTopic(&jahreszahlen.Topic{
 			TopicID:     topicID,
 			Name:        form.Name,
 			StartYear:   form.StartYear,
@@ -254,7 +254,7 @@ func (handler *TopicHandler) EditStore() http.HandlerFunc {
 		}
 
 		// Add flash message
-		handler.sessions.Put(req.Context(), "flash_success", "Thema wurde erfolgreich bearbeitet.")
+		h.sessions.Put(req.Context(), "flash_success", "Thema wurde erfolgreich bearbeitet.")
 
 		// Redirect to topic Show
 		http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
@@ -266,7 +266,7 @@ func (handler *TopicHandler) EditStore() http.HandlerFunc {
 // It displays details of the topic. Anyone can view the topic, while users
 // have the ability to play the quiz and admins have the ability to edit or
 // delete the topic.
-func (handler *TopicHandler) Show() http.HandlerFunc {
+func (h *TopicHandler) Show() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -286,7 +286,7 @@ func (handler *TopicHandler) Show() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to get a topic
-		topic, err := handler.store.GetTopic(topicID)
+		topic, err := h.store.GetTopic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -294,7 +294,7 @@ func (handler *TopicHandler) Show() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := Templates["topics_show"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Topic:       topic,
 		}); err != nil {

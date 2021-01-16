@@ -80,7 +80,7 @@ type QuizData struct {
 //
 // It consists of a form with 3 multiple-choice questions, where the user has
 // to guess the year of a given event.
-func (handler *QuizHandler) Phase1() http.HandlerFunc {
+func (h *QuizHandler) Phase1() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -106,14 +106,14 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 		user := req.Context().Value("user")
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
+			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen.")
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
 
 		// Execute SQL statement to get topic
-		topic, err := handler.store.GetTopic(topicID)
+		topic, err := h.store.GetTopic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -130,14 +130,14 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 		questions := createPhase1Questions(topic.Events)
 
 		// Create quiz data and pass it to session
-		handler.sessions.Put(req.Context(), "quiz", QuizData{
+		h.sessions.Put(req.Context(), "quiz", QuizData{
 			Topic:     topic,
 			Questions: questions,
 		})
 
 		// Execute HTML-templates with data
 		if err := Templates["quiz_phase1"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			TopicID:     topicID,
 			TopicName:   topic.Name,
@@ -152,7 +152,7 @@ func (handler *QuizHandler) Phase1() http.HandlerFunc {
 // Phase1Submit is a POST-method that is accessible to any user after Phase1.
 //
 // It calculates the points and redirects to Phase1Review.
-func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
+func (h *QuizHandler) Phase1Submit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -160,7 +160,7 @@ func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
 		topicIDstr := chi.URLParam(req, "topicID")
 
 		// Retrieve quiz data from session
-		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
+		quiz := h.sessions.Get(req.Context(), "quiz").(QuizData)
 		questions := quiz.Questions.([]phase1Question)
 
 		// Update quiz data
@@ -185,7 +185,7 @@ func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
 		quiz.Questions = questions
 
 		// Add data to session again
-		handler.sessions.Put(req.Context(), "quiz", quiz)
+		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Redirect to review of phase 1
 		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/1/review", http.StatusFound)
@@ -195,7 +195,7 @@ func (handler *QuizHandler) Phase1Submit() http.HandlerFunc {
 // Phase1Review is a GET-method that is accessible to any user after Phase1.
 //
 // It displays a correction of the questions.
-func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
+func (h *QuizHandler) Phase1Review() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -221,14 +221,14 @@ func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 		user := req.Context().Value("user")
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
+			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen.")
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
 
 		// Retrieve quiz data from session
-		quizInf := handler.sessions.Get(req.Context(), "quiz")
+		quizInf := h.sessions.Get(req.Context(), "quiz")
 
 		// Validate the token of the quiz data
 		// Pass in quiz data as interface instead of struct, because before
@@ -238,18 +238,18 @@ func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 		// Usually an error only occurs when user manually typed in a URL
 		// without starting at phase 1 or after the time stamp expired
 		if msg != "" {
-			handler.sessions.Put(req.Context(), "flash_error",
+			h.sessions.Put(req.Context(), "flash_error",
 				"Ein Fehler ist aufgetreten in Phase 1 des Quizzes. "+msg)
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
 
 		// Pass quiz data to session for later phases
-		handler.sessions.Put(req.Context(), "quiz", quiz)
+		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Execute HTML-templates with data
 		if err := Templates["quiz_phase1_review"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			TopicID:     topicID,
 			TopicName:   quiz.Topic.Name,
@@ -267,7 +267,7 @@ func (handler *QuizHandler) Phase1Review() http.HandlerFunc {
 // It prepares the questions to be used in Phase2 and updates the quiz data for
 // future validation. This method allows user to refresh Phase2, without quiz
 // data becoming invalid or questions changing.
-func (handler *QuizHandler) Phase2Prepare() http.HandlerFunc {
+func (h *QuizHandler) Phase2Prepare() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -275,7 +275,7 @@ func (handler *QuizHandler) Phase2Prepare() http.HandlerFunc {
 		topicID := chi.URLParam(req, "topicID")
 
 		// Retrieve quiz data from session
-		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
+		quiz := h.sessions.Get(req.Context(), "quiz").(QuizData)
 
 		// Update quiz data and add questions for phase 2
 		quiz.Phase = 1
@@ -286,7 +286,7 @@ func (handler *QuizHandler) Phase2Prepare() http.HandlerFunc {
 		quiz.Questions = createPhase2Questions(quiz.Topic.Events)
 
 		// Pass quiz data to session
-		handler.sessions.Put(req.Context(), "quiz", quiz)
+		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Redirect to phase 2 of quiz
 		http.Redirect(res, req, "topics/"+topicID+"/quiz/2", http.StatusFound)
@@ -297,7 +297,7 @@ func (handler *QuizHandler) Phase2Prepare() http.HandlerFunc {
 //
 // It consists of a form with 4 questions, where the user has to guess the
 // exact year of a given event.
-func (handler *QuizHandler) Phase2() http.HandlerFunc {
+func (h *QuizHandler) Phase2() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -323,14 +323,14 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 		user := req.Context().Value("user")
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
+			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen.")
 			http.Redirect(res, req, "topics/"+topicIDstr, http.StatusFound)
 			return
 		}
 
 		// Retrieve quiz data from session
-		quizInf := handler.sessions.Get(req.Context(), "quiz")
+		quizInf := h.sessions.Get(req.Context(), "quiz")
 
 		// Validate the token of the quiz data
 		// Pass in quiz data as interface instead of struct, because before
@@ -340,18 +340,18 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 		// Usually an error only occurs when user manually typed in a URL
 		// without starting at phase 1 or after the time stamp expired
 		if msg != "" {
-			handler.sessions.Put(req.Context(), "flash_error",
+			h.sessions.Put(req.Context(), "flash_error",
 				"Ein Fehler ist aufgetreten in Phase 2 des Quizzes. "+msg)
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
 
 		// Pass quiz data to session
-		handler.sessions.Put(req.Context(), "quiz", quiz)
+		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Execute HTML-templates with data
 		if err := Templates["quiz_phase2"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			TopicID:     topicID,
 			TopicName:   quiz.Topic.Name,
@@ -366,7 +366,7 @@ func (handler *QuizHandler) Phase2() http.HandlerFunc {
 // Phase2Submit is a POST-method that is accessible to any user after Phase2.
 //
 // It calculates the points and redirects to Phase2Review.
-func (handler *QuizHandler) Phase2Submit() http.HandlerFunc {
+func (h *QuizHandler) Phase2Submit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -374,7 +374,7 @@ func (handler *QuizHandler) Phase2Submit() http.HandlerFunc {
 		topicIDstr := chi.URLParam(req, "topicID")
 
 		// Retrieve quiz data from session
-		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
+		quiz := h.sessions.Get(req.Context(), "quiz").(QuizData)
 		questions := quiz.Questions.([]phase2Question)
 
 		// Update quiz data
@@ -410,7 +410,7 @@ func (handler *QuizHandler) Phase2Submit() http.HandlerFunc {
 		quiz.Questions = questions
 
 		// Pass quiz data to session again
-		handler.sessions.Put(req.Context(), "quiz", quiz)
+		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Redirect to review of phase 2
 		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/2/review", http.StatusFound)
@@ -420,7 +420,7 @@ func (handler *QuizHandler) Phase2Submit() http.HandlerFunc {
 // Phase2Review is a GET-method that is accessible to any user after Phase2.
 //
 // It displays a correction of the questions.
-func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
+func (h *QuizHandler) Phase2Review() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -446,14 +446,14 @@ func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 		user := req.Context().Value("user")
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
+			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen.")
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
 
 		// Retrieve quiz data from session
-		quizInf := handler.sessions.Get(req.Context(), "quiz")
+		quizInf := h.sessions.Get(req.Context(), "quiz")
 
 		// Validate the token of the quiz data
 		// Pass in quiz data as interface instead of struct, because before
@@ -463,18 +463,18 @@ func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 		// Usually an error only occurs when user manually typed in a URL
 		// without starting at phase 1 or after the time stamp expired
 		if msg != "" {
-			handler.sessions.Put(req.Context(), "flash_error",
+			h.sessions.Put(req.Context(), "flash_error",
 				"Ein Fehler ist aufgetreten in Phase 2 des Quizzes. "+msg)
 			http.Redirect(res, req, "/topics", http.StatusFound)
 			return
 		}
 
 		// Pass quiz data to session for later phases
-		handler.sessions.Put(req.Context(), "quiz", quiz)
+		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Execute HTML-templates with data
 		if err := Templates["quiz_phase2_review"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			TopicID:     topicID,
 			TopicName:   quiz.Topic.Name,
@@ -492,7 +492,7 @@ func (handler *QuizHandler) Phase2Review() http.HandlerFunc {
 // It prepares the questions to be used in Phase3 and updates the quiz data for
 // future validation. This method allows user to refresh Phase3, without quiz
 // data becoming invalid or questions changing.
-func (handler *QuizHandler) Phase3Prepare() http.HandlerFunc {
+func (h *QuizHandler) Phase3Prepare() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -500,7 +500,7 @@ func (handler *QuizHandler) Phase3Prepare() http.HandlerFunc {
 		topicID := chi.URLParam(req, "topicID")
 
 		// Retrieve quiz data from session
-		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
+		quiz := h.sessions.Get(req.Context(), "quiz").(QuizData)
 
 		// Update quiz data and add questions for phase 3
 		quiz.Phase = 2
@@ -513,7 +513,7 @@ func (handler *QuizHandler) Phase3Prepare() http.HandlerFunc {
 		quiz.Questions = createPhase3Questions(quiz.Topic.Events)
 
 		// Pass quiz data to session
-		handler.sessions.Put(req.Context(), "quiz", quiz)
+		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Redirect to phase 2 of quiz
 		http.Redirect(res, req, "topics/"+topicID+"/quiz/3", http.StatusFound)
@@ -524,7 +524,7 @@ func (handler *QuizHandler) Phase3Prepare() http.HandlerFunc {
 //
 // It consists of a form with all events of the topic, where the user has to
 // put the events in chronological order.
-func (handler *QuizHandler) Phase3() http.HandlerFunc {
+func (h *QuizHandler) Phase3() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -549,14 +549,14 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 		user := req.Context().Value("user")
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
+			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen.")
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
 
 		// Retrieve quiz data from session
-		quizInf := handler.sessions.Get(req.Context(), "quiz")
+		quizInf := h.sessions.Get(req.Context(), "quiz")
 
 		// Validate the token of the quiz data
 		// Pass in quiz data as interface instead of struct, because before
@@ -566,18 +566,18 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 		// Usually an error only occurs when user manually typed in a URL
 		// without starting at phase 1 or after the time stamp expired
 		if msg != "" {
-			handler.sessions.Put(req.Context(), "flash_error",
+			h.sessions.Put(req.Context(), "flash_error",
 				"Ein Fehler ist aufgetreten in Phase 3 des Quizzes. "+msg)
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
 
 		// Pass quiz data to session
-		handler.sessions.Put(req.Context(), "quiz", quiz)
+		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Execute HTML-templates with data
 		if err := Templates["quiz_phase3"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			TopicID:     topicID,
 			TopicName:   quiz.Topic.Name,
@@ -593,7 +593,7 @@ func (handler *QuizHandler) Phase3() http.HandlerFunc {
 //
 // It calculates the points and redirects to Phase3Review. It also creates a
 // new score object which is stored in the database.
-func (handler *QuizHandler) Phase3Submit() http.HandlerFunc {
+func (h *QuizHandler) Phase3Submit() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
@@ -601,7 +601,7 @@ func (handler *QuizHandler) Phase3Submit() http.HandlerFunc {
 		topicID := chi.URLParam(req, "topicID")
 
 		// Retrieve quiz data from session
-		quiz := handler.sessions.Get(req.Context(), "quiz").(QuizData)
+		quiz := h.sessions.Get(req.Context(), "quiz").(QuizData)
 		questions := quiz.Questions.([]phase3Question)
 
 		// Update quiz data
@@ -642,7 +642,7 @@ func (handler *QuizHandler) Phase3Submit() http.HandlerFunc {
 		user := req.Context().Value("user").(jahreszahlen.User)
 
 		// Add score of quiz to database
-		if err := handler.store.CreateScore(&jahreszahlen.Score{
+		if err := h.store.CreateScore(&jahreszahlen.Score{
 			TopicID: quiz.Topic.TopicID,
 			UserID:  user.UserID,
 			Points:  quiz.Points,
@@ -659,7 +659,7 @@ func (handler *QuizHandler) Phase3Submit() http.HandlerFunc {
 // Phase3Review is a GET-method that is accessible to any user after Phase3.
 //
 // It displays a correction of the questions.
-func (handler *QuizHandler) Phase3Review() http.HandlerFunc {
+func (h *QuizHandler) Phase3Review() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -685,14 +685,14 @@ func (handler *QuizHandler) Phase3Review() http.HandlerFunc {
 		user := req.Context().Value("user")
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
+			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen.")
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
 
 		// Retrieve quiz data from session
-		quizInf := handler.sessions.Get(req.Context(), "quiz")
+		quizInf := h.sessions.Get(req.Context(), "quiz")
 
 		// Validate the token of the quiz data
 		// Pass in quiz data as interface instead of struct, because before
@@ -702,18 +702,18 @@ func (handler *QuizHandler) Phase3Review() http.HandlerFunc {
 		// Usually an error only occurs when user manually typed in a URL
 		// without starting at phase 1 or after the time stamp expired
 		if msg != "" {
-			handler.sessions.Put(req.Context(), "flash_error",
+			h.sessions.Put(req.Context(), "flash_error",
 				"Ein Fehler ist aufgetreten in Phase 3 des Quizzes. "+msg)
 			http.Redirect(res, req, "/topics", http.StatusFound)
 			return
 		}
 
 		// Pass quiz data to session for summary
-		handler.sessions.Put(req.Context(), "quiz", quiz)
+		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Execute HTML-templates with data
 		if err := Templates["quiz_phase3_review"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Questions:   quiz.Questions.([]phase3Question),
 		}); err != nil {
@@ -726,7 +726,7 @@ func (handler *QuizHandler) Phase3Review() http.HandlerFunc {
 // Summary is a GET-method that is accessible to any user after Phase3Review.
 //
 // It summarizes the quiz completed.
-func (handler *QuizHandler) Summary() http.HandlerFunc {
+func (h *QuizHandler) Summary() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -749,7 +749,7 @@ func (handler *QuizHandler) Summary() http.HandlerFunc {
 		}
 
 		// Retrieve quiz data from session
-		quizInf := handler.sessions.Get(req.Context(), "quiz")
+		quizInf := h.sessions.Get(req.Context(), "quiz")
 
 		// Validate the token of the quiz data
 		// Pass in quiz data as interface instead of struct, because before
@@ -759,14 +759,14 @@ func (handler *QuizHandler) Summary() http.HandlerFunc {
 		// Usually an error only occurs when user manually typed in a URL
 		// without starting at phase 1 or after the time stamp expired
 		if msg != "" {
-			handler.sessions.Put(req.Context(), "flash_error",
+			h.sessions.Put(req.Context(), "flash_error",
 				"Ein Fehler ist aufgetreten in Phase 1 des Quizzes. "+msg)
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
 
 		// Get average score for this topic from database
-		scores, err := handler.store.GetScoresByTopic(topicID)
+		scores, err := h.store.GetScoresByTopic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -783,7 +783,7 @@ func (handler *QuizHandler) Summary() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := Templates["quiz_summary"].Execute(res, data{
-			SessionData:       GetSessionData(handler.sessions, req.Context()),
+			SessionData:       GetSessionData(h.sessions, req.Context()),
 			Quiz:              quiz,
 			QuestionsCount:    p1Questions + p2Questions + len(quiz.Topic.Events),
 			PotentialPoints:   p1Questions*p1Points + p2Questions*p2Points + len(quiz.Topic.Events)*p3Points,

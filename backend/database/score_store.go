@@ -12,13 +12,13 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
 
-// ScoreStore is the database access object
+// ScoreStore is the database access object.
 type ScoreStore struct {
 	*sqlx.DB
 }
 
 // GetScores gets all scores, sorted by points descending.
-func (store ScoreStore) GetScores() ([]jahreszahlen.Score, error) {
+func (store *ScoreStore) GetScores() ([]jahreszahlen.Score, error) {
 	var scores []jahreszahlen.Score
 
 	// Execute prepared statement
@@ -40,7 +40,7 @@ func (store ScoreStore) GetScores() ([]jahreszahlen.Score, error) {
 
 // GetScoresByTopic gets scores of a certain topic, sorted by points
 // descending.
-func (store ScoreStore) GetScoresByTopic(topicID int) ([]jahreszahlen.Score, error) {
+func (store *ScoreStore) GetScoresByTopic(topicID int) ([]jahreszahlen.Score, error) {
 	var scores []jahreszahlen.Score
 
 	// Execute prepared statement
@@ -62,7 +62,7 @@ func (store ScoreStore) GetScoresByTopic(topicID int) ([]jahreszahlen.Score, err
 }
 
 // GetScoresByUser gets scores of a certain user, sorted by points descending.
-func (store ScoreStore) GetScoresByUser(userID int) ([]jahreszahlen.Score, error) {
+func (store *ScoreStore) GetScoresByUser(userID int) ([]jahreszahlen.Score, error) {
 	var scores []jahreszahlen.Score
 
 	// Execute prepared statement
@@ -85,7 +85,7 @@ func (store ScoreStore) GetScoresByUser(userID int) ([]jahreszahlen.Score, error
 
 // GetScoresByTopicAndUser gets scores of a certain topic and user, sorted by
 // points descending.
-func (store ScoreStore) GetScoresByTopicAndUser(topicID int, userID int) ([]jahreszahlen.Score, error) {
+func (store *ScoreStore) GetScoresByTopicAndUser(topicID int, userID int) ([]jahreszahlen.Score, error) {
 	var scores []jahreszahlen.Score
 
 	// Execute prepared statement
@@ -108,7 +108,7 @@ func (store ScoreStore) GetScoresByTopicAndUser(topicID int, userID int) ([]jahr
 }
 
 // CreateScore creates a new score.
-func (store ScoreStore) CreateScore(score *jahreszahlen.Score) error {
+func (store *ScoreStore) CreateScore(score *jahreszahlen.Score) error {
 
 	// Execute prepared statement
 	query := `

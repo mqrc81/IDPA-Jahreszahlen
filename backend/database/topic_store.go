@@ -11,7 +11,7 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
 
-// TopicStore is the database access object
+// TopicStore is the database access object.
 type TopicStore struct {
 	*sqlx.DB
 }

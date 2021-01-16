@@ -29,6 +29,7 @@ func NewStore(dataSourceName string) (*Store, error) {
 		&EventStore{DB: db},
 		&UserStore{DB: db},
 		&ScoreStore{DB: db},
+		&TokenStore{DB: db},
 	}, nil
 }
 
@@ -38,4 +39,5 @@ type Store struct {
 	*EventStore
 	*UserStore
 	*ScoreStore
+	*TokenStore
 }

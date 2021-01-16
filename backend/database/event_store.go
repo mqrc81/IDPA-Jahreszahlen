@@ -11,7 +11,7 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
 )
 
-// EventStore is the MySQL database access object
+// EventStore is the MySQL database access object.
 type EventStore struct {
 	*sqlx.DB
 }

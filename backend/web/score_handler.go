@@ -29,7 +29,7 @@ type ScoreHandler struct {
 //
 // The leaderboard contains of a rank, name of user, name of topic, date and
 // points of a score.
-func (handler *ScoreHandler) List() http.HandlerFunc {
+func (h *ScoreHandler) List() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -51,7 +51,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 		userInf := req.Context().Value("user")
 		if userInf == nil {
 			// If no user is logged in, then redirect back with flash message
-			handler.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
+			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Benutzer eingeloggt sein, um das Leaderboard zu betrachten.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
@@ -76,7 +76,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 		if topicID != 0 {
 			if !allUsers { // Topic and user specified in URL parameters
 				// Execute SQL statement to get scores
-				scoresByTopicAndUser, err := handler.store.GetScoresByTopicAndUser(topicID, user.UserID)
+				scoresByTopicAndUser, err := h.store.GetScoresByTopicAndUser(topicID, user.UserID)
 				if err != nil {
 					http.Error(res, err.Error(), http.StatusInternalServerError)
 					return
@@ -84,7 +84,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 				scores = scoresByTopicAndUser
 			} else { // Only topic specified in URL parameters
 				// Execute SQL statement to get scores
-				scoresByTopic, err := handler.store.GetScoresByTopic(topicID)
+				scoresByTopic, err := h.store.GetScoresByTopic(topicID)
 				if err != nil {
 					http.Error(res, err.Error(), http.StatusInternalServerError)
 					return
@@ -93,7 +93,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 			}
 		} else if !allUsers { // Only user specified in URL parameters
 			// Execute SQL statement to get scores
-			scoresByUser, err := handler.store.GetScoresByUser(user.UserID)
+			scoresByUser, err := h.store.GetScoresByUser(user.UserID)
 			if err != nil {
 				http.Error(res, err.Error(), http.StatusInternalServerError)
 				return
@@ -101,7 +101,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 			scores = scoresByUser
 		} else { // Neither topic nor user specified in URL parameters
 			// Execute SQL statement to get scores
-			scoresAll, err := handler.store.GetScores()
+			scoresAll, err := h.store.GetScores()
 			if err != nil {
 				http.Error(res, err.Error(), http.StatusInternalServerError)
 				return
@@ -122,7 +122,7 @@ func (handler *ScoreHandler) List() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := Templates["scores_list"].Execute(res, data{
-			SessionData:  GetSessionData(handler.sessions, req.Context()),
+			SessionData:  GetSessionData(h.sessions, req.Context()),
 			Leaderboard:  leaderboard,
 			Topic:        topicID,
 			User:         allUsers,

@@ -37,6 +37,7 @@ type User struct {
 	Email       string `db:"email"`
 	Password    string `db:"password"`
 	Admin       bool   `db:"admin"`
+	Verified    bool   `db:"verified"`
 	ScoresCount int    `db:"scores_count"`
 }
 
@@ -50,6 +51,14 @@ type Score struct {
 	Date      time.Time `db:"date"`
 	TopicName string    `db:"topic_name"`
 	UserName  string    `db:"user_name"`
+}
+
+// Token represents a token to be sent to the user by email in case of a
+// forgotten password.
+type Token struct {
+	TokenID string    `db:"token_id"`
+	UserID  int       `db:"user_id"`
+	Expiry  time.Time `db:"expiry"`
 }
 
 // TopicStore stores functions using topics for the database-layer.
@@ -92,10 +101,18 @@ type ScoreStore interface {
 	CreateScore(score *Score) error
 }
 
+// TokenStore stores functions using tokens for the database-layer.
+type TokenStore interface {
+	GetToken(tokenID int) (Token, error)
+	CreateToken(token *Token) error
+	DeleteTokensByUser(userID int) error
+}
+
 // Store combines TopicStore, EventStore, UserStore and ScoreStore.
 type Store interface {
 	TopicStore
 	EventStore
 	UserStore
 	ScoreStore
+	TokenStore
 }
