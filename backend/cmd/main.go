@@ -15,11 +15,6 @@ import (
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/web"
 )
 
-const (
-	Yellow = string("\033[33m")
-	Reset  = string("\033[0m")
-)
-
 // main is the initial starting point of the program, which acquires a
 // connection to the database and the server. It also obtains session
 // management and CSRF-protection.

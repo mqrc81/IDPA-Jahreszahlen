@@ -39,6 +39,7 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 		CSRF template.HTML
 
 		Leaderboard  []leaderboardRow
+		Topics       []jahreszahlen.Topic
 		Topic        int
 		User         bool
 		Page         int
@@ -122,11 +123,19 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 		// However, if len(scores)=33 => scores[30:33] (ranks 31-33)
 		leaderboard := createLeaderboardRows(scores, show, page)
 
+		// Execute SQL statement to get all topics
+		topics, err := h.store.GetTopics()
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		// Execute HTML-templates with data
 		if err := Templates["scores_list"].Execute(res, data{
 			SessionData:  GetSessionData(h.sessions, req.Context()),
 			CSRF:         csrf.TemplateField(req),
 			Leaderboard:  leaderboard,
+			Topics:       topics,
 			Topic:        topicID,
 			User:         allUsers,
 			Page:         page,
