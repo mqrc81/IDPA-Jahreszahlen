@@ -21,7 +21,7 @@
                     </a>
                 </p>
                 <p class="card-text">{{.ScoresCount}}x gespielt</p>
-                <a href="/topics/{{.TopicID}}" class="x-button">Thema anschauen</a>
+                <a href="/topics/{{.TopicID}}" class="x-button"><i class="fas fa-search"></i> Thema anschauen</a>
             </div>
         </div>
     {{end}}
@@ -30,7 +30,7 @@
 {{define "sidebar"}}
     <div class="x-card">
         <div class="card-body">
-            <h5 class="card-title">Themen</h5>
+            <h5 class="card-title">Themen <i class="far fa-list-alt"></i></h5>
             <p class="card-text">
                 Schauen Sie alle Themen an, zum Lernen ihrer Jahreszahlen.
             </p>
@@ -39,7 +39,7 @@
     </div>
     <div class="x-card">
         <div class="card-body">
-            <h5 class="card-title">Leaderboard</h5>
+            <h5 class="card-title">Leaderboard <i class="fas fa-award"></i></h5>
             <p class="card-text">
                 Schauen Sie das Leaderboard mit allen Spielresultaten an und filtern Sie nach Benutzer und Thema.
             </p>
@@ -49,7 +49,7 @@
     {{if .User.Admin}}
         <div class="x-card">
             <div class="card-body">
-                <h5 class="card-title">Alle Benutzer</h5>
+                <h5 class="card-title">Alle Benutzer <i class="fas fa-users"></i></h5>
                 <p class="card-text">
                     Sehen Sie alle Benutzer, welche sich bisher registriert haben.
                 </p>
