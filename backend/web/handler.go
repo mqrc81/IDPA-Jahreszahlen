@@ -143,6 +143,10 @@ func NewHandler(store jahreszahlen.Store, sessions *scs.SessionManager, csrfKey 
 	})
 
 	// Scores
+	handler.Route("/scores", func(router chi.Router) {
+		router.Get("/", scores.List())
+		router.Post("/", scores.Filter())
+	})
 	handler.Get("/scores", scores.List())
 
 	// Users

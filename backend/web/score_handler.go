@@ -70,11 +70,11 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 		if show == 0 {
 			show = 25
 		}
-		page, err := strconv.Atoi(req.URL.Query().Get("page"))
-		if err != nil || page < 1 {
+		page, _ := strconv.Atoi(req.URL.Query().Get("page"))
+		if page < 1 {
 			page = 1
 		}
-		allUsers := userFilter != "me"
+		allUsers := userFilter == "alle"
 
 		if topicID != 0 {
 			if !allUsers { // Topic and user specified in URL parameters
@@ -146,6 +146,29 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+// Filter is a POST-method that is accessible to any user.
+//
+// It adds the form values to the URL queries and redirects to List.
+func (h *ScoreHandler) Filter() http.HandlerFunc {
+
+	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Retrieve values from form
+		page := req.FormValue("page")
+		show := req.FormValue("show")
+		topic := req.FormValue("show")
+		user := req.FormValue("user")
+
+		// Add values to URL
+		req.URL.Query().Add("page", page)
+		req.URL.Query().Add("show", show)
+		req.URL.Query().Add("topic", topic)
+		req.URL.Query().Add("user", user)
+
+		http.Redirect(res, req, "/scores", http.StatusFound)
 	}
 }
 
