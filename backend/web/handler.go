@@ -19,6 +19,9 @@ import (
 )
 
 var (
+	// Flag to skip init function when testing
+	_testing = false
+
 	// Parsed HTML-templates to be executed in their respective HTTP-handler
 	// functions when needed
 	Templates = make(map[string]*template.Template)
@@ -43,6 +46,10 @@ var (
 // needed. This is way more efficient than parsing the HTML-templates every
 // time a request is sent.
 func init() {
+	if _testing {
+		return
+	}
+
 	path := "frontend/templates/"
 	layout := "frontend/layout.html"
 	css := "frontend/css/css.html"
