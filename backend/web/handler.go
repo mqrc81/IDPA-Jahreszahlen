@@ -169,8 +169,6 @@ func NewHandler(store jahreszahlen.Store, sessions *scs.SessionManager, csrfKey 
 		router.Post("/forgot/password", users.ForgotPasswordSubmit())
 		router.Get("/reset/password", users.ResetPassword())
 		router.Post("/reset/password", users.ResetPasswordSubmit())
-
-		router.Get("/test/email", users.TestEmail()) // TEMP
 	})
 
 	// Handler for when a non-existing URL is called

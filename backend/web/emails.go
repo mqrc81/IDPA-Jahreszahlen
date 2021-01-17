@@ -18,7 +18,7 @@ const (
 	fromAddress = "jahreszahlenapp@gmail.com"
 
 	passwordResetSubject     = "Passwort Zurücksetzen - " + fromName
-	emailVerificationSubject = "Email Verifizieren - " + fromName
+	emailVerificationSubject = "Email Bestätigen - " + fromName
 )
 
 // Email consists of data for an email to be sent out.
@@ -29,7 +29,7 @@ type Email struct {
 }
 
 // Send sends an email to a user.
-func (email Email) Send() error {
+func (email Email) Send() {
 
 	// Create sender
 	from := mail.NewEmail(fromName, fromAddress)
@@ -41,12 +41,9 @@ func (email Email) Send() error {
 	client := sendgrid.NewSendClient(os.Getenv("SG_APIKEY"))
 
 	// Send email
-	_, err := client.Send(singleEmail)
-	if err != nil {
+	if _, err := client.Send(singleEmail); err != nil {
 		log.Println(err)
 	}
-
-	return err
 }
 
 // PasswordResetEmail creates an email for resetting the user's password to be
@@ -57,9 +54,9 @@ func PasswordResetEmail(user jahreszahlen.User, token string) Email {
 	body := "Hallo " + user.Username + ",\n" +
 		"\n" +
 		"Klicken Sie auf diesen Link, um Ihr Passwort zurückzusetzen:\n" +
-		"jahreszahlen.heroku.com/users/password/reset?token=" + token
+		"localhost:3000/users/password/reset?token=" + token
 
-	// Create recipient
+	// New recipient
 	to := mail.NewEmail(user.Username, user.Email)
 
 	return Email{
@@ -77,9 +74,9 @@ func EmailVerificationEmail(user jahreszahlen.User, token string) Email {
 	body := "Hallo " + user.Username + ",\n" +
 		"\n" +
 		"Klicken Sie auf diesen Link, um Ihre Email zu bestätigen:\n" +
-		"jahreszahlen.heroku.com/users/email/verify?token=" + token
+		"localhost:3000/users/email/verify?token=" + token // TEMP
 
-	// Create recipient
+	// New recipient
 	to := mail.NewEmail(user.Username, user.Email)
 
 	return Email{

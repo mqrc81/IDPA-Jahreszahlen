@@ -9,6 +9,7 @@ import (
 	"encoding/base64"
 	"encoding/gob"
 	"html/template"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -120,18 +121,31 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 			return
 		}
 
-		// Execute SQL statement to create a user
-		if err := h.store.CreateUser(&jahreszahlen.User{
+		// New user
+		user := jahreszahlen.User{
 			Username: form.Username,
+			Email:    form.Email,
 			Password: string(password),
-		}); err != nil {
+		}
+		// Execute SQL statement to create a user
+		if err = h.store.CreateUser(&user); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Add flash message
 		h.sessions.Put(req.Context(), "flash_success",
-			"Willkommen "+form.Username+"! Ihre Registrierung war erfolgreich. Loggen Sie sich bitte ein.")
+			"Willkommen "+form.Username+"! Ihre Registrierung war erfolgreich. Loggen Sie sich bitte ein.\n"+
+				"Es wurde eine Bestätigungs-Email an "+form.Email+" versandt, um ihr Account zu validieren.")
+
+		// New token
+		token := jahreszahlen.Token{
+			TokenID: generateToken(),
+			UserID:  user.UserID,
+		}
+
+		// Send email to verify a user's email
+		EmailVerificationEmail(user, token.TokenID).Send()
 
 		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)
@@ -435,7 +449,7 @@ func (h *UserHandler) VerifyEmail() http.HandlerFunc {
 		}
 
 		// Add flash message to session
-		h.sessions.Put(req.Context(), "flash_success", "Ihre Email wurde erfolgreich verifiziert.")
+		h.sessions.Put(req.Context(), "flash_success", "Ihre Email wurde erfolgreich bestätigt.")
 
 		// Redirect to home-page
 		http.Redirect(res, req, "/", http.StatusFound)
@@ -509,29 +523,20 @@ func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 			return
 		}
 
-		// Generate secret token
-		tokenKey := make([]byte, 32)
-		_, err = rand.Read(tokenKey)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
+		// New token
+		token := jahreszahlen.Token{
+			TokenID: generateToken(),
+			UserID:  user.UserID,
 		}
-		tokenID := base64.URLEncoding.EncodeToString(tokenKey)[:43]
 
 		// Execute SQL statement to create new token
-		if err := h.store.CreateToken(&jahreszahlen.Token{
-			TokenID: tokenID,
-			UserID:  user.UserID,
-		}); err != nil {
+		if err = h.store.CreateToken(&token); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// Send email
-		if err = PasswordResetEmail(user, tokenID).Send(); err != nil {
-			http.Error(res, err.Error(), http.StatusFound)
-			return
-		}
+		// Send email to reset a user's password
+		PasswordResetEmail(user, token.TokenID).Send()
 
 		// Add flash message to session
 		h.sessions.Put(req.Context(), "form",
@@ -663,4 +668,17 @@ func (h *UserHandler) ResetPasswordSubmit() http.HandlerFunc {
 		// Redirect to login
 		http.Redirect(res, req, "/users/login", http.StatusNotFound)
 	}
+}
+
+// generateToken generates a secret key as the token ID
+func generateToken() string {
+
+	// Generate secret token
+	tokenKey := make([]byte, 32)
+	if _, err := rand.Read(tokenKey); err != nil {
+		log.Fatal(err)
+	}
+
+	// Return token as string
+	return base64.URLEncoding.EncodeToString(tokenKey)[:43]
 }
