@@ -456,6 +456,39 @@ func (h *UserHandler) VerifyEmail() http.HandlerFunc {
 	}
 }
 
+// ResendVerifyEmail is a POST-method that is accessible to any user.
+//
+// It resends a email-verification email to the user's email address.
+func (h *UserHandler) ResendVerifyEmail() http.HandlerFunc {
+
+	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Retrieve user from session
+		user := req.Context().Value("user").(jahreszahlen.User)
+
+		// New token
+		token := jahreszahlen.Token{
+			TokenID: generateToken(),
+			UserID:  user.UserID,
+		}
+
+		// Execute SQL statement to create a token
+		if err := h.store.CreateToken(&token); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Add flash message to session
+		h.sessions.Put(req.Context(), "flash_success", "Eine Bestätigungs-Email wurde an "+user.Email+"versandt.")
+
+		// Send email to verify a user's email
+		EmailVerificationEmail(user, token.TokenID).Send()
+
+		// Redirect to home-page
+		http.Redirect(res, req, "/", http.StatusFound)
+	}
+}
+
 // ForgotPassword is a GET-method that is accessible to anyone not logged in.
 //
 // It displays a form, in which the user can receive an email with a link and

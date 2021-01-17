@@ -165,6 +165,7 @@ func NewHandler(store jahreszahlen.Store, sessions *scs.SessionManager, csrfKey 
 		router.Post("/edit/password", users.EditPasswordSubmit())
 
 		router.Post("/verify/email", users.VerifyEmail())
+		router.Post("/resend/email", users.ResendVerifyEmail())
 		router.Get("/forgot/password", users.ForgotPassword())
 		router.Post("/forgot/password", users.ForgotPasswordSubmit())
 		router.Get("/reset/password", users.ResetPassword())
