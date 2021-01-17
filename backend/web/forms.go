@@ -344,7 +344,7 @@ func (errors *FormErrors) validateUsername(username string) {
 		(*errors)["Username"] = "Benutzername darf höchstens 20 Zeichen lang sein."
 	} else if !regex(username, "^[a-zA-Z0-9._]*$") {
 		(*errors)["Username"] = "Benutzername darf nur Buchstaben, Zahlen, '.' und '_' enthalten."
-	} else if !regex(username, "\\D") {
+	} else if !regex(username, "[a-zA-Z]") {
 		(*errors)["Username"] = "Benutzername muss mindestens 1 Buchstaben enthalten."
 	} else if regex(username, "^[._]") {
 		(*errors)["Username"] = "Benutzername darf nicht mit '.' oder '_' beginnen."
