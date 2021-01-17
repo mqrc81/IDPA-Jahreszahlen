@@ -381,7 +381,7 @@ func (h *QuizHandler) Phase2Submit() http.HandlerFunc {
 		quiz.Reviewed = false
 		quiz.TimeStamp = time.Now()
 
-		// Loop through the 4 input fields of phase 2
+		// Loop through the 4 input filds of phase 2
 		for num := 0; num < p2Questions; num++ {
 
 			// Retrieve user's guess from form
