@@ -528,7 +528,10 @@ func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 		}
 
 		// Send email
-		PasswordResetEmail(user, tokenID).Send()
+		if err = PasswordResetEmail(user, tokenID).Send(); err != nil {
+			http.Error(res, err.Error(), http.StatusFound)
+			return
+		}
 
 		// Add flash message to session
 		h.sessions.Put(req.Context(), "form",

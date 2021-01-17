@@ -21,56 +21,49 @@ const (
 	emailVerificationSubject = "Email Verifizieren - " + fromName
 )
 
-var (
-	client *sendgrid.Client
-	from   *mail.Email
-)
-
-// init gets initialized with the package.
-func init() {
-	client = sendgrid.NewSendClient(os.Getenv("SG_APIKEY"))
-	from = mail.NewEmail(fromName, fromAddress)
-}
-
 // Email consists of data for an email to be sent out.
 type Email struct {
-	From    *mail.Email
 	To      *mail.Email
 	Subject string
 	Body    string
 }
 
 // Send sends an email to a user.
-func (email Email) Send() {
+func (email Email) Send() error {
 
-	// Create new email instance
-	singleEmail := mail.NewSingleEmail(
-		email.From,
-		email.Subject,
-		email.To,
-		email.Body,
-		email.Body,
-	)
+	// Create sender
+	from := mail.NewEmail(fromName, fromAddress)
 
-	// Send email to user
-	if _, err := client.Send(singleEmail); err != nil {
-		log.Fatalf("error sending email to "+email.To.Name+" <"+email.To.Address+">: %v", err)
+	// Create new email
+	singleEmail := mail.NewSingleEmail(from, email.Subject, email.To, email.Body, "")
+
+	// Create new SendGrid client
+	client := sendgrid.NewSendClient(os.Getenv("SG_APIKEY"))
+
+	// Send email
+	_, err := client.Send(singleEmail)
+	if err != nil {
+		log.Println(err)
 	}
+
+	return err
 }
 
 // PasswordResetEmail creates an email for resetting the user's password to be
 // sent out to a user.
 func PasswordResetEmail(user jahreszahlen.User, token string) Email {
 
-	// Create email message
+	// Create email body
 	body := "Hallo " + user.Username + ",\n" +
 		"\n" +
 		"Klicken Sie auf diesen Link, um Ihr Passwort zurückzusetzen:\n" +
 		"jahreszahlen.heroku.com/users/password/reset?token=" + token
 
+	// Create recipient
+	to := mail.NewEmail(user.Username, user.Email)
+
 	return Email{
-		From:    from,
-		To:      mail.NewEmail(user.Username, user.Email),
+		To:      to,
 		Subject: passwordResetSubject,
 		Body:    body,
 	}
@@ -80,15 +73,17 @@ func PasswordResetEmail(user jahreszahlen.User, token string) Email {
 // to a user.
 func EmailVerificationEmail(user jahreszahlen.User, token string) Email {
 
-	// Create email message
+	// Create email body
 	body := "Hallo " + user.Username + ",\n" +
 		"\n" +
 		"Klicken Sie auf diesen Link, um Ihre Email zu bestätigen:\n" +
 		"jahreszahlen.heroku.com/users/email/verify?token=" + token
 
+	// Create recipient
+	to := mail.NewEmail(user.Username, user.Email)
+
 	return Email{
-		From:    from,
-		To:      mail.NewEmail(user.Username, user.Email),
+		To:      to,
 		Subject: emailVerificationSubject,
 		Body:    body,
 	}
