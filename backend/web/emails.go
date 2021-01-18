@@ -30,18 +30,17 @@ type Email struct {
 
 // Send sends an email to a user.
 func (email Email) Send() {
+	// Create new SendGrid client
+	client := sendgrid.NewSendClient(os.Getenv("SG_APIKEY"))
 
 	// Create sender
 	from := mail.NewEmail(fromName, fromAddress)
 
 	// Create new email
-	singleEmail := mail.NewSingleEmail(from, email.Subject, email.To, email.Body, "")
-
-	// Create new SendGrid client
-	client := sendgrid.NewSendClient(os.Getenv("SG_APIKEY"))
+	newEmail := mail.NewSingleEmail(from, email.Subject, email.To, email.Body, "")
 
 	// Send email
-	if _, err := client.Send(singleEmail); err != nil {
+	if _, err := client.Send(newEmail); err != nil {
 		log.Println(err)
 	}
 }

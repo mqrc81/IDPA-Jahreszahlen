@@ -19,6 +19,7 @@ import (
 // connection to the database and the server. It also obtains session
 // management and CSRF-protection.
 func main() {
+	port := ":3000"
 	log.Println("Starting application...")
 
 	// Access global environment variables
@@ -53,8 +54,8 @@ func main() {
 
 	// Listen on the TCP network address and call Serve with handler to handle
 	// requests on incoming connections
-	log.Println("Listening on port 3000...")
-	if err = http.ListenAndServe(":3000", handler); err != nil {
+	log.Println("Listening on port " + port + "...")
+	if err = http.ListenAndServe(port, handler); err != nil {
 		log.Fatal(err)
 	}
 }

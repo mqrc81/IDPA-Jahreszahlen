@@ -1,3 +1,5 @@
+// Collection of tests for all form validations.
+
 package web
 
 import (
@@ -14,90 +16,97 @@ var _ = func() interface{} {
 	return nil
 }()
 
-// TestValidateTopicForm tests the validation of a TopicForm
+// TestValidateTopicForm tests the validation of a TopicForm.
 func TestValidateTopicForm(t *testing.T) {
+
+	// Mock input form of user
+	type input struct {
+		name        string
+		startYear   int
+		endYear     int
+		description string
+	}
 
 	// Declare test cases
 	tests := []struct {
 		name string
-		args TopicForm
+		form input
 		want bool
 	}{
 		{
 			name: "1. Valid",
-			args: TopicForm{
-				Name:        "Topic 1",
-				StartYear:   1800,
-				EndYear:     1900,
-				Description: "",
+			form: input{
+				name:        "Topic 1",
+				startYear:   1800,
+				endYear:     1900,
+				description: "",
 			},
 			want: true,
 		},
 		{
-			name: "2. Name empty",
-			args: TopicForm{
-				Name:        "",
-				StartYear:   1800,
-				EndYear:     1900,
-				Description: "",
+			name: "2. Name missing",
+			form: input{
+				startYear:   1800,
+				endYear:     1900,
+				description: "",
 			},
 			want: false,
 		},
 		{
 			name: "3. Name too long",
-			args: TopicForm{
-				Name:        "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.",
-				StartYear:   1800,
-				EndYear:     1900,
-				Description: "",
+			form: input{
+				name:        "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.",
+				startYear:   1800,
+				endYear:     1900,
+				description: "",
 			},
 			want: false,
 		},
 		{
 			name: "4. Start-year missing",
-			args: TopicForm{
-				Name:        "Topic 1",
-				EndYear:     1900,
-				Description: "",
+			form: input{
+				name:        "Topic 1",
+				endYear:     1900,
+				description: "",
 			},
 			want: false,
 		},
 		{
 			name: "5. End-year missing",
-			args: TopicForm{
-				Name:        "Topic 1",
-				StartYear:   1800,
-				Description: "",
+			form: input{
+				name:        "Topic 1",
+				startYear:   1800,
+				description: "",
 			},
 			want: false,
 		},
 		{
 			name: "6. Start-year after End-year",
-			args: TopicForm{
-				Name:        "Topic 1",
-				StartYear:   1900,
-				EndYear:     1800,
-				Description: "",
+			form: input{
+				name:        "Topic 1",
+				startYear:   1900,
+				endYear:     1800,
+				description: "",
 			},
 			want: false,
 		},
 		{
 			name: "7. End-year in the future",
-			args: TopicForm{
-				Name:        "Topic 1",
-				StartYear:   1900,
-				EndYear:     time.Now().Year() + 1,
-				Description: "",
+			form: input{
+				name:        "Topic 1",
+				startYear:   1900,
+				endYear:     time.Now().Year() + 1,
+				description: "",
 			},
 			want: false,
 		},
 		{
 			name: "8. Description too long",
-			args: TopicForm{
-				Name:      "Topic 1",
-				StartYear: 1800,
-				EndYear:   1900,
-				Description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget " +
+			form: input{
+				name:      "Topic 1",
+				startYear: 1800,
+				endYear:   1900,
+				description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget " +
 					"dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur " +
 					"ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla " +
 					"consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. " +
@@ -108,15 +117,15 @@ func TestValidateTopicForm(t *testing.T) {
 		},
 	}
 
-	// Run test cases
+	// Run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			form := &TopicForm{
-				Name:        test.args.Name,
-				StartYear:   test.args.StartYear,
-				EndYear:     test.args.EndYear,
-				Description: test.args.Description,
-				Errors:      test.args.Errors,
+				Name:        test.form.name,
+				StartYear:   test.form.startYear,
+				EndYear:     test.form.endYear,
+				Description: test.form.description,
+				Errors:      FormErrors{},
 			}
 			if got := form.Validate(); got != test.want {
 				t.Errorf("Validate() = %v, want %v", got, test.want)
@@ -125,132 +134,139 @@ func TestValidateTopicForm(t *testing.T) {
 	}
 }
 
-// TestValidateEventForm tests the validation of an event form
+// TestValidateEventForm tests the validation of an event form.
 func TestValidateEventForm(t *testing.T) {
-	future := time.Now().Add(time.Hour * 10000)
+
+	// Mock input form of user
+	type input struct {
+		name       string
+		yearOrDate string
+	}
+
+	future := time.Now().AddDate(1, 1, 1)
 
 	// Declare test cases
 	tests := []struct {
 		name string
-		args EventForm
+		form input
 		want bool
 	}{
 		{
 			name: "1. Valid (dd.mm.yyy)",
-			args: EventForm{
-				Name:       "Event 1",
-				YearOrDate: "25.10.1800",
+			form: input{
+				name:       "Event 1",
+				yearOrDate: "25.10.1800",
 			},
 			want: true,
 		},
 		{
 			name: "2. Valid (mm.yyyy)",
-			args: EventForm{
-				Name:       "Event 1",
-				YearOrDate: "10.1800",
+			form: input{
+				name:       "Event 1",
+				yearOrDate: "10.1800",
 			},
 			want: true,
 		},
 		{
 			name: "3. Valid (yyyy)",
-			args: EventForm{
-				Name:       "Event 1",
-				YearOrDate: "1800",
+			form: input{
+				name:       "Event 1",
+				yearOrDate: "1800",
 			},
 			want: true,
 		},
 		{
 			name: "4. Date invalid (d.m.yyyy)",
-			args: EventForm{
-				Name:       "Event 1",
-				YearOrDate: "5.1.1800",
+			form: input{
+				name:       "Event 1",
+				yearOrDate: "5.1.1800",
 			},
 			want: false,
 		},
 		{
 			name: "5. Date invalid 'dd.mm.yy'",
-			args: EventForm{
-				Name:       "Event 1",
-				YearOrDate: "25.10.50",
+			form: input{
+				name:       "Event 1",
+				yearOrDate: "25.10.50",
 			},
 			want: false,
 		},
 		{
 			name: "6. Date format incorrect 'dd-mm-yyy'",
-			args: EventForm{
-				Name:       "Event 1",
-				YearOrDate: "25-10-1800",
+			form: input{
+				name:       "Event 1",
+				yearOrDate: "25-10-1800",
 			},
 			want: false,
 		},
 		{
 			name: "7. Date invalid 'dd.mm'",
-			args: EventForm{
-				Name:       "Event 1",
-				YearOrDate: "25.10",
+			form: input{
+				name:       "Event 1",
+				yearOrDate: "25.10",
 			},
 			want: false,
 		},
 		{
 			name: "8. Name missing",
-			args: EventForm{
-				YearOrDate: "",
+			form: input{
+				yearOrDate: "",
 			},
 			want: false,
 		},
 		{
 			name: "9. Date missing",
-			args: EventForm{
-				Name: "Event 1",
+			form: input{
+				name: "Event 1",
 			},
 			want: false,
 		},
 		{
 			name: "10. Name too long",
-			args: EventForm{
-				Name: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. " +
+			form: input{
+				name: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. " +
 					"Aenean massa. Cum sociis.",
-				YearOrDate: "25.10.1800",
+				yearOrDate: "25.10.1800",
 			},
 			want: false,
 		},
 		{
 			name: "11. Date in the future (dd.mm.yyyy)",
-			args: EventForm{
-				Name:       "Event 1",
-				YearOrDate: future.Format("02.01.2006"),
+			form: input{
+				name:       "Event 1",
+				yearOrDate: future.Format("02.01.2006"),
 			},
 			want: false,
 		},
 		{
 			name: "12. Date in the future (mm.yyyy)",
-			args: EventForm{
-				Name:       "Event 1",
-				YearOrDate: future.Format("01.2006"),
+			form: input{
+				name:       "Event 1",
+				yearOrDate: future.Format("01.2006"),
 			},
 			want: false,
 		},
 		{
 			name: "13. Date in the future (yyyy)",
-			args: EventForm{
-				Name:       "Event 1",
-				YearOrDate: future.Format("2006"),
+			form: input{
+				name:       "Event 1",
+				yearOrDate: future.Format("2006"),
 			},
 			want: false,
 		},
 		{
 			name: "14. Day out of bounds",
-			args: EventForm{
-				Name:       "Event 1",
-				YearOrDate: "32.10.1800",
+			form: input{
+				name:       "Event 1",
+				yearOrDate: "32.10.1800",
 			},
 			want: false,
 		},
 		{
 			name: "15. Month out of bounds",
-			args: EventForm{
-				Name:       "Event 1",
-				YearOrDate: "25.13.1800",
+			form: input{
+				name:       "Event 1",
+				yearOrDate: "25.13.1800",
 			},
 			want: false,
 		},
@@ -260,11 +276,11 @@ func TestValidateEventForm(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			form := &EventForm{
-				Name:       test.args.Name,
-				Year:       test.args.Year,
-				Date:       test.args.Date,
-				YearOrDate: test.args.YearOrDate,
-				Errors:     test.args.Errors,
+				Name:       test.form.name,
+				Year:       0,
+				Date:       time.Time{},
+				YearOrDate: test.form.yearOrDate,
+				Errors:     FormErrors{},
 			}
 			if got := form.Validate(); got != test.want {
 				t.Errorf("Validate() = %v, want %v", got, test.want)
@@ -273,78 +289,88 @@ func TestValidateEventForm(t *testing.T) {
 	}
 }
 
-// TestValidateRegisterForm tests the validation of a RegisterForm
+// TestValidateRegisterForm tests the validation of a RegisterForm.
 func TestValidateRegisterForm(t *testing.T) {
+
+	// Mock input form of user and result of database look-up
+	type input struct {
+		username string
+		email    string
+		password string
+
+		usernameTaken bool
+		emailTaken    bool
+	}
 
 	// Declare test cases
 	tests := []struct {
 		name string
-		args RegisterForm
+		form input
 		want bool
 	}{
 		{
 			name: "1. Valid",
-			args: RegisterForm{
-				Username:      "user1",
-				Email:         "test@mail.com",
-				Password:      "Passw0rd!",
-				UsernameTaken: false,
-				EmailTaken:    false,
+			form: input{
+				username:      "user1",
+				email:         "test@mail.com",
+				password:      "Passw0rd!",
+				usernameTaken: false,
+				emailTaken:    false,
 			},
 			want: true,
 		},
 		{
 			name: "2. Username invalid",
-			args: RegisterForm{
-				Username:      ".user#name_",
-				Email:         "test@mail.com",
-				Password:      "Passw0rd!",
-				UsernameTaken: false,
-				EmailTaken:    false,
+			form: input{
+				username:      ".user#name_",
+				email:         "test@mail.com",
+				password:      "Passw0rd!",
+				usernameTaken: false,
+				emailTaken:    false,
 			},
 			want: false,
 		},
 		{
 			name: "3. email invalid",
-			args: RegisterForm{
-				Username:      "user1",
-				Email:         "test@.com",
-				Password:      "Passw0rd!",
-				UsernameTaken: false,
-				EmailTaken:    false,
+			form: input{
+				username:      "user1",
+				email:         "test@.com",
+				password:      "Passw0rd!",
+				usernameTaken: false,
+				emailTaken:    false,
 			},
 			want: false,
 		},
 		{
 			name: "4. Password invalid",
-			args: RegisterForm{
-				Username:      "user1",
-				Email:         "test@mail.com",
-				Password:      "Pwd",
-				UsernameTaken: false,
-				EmailTaken:    false,
+			form: input{
+				username:      "user1",
+				email:         "test@mail.com",
+				password:      "Pwd",
+				usernameTaken: false,
+				emailTaken:    false,
 			},
 			want: false,
 		},
 		{
 			name: "5. Username taken",
-			args: RegisterForm{
-				Username:      "user1",
-				Email:         "test@mail.com",
-				Password:      "Passw0rd!",
-				UsernameTaken: true,
-				EmailTaken:    false,
+			form: input{
+				username:      "user1",
+				email:         "test@mail.com",
+				password:      "Passw0rd!",
+				usernameTaken: true,
+				emailTaken:    false,
 			},
 			want: false,
 		},
 		{
 			name: "6. Email taken",
-			args: RegisterForm{
-				Username:      "user1",
-				Email:         "test@mail.com",
-				Password:      "Passw0rd!",
-				UsernameTaken: false,
-				EmailTaken:    true,
+			form: input{
+				username:      "user1",
+				email:         "test@mail.com",
+				password:      "Passw0rd!",
+				usernameTaken: false,
+				emailTaken:    true,
 			},
 			want: false,
 		},
@@ -354,12 +380,12 @@ func TestValidateRegisterForm(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			form := &RegisterForm{
-				Username:      test.args.Username,
-				Email:         test.args.Email,
-				Password:      test.args.Password,
-				UsernameTaken: test.args.UsernameTaken,
-				EmailTaken:    test.args.EmailTaken,
-				Errors:        test.args.Errors,
+				Username:      test.form.username,
+				Email:         test.form.email,
+				Password:      test.form.password,
+				UsernameTaken: test.form.usernameTaken,
+				EmailTaken:    test.form.emailTaken,
+				Errors:        FormErrors{},
 			}
 			if got := form.Validate(); got != test.want {
 				t.Errorf("Validate() = %v, want %v", got, test.want)
@@ -368,52 +394,61 @@ func TestValidateRegisterForm(t *testing.T) {
 	}
 }
 
-// TestValidateLoginForm tests the validation of a LoginForm
+// TestValidateLoginForm tests the validation of a LoginForm.
 func TestValidateLoginForm(t *testing.T) {
+
+	// Mock input form of user and result of database look-up
+	type input struct {
+		usernameOrEmail string
+		password        string
+
+		incorrectUsernameOrEmail bool
+		incorrectPassword        bool
+	}
 
 	// Declare test cases
 	tests := []struct {
 		name string
-		args LoginForm
+		form input
 		want bool
 	}{
 		{
 			name: "1. Valid (username)",
-			args: LoginForm{
-				UsernameOrEmail:          "user1",
-				Password:                 "Passw0rd!",
-				IncorrectUsernameOrEmail: false,
-				IncorrectPassword:        false,
+			form: input{
+				usernameOrEmail:          "user1",
+				password:                 "Passw0rd!",
+				incorrectUsernameOrEmail: false,
+				incorrectPassword:        false,
 			},
 			want: true,
 		},
 		{
 			name: "2. Valid (email)",
-			args: LoginForm{
-				UsernameOrEmail:          "test@mail.com",
-				Password:                 "Passw0rd!",
-				IncorrectUsernameOrEmail: false,
-				IncorrectPassword:        false,
+			form: input{
+				usernameOrEmail:          "test@mail.com",
+				password:                 "Passw0rd!",
+				incorrectUsernameOrEmail: false,
+				incorrectPassword:        false,
 			},
 			want: true,
 		},
 		{
 			name: "3. Username or email incorrect",
-			args: LoginForm{
-				UsernameOrEmail:          "user1",
-				Password:                 "Passw0rd!",
-				IncorrectUsernameOrEmail: true,
-				IncorrectPassword:        false,
+			form: input{
+				usernameOrEmail:          "user1",
+				password:                 "Passw0rd!",
+				incorrectUsernameOrEmail: true,
+				incorrectPassword:        false,
 			},
 			want: false,
 		},
 		{
 			name: "4. Password incorrect",
-			args: LoginForm{
-				UsernameOrEmail:          "user1",
-				Password:                 "Passw0rd!",
-				IncorrectUsernameOrEmail: false,
-				IncorrectPassword:        true,
+			form: input{
+				usernameOrEmail:          "user1",
+				password:                 "Passw0rd!",
+				incorrectUsernameOrEmail: false,
+				incorrectPassword:        true,
 			},
 			want: false,
 		},
@@ -423,11 +458,11 @@ func TestValidateLoginForm(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			form := &LoginForm{
-				UsernameOrEmail:          test.args.UsernameOrEmail,
-				Password:                 test.args.Password,
-				IncorrectUsernameOrEmail: test.args.IncorrectUsernameOrEmail,
-				IncorrectPassword:        test.args.IncorrectPassword,
-				Errors:                   test.args.Errors,
+				UsernameOrEmail:          test.form.usernameOrEmail,
+				Password:                 test.form.password,
+				IncorrectUsernameOrEmail: test.form.incorrectUsernameOrEmail,
+				IncorrectPassword:        test.form.incorrectPassword,
+				Errors:                   FormErrors{},
 			}
 			if got := form.Validate(); got != test.want {
 				t.Errorf("Validate() = %v, want %v", got, test.want)
@@ -436,70 +471,79 @@ func TestValidateLoginForm(t *testing.T) {
 	}
 }
 
-// TestValidateEditUsernameForm tests the validation of an EditUsernameForm
+// TestValidateEditUsernameForm tests the validation of an EditUsernameForm.
 func TestValidateEditUsernameForm(t *testing.T) {
+
+	// Mock input form of user and result of database look-up
+	type input struct {
+		newUsername string
+		password    string
+
+		usernameTaken     bool
+		incorrectPassword bool
+	}
 
 	// Declare test cases
 	tests := []struct {
 		name string
-		args EditUsernameForm
+		form input
 		want bool
 	}{
 		{
 			name: "1. Valid",
-			args: EditUsernameForm{
-				NewUsername:       "user1",
-				Password:          "Passw0rd!",
-				UsernameTaken:     false,
-				IncorrectPassword: false,
+			form: input{
+				newUsername:       "user1",
+				password:          "Passw0rd!",
+				usernameTaken:     false,
+				incorrectPassword: false,
 			},
 			want: true,
 		},
 		{
 			name: "2. New username missing",
-			args: EditUsernameForm{
-				Password:          "Passw0rd!",
-				UsernameTaken:     false,
-				IncorrectPassword: false,
+			form: input{
+				password:          "Passw0rd!",
+				usernameTaken:     false,
+				incorrectPassword: false,
 			},
 			want: false,
 		},
 		{
 			name: "3. Password missing",
-			args: EditUsernameForm{
-				NewUsername:       "user1",
-				UsernameTaken:     false,
-				IncorrectPassword: false,
+			form: input{
+				newUsername:       "user1",
+				usernameTaken:     false,
+				incorrectPassword: false,
 			},
 			want: false,
 		},
 		{
 			name: "4. New username invalid",
-			args: EditUsernameForm{
-				NewUsername:       ".user#name_",
-				Password:          "Passw0rd!",
-				UsernameTaken:     false,
-				IncorrectPassword: false,
+			form: input{
+				newUsername:       ".user#name_",
+				password:          "Passw0rd!",
+				usernameTaken:     false,
+				incorrectPassword: false,
 			},
 			want: false,
 		},
 		{
 			name: "5. Username taken",
-			args: EditUsernameForm{
-				NewUsername:       "user1",
-				Password:          "Passw0rd!",
-				UsernameTaken:     true,
-				IncorrectPassword: false,
+			form: input{
+				newUsername:       "user1",
+				password:          "Passw0rd!",
+				usernameTaken:     true,
+				incorrectPassword: false,
 			},
 			want: false,
 		},
 		{
 			name: "6. Password incorrect",
-			args: EditUsernameForm{
-				NewUsername:       "user1",
-				Password:          "Passw0rd!",
-				UsernameTaken:     false,
-				IncorrectPassword: true,
+			form: input{
+				newUsername:       "user1",
+				password:          "Passw0rd!",
+				usernameTaken:     false,
+				incorrectPassword: true,
 			},
 			want: false,
 		},
@@ -509,11 +553,11 @@ func TestValidateEditUsernameForm(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			form := &EditUsernameForm{
-				NewUsername:       test.args.NewUsername,
-				Password:          test.args.Password,
-				UsernameTaken:     test.args.UsernameTaken,
-				IncorrectPassword: test.args.IncorrectPassword,
-				Errors:            test.args.Errors,
+				NewUsername:       test.form.newUsername,
+				Password:          test.form.password,
+				UsernameTaken:     test.form.usernameTaken,
+				IncorrectPassword: test.form.incorrectPassword,
+				Errors:            FormErrors{},
 			}
 			if got := form.Validate(); got != test.want {
 				t.Errorf("Validate() = %v, want %v", got, test.want)
@@ -522,70 +566,79 @@ func TestValidateEditUsernameForm(t *testing.T) {
 	}
 }
 
-// TestValidateEditEmailForm tests the validation of an EditEmailForm
+// TestValidateEditEmailForm tests the validation of an EditEmailForm.
 func TestValidateEditEmailForm(t *testing.T) {
 
-	// Declate test cases
+	// Mock input form of user and result of database look-up
+	type input struct {
+		newEmail string
+		password string
+
+		emailTaken        bool
+		incorrectPassword bool
+	}
+
+	// Declare test cases
 	tests := []struct {
 		name string
-		args EditEmailForm
+		form input
 		want bool
 	}{
 		{
 			name: "1. Valid",
-			args: EditEmailForm{
-				NewEmail:          "test@mail.com",
-				Password:          "Passw0rd!",
-				EmailTaken:        false,
-				IncorrectPassword: false,
+			form: input{
+				newEmail:          "test@mail.com",
+				password:          "Passw0rd!",
+				emailTaken:        false,
+				incorrectPassword: false,
 			},
 			want: true,
 		},
 		{
 			name: "2. New email missing",
-			args: EditEmailForm{
-				Password:          "Passw0rd!",
-				EmailTaken:        false,
-				IncorrectPassword: false,
+			form: input{
+				password:          "Passw0rd!",
+				emailTaken:        false,
+				incorrectPassword: false,
 			},
 			want: false,
 		},
 		{
 			name: "3. Password missing",
-			args: EditEmailForm{
-				NewEmail:          "test@mail.com",
-				EmailTaken:        false,
-				IncorrectPassword: false,
+			form: input{
+				newEmail:          "test@mail.com",
+				emailTaken:        false,
+				incorrectPassword: false,
 			},
 			want: false,
 		},
 		{
 			name: "4. New email invalid",
-			args: EditEmailForm{
-				NewEmail:          "test@.com",
-				Password:          "Passw0rd!",
-				EmailTaken:        false,
-				IncorrectPassword: false,
+			form: input{
+				newEmail:          "test@.com",
+				password:          "Passw0rd!",
+				emailTaken:        false,
+				incorrectPassword: false,
 			},
 			want: false,
 		},
 		{
 			name: "5. Email taken",
-			args: EditEmailForm{
-				NewEmail:          "test@mail.com",
-				Password:          "Passw0rd!",
-				EmailTaken:        true,
-				IncorrectPassword: false,
+			form: input{
+				newEmail:          "test@mail.com",
+				password:          "Passw0rd!",
+				emailTaken:        true,
+				incorrectPassword: false,
 			},
 			want: false,
 		},
 		{
 			name: "6. Password incorrect",
-			args: EditEmailForm{
-				NewEmail:          "test@mail.com",
-				Password:          "Passw0rd!",
-				EmailTaken:        false,
-				IncorrectPassword: true,
+			form: input{
+				newEmail:          "test@mail.com",
+				password:          "Passw0rd!",
+				emailTaken:        false,
+				incorrectPassword: true,
 			},
 			want: false,
 		},
@@ -595,11 +648,11 @@ func TestValidateEditEmailForm(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			form := &EditEmailForm{
-				NewEmail:          test.args.NewEmail,
-				Password:          test.args.Password,
-				EmailTaken:        test.args.EmailTaken,
-				IncorrectPassword: test.args.IncorrectPassword,
-				Errors:            test.args.Errors,
+				NewEmail:          test.form.newEmail,
+				Password:          test.form.password,
+				EmailTaken:        test.form.emailTaken,
+				IncorrectPassword: test.form.incorrectPassword,
+				Errors:            FormErrors{},
 			}
 			if got := form.Validate(); got != test.want {
 				t.Errorf("Validate() = %v, want %v", got, test.want)
@@ -608,64 +661,72 @@ func TestValidateEditEmailForm(t *testing.T) {
 	}
 }
 
-// TestValidateEditPasswordForm tests the validation of an EditPasswordForm
+// TestValidateEditPasswordForm tests the validation of an EditPasswordForm.
 func TestValidateEditPasswordForm(t *testing.T) {
+
+	// Mock input form of user and result of database look-up
+	type input struct {
+		newPassword string
+		oldPassword string
+
+		incorrectOldPassword bool
+	}
 
 	// Declare test cases
 	tests := []struct {
 		name string
-		args EditPasswordForm
+		form input
 		want bool
 	}{
 		{
 			name: "1. Valid",
-			args: EditPasswordForm{
-				NewPassword:          "Passw0rd!",
-				OldPassword:          "Passw0rd!",
-				IncorrectOldPassword: false,
+			form: input{
+				newPassword:          "Passw0rd!",
+				oldPassword:          "Passw0rd!",
+				incorrectOldPassword: false,
 			},
 			want: true,
 		},
 		{
 			name: "2. New password missing",
-			args: EditPasswordForm{
-				OldPassword:          "Passw0rd!",
-				IncorrectOldPassword: false,
+			form: input{
+				oldPassword:          "Passw0rd!",
+				incorrectOldPassword: false,
 			},
 			want: false,
 		},
 		{
 			name: "3. Old password missing",
-			args: EditPasswordForm{
-				NewPassword:          "Passw0rd",
-				IncorrectOldPassword: false,
+			form: input{
+				newPassword:          "Passw0rd",
+				incorrectOldPassword: false,
 			},
 			want: false,
 		},
 		{
 			name: "4. New password invalid",
-			args: EditPasswordForm{
-				NewPassword:          "Pwd",
-				OldPassword:          "Passw0rd!",
-				IncorrectOldPassword: false,
+			form: input{
+				newPassword:          "Pwd",
+				oldPassword:          "Passw0rd!",
+				incorrectOldPassword: false,
 			},
 			want: false,
 		},
 		{
 			name: "5. Old password invalid",
-			args: EditPasswordForm{
-				NewPassword:          "Passw0rd",
-				OldPassword:          "Pwd",
-				IncorrectOldPassword: false,
+			form: input{
+				newPassword:          "Passw0rd",
+				oldPassword:          "Pwd",
+				incorrectOldPassword: false,
 			},
 			want: false,
 		},
 		{
 			name: "6. Old password incorrect",
-			args: EditPasswordForm{
-				NewPassword:          "Passw0rd!",
-				OldPassword:          "Passw0rd!",
-				IncorrectOldPassword: true,
+			form: input{
+				newPassword:          "Passw0rd!",
+				oldPassword:          "Passw0rd!",
+				incorrectOldPassword: true,
 			},
 			want: false,
 		},
@@ -675,10 +736,10 @@ func TestValidateEditPasswordForm(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			form := &EditPasswordForm{
-				NewPassword:          test.args.NewPassword,
-				OldPassword:          test.args.OldPassword,
-				IncorrectOldPassword: test.args.IncorrectOldPassword,
-				Errors:               test.args.Errors,
+				NewPassword:          test.form.newPassword,
+				OldPassword:          test.form.oldPassword,
+				IncorrectOldPassword: test.form.incorrectOldPassword,
+				Errors:               FormErrors{},
 			}
 			if got := form.Validate(); got != test.want {
 				t.Errorf("Validate() = %v, want %v", got, test.want)
@@ -690,36 +751,44 @@ func TestValidateEditPasswordForm(t *testing.T) {
 // TestValidateForgotPasswordForm tests the validation of a ForgotPasswordForm.
 func TestValidateForgotPasswordForm(t *testing.T) {
 
+	// Mock input form of user and result of database look-up
+	type input struct {
+		email string
+
+		incorrectEmail  bool
+		unverifiedEmail bool
+	}
+
 	// Declare test cases
 	tests := []struct {
 		name string
-		args ForgotPasswordForm
+		form input
 		want bool
 	}{
 		{
 			name: "1. Valid",
-			args: ForgotPasswordForm{
-				Email:           "test@mail.com",
-				IncorrectEmail:  false,
-				UnverifiedEmail: false,
+			form: input{
+				email:           "test@mail.com",
+				incorrectEmail:  false,
+				unverifiedEmail: false,
 			},
 			want: true,
 		},
 		{
 			name: "2. Email incorrect",
-			args: ForgotPasswordForm{
-				Email:           "test@mail.com",
-				IncorrectEmail:  true,
-				UnverifiedEmail: false,
+			form: input{
+				email:           "test@mail.com",
+				incorrectEmail:  true,
+				unverifiedEmail: false,
 			},
 			want: false,
 		},
 		{
 			name: "3. Email unverified",
-			args: ForgotPasswordForm{
-				Email:           "test@mail.com",
-				IncorrectEmail:  false,
-				UnverifiedEmail: true,
+			form: input{
+				email:           "test@mail.com",
+				incorrectEmail:  false,
+				unverifiedEmail: true,
 			},
 			want: false,
 		},
@@ -729,10 +798,10 @@ func TestValidateForgotPasswordForm(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			form := &ForgotPasswordForm{
-				Email:           test.args.Email,
-				IncorrectEmail:  test.args.IncorrectEmail,
-				UnverifiedEmail: test.args.UnverifiedEmail,
-				Errors:          test.args.Errors,
+				Email:           test.form.email,
+				IncorrectEmail:  test.form.incorrectEmail,
+				UnverifiedEmail: test.form.unverifiedEmail,
+				Errors:          FormErrors{},
 			}
 			if got := form.Validate(); got != test.want {
 				t.Errorf("Validate() = %v, want %v", got, test.want)
@@ -744,24 +813,30 @@ func TestValidateForgotPasswordForm(t *testing.T) {
 // TestValidateResetPasswordForm tests the validation of a ResetPasswordForm.
 func TestValidateResetPasswordForm(t *testing.T) {
 
+	// Mock input form of user
+	type input struct {
+		password string
+	}
+
 	// Declare test cases
 	tests := []struct {
 		name string
-		args ResetPasswordForm
+		form input
 		want bool
 	}{
 		{
 			name: "1. Valid",
-			args: ResetPasswordForm{
-				Password: "Passw0rd!",
+			form: input{
+				password: "Passw0rd!",
 			},
 			want: true,
 		},
 		{
 			name: "2. Invalid",
-			args: ResetPasswordForm{
-				Password: "pwd",
+			form: input{
+				password: "Pwd",
 			},
+			want: false,
 		},
 	}
 
@@ -769,8 +844,8 @@ func TestValidateResetPasswordForm(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			form := &ResetPasswordForm{
-				Password: test.args.Password,
-				Errors:   test.args.Errors,
+				Password: test.form.password,
+				Errors:   FormErrors{},
 			}
 			if got := form.Validate(); got != test.want {
 				t.Errorf("Validate() = %v, want %v", got, test.want)
@@ -781,6 +856,8 @@ func TestValidateResetPasswordForm(t *testing.T) {
 
 // TestValidateUsername tests the validation of a username.
 func TestValidateUsername(t *testing.T) {
+
+	// Declare test cases
 	tests := []struct {
 		name     string
 		username string
@@ -842,6 +919,8 @@ func TestValidateUsername(t *testing.T) {
 			want:     false,
 		},
 	}
+
+	// Run tests
 	for _, test := range tests {
 		errors := FormErrors{}
 		t.Run(test.name, func(t *testing.T) {
