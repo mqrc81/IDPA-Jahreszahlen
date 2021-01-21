@@ -22,4 +22,3 @@
 migrations
 *.sql
 .env
-/backend/database/event_store_test.go

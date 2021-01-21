@@ -11,6 +11,37 @@ import (
 	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
+var (
+	getEventQuery = `
+		SELECT *
+		FROM events
+		WHERE event_id = ?
+		`
+
+	countEventsQuery = `
+		SELECT COUNT(*) 
+		FROM events
+		`
+
+	createEventQuery = `
+		INSERT INTO events(topic_id, name, year, date) 
+		VALUES (?, ?, ?, ?)
+		`
+
+	updateEventQuery = `
+		UPDATE events 
+		SET name = ?, 
+		    year = ?,
+		    date = ?
+		WHERE event_id = ?
+		`
+
+	deleteEventQuery = `
+		DELETE FROM events 
+		WHERE event_id = ?
+		`
+)
+
 // EventStore is the MySQL database access object.
 type EventStore struct {
 	*sqlx.DB
@@ -21,12 +52,7 @@ func (store *EventStore) GetEvent(eventID int) (x.Event, error) {
 	var event x.Event
 
 	// Execute prepared statement
-	query := `
-		SELECT *
-		FROM events
-		WHERE event_id = ?
-		`
-	if err := store.Get(&event, query, eventID); err != nil {
+	if err := store.Get(&event, getEventQuery, eventID); err != nil {
 		return x.Event{}, fmt.Errorf("error getting event: %w", err)
 	}
 
@@ -38,11 +64,7 @@ func (store *EventStore) CountEvents() (int, error) {
 	var eventCount int
 
 	// Execute prepared statement
-	query := `
-		SELECT COUNT(*) 
-		FROM events
-		`
-	if err := store.Get(&eventCount, query); err != nil {
+	if err := store.Get(&eventCount, countEventsQuery); err != nil {
 		return 0, fmt.Errorf("error getting number of events: %w", err)
 	}
 
@@ -53,11 +75,7 @@ func (store *EventStore) CountEvents() (int, error) {
 func (store *EventStore) CreateEvent(event *x.Event) error {
 
 	// Execute prepared statement
-	query := `
-		INSERT INTO events(topic_id, name, year, date) 
-		VALUES (?, ?, ?, ?)
-		`
-	if _, err := store.Exec(query,
+	if _, err := store.Exec(createEventQuery,
 		event.TopicID,
 		event.Name,
 		event.Year,
@@ -72,14 +90,7 @@ func (store *EventStore) CreateEvent(event *x.Event) error {
 func (store *EventStore) UpdateEvent(event *x.Event) error {
 
 	// Execute prepared statement
-	query := `
-		UPDATE events 
-		SET name = ?, 
-		    year = ?,
-		    date = ?
-		WHERE event_id = ?
-		`
-	if _, err := store.Exec(query,
+	if _, err := store.Exec(updateEventQuery,
 		event.Name,
 		event.Year,
 		event.Date,
@@ -94,11 +105,7 @@ func (store *EventStore) UpdateEvent(event *x.Event) error {
 func (store *EventStore) DeleteEvent(eventID int) error {
 
 	// Execute prepared statement
-	query := `
-		DELETE FROM events 
-		WHERE event_id = ?
-		`
-	if _, err := store.Exec(query, eventID); err != nil {
+	if _, err := store.Exec(deleteEventQuery, eventID); err != nil {
 		return fmt.Errorf("error deleting event: %w", err)
 	}
 
