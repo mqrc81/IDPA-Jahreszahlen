@@ -13,12 +13,12 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/gorilla/csrf"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
+	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
 // ScoreHandler is the object for handlers to access sessions and database.
 type ScoreHandler struct {
-	store    jahreszahlen.Store
+	store    x.Store
 	sessions *scs.SessionManager
 }
 
@@ -39,7 +39,7 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 		CSRF template.HTML
 
 		Leaderboard  []leaderboardRow
-		Topics       []jahreszahlen.Topic
+		Topics       []x.Topic
 		Topic        int
 		User         bool
 		Page         int
@@ -59,9 +59,9 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
-		user := userInf.(jahreszahlen.User)
+		user := userInf.(x.User)
 
-		var scores []jahreszahlen.Score
+		var scores []x.Score
 
 		// Retrieve URL query parameters for filtering the leaderboard from URL
 		topicID, _ := strconv.Atoi(req.URL.Query().Get("topic"))   // if topic query is empty or invalid -> topicID = 0
@@ -182,7 +182,7 @@ type leaderboardRow struct {
 }
 
 // createLeaderboardRows generates all rows of the leaderboard
-func createLeaderboardRows(scores []jahreszahlen.Score, show int, page int) []leaderboardRow {
+func createLeaderboardRows(scores []x.Score, show int, page int) []leaderboardRow {
 	var leaderboard []leaderboardRow
 	for i := show * (page - 1); i < len(scores) && i < show*page; i++ {
 		leaderboard = append(leaderboard, leaderboardRow{

@@ -8,6 +8,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/gob"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -20,7 +21,7 @@ import (
 	"github.com/gorilla/csrf"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
+	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
 // init gets initialized with the package.
@@ -28,12 +29,12 @@ import (
 // It registers certain types to the session, because by default the session
 // can only contain basic data types (int, bool, string, etc.).
 func init() {
-	gob.Register(jahreszahlen.Token{})
+	gob.Register(x.Token{})
 }
 
 // UserHandler is the object for handlers to access sessions and database.
 type UserHandler struct {
-	store    jahreszahlen.Store
+	store    x.Store
 	sessions *scs.SessionManager
 }
 
@@ -122,7 +123,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 		}
 
 		// New user
-		user := jahreszahlen.User{
+		user := x.User{
 			Username: form.Username,
 			Email:    form.Email,
 			Password: string(password),
@@ -139,7 +140,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 				"Es wurde eine Bestätigungs-Email an "+form.Email+" versandt, um ihr Account zu validieren.")
 
 		// New token
-		token := jahreszahlen.Token{
+		token := x.Token{
 			TokenID: generateToken(),
 			UserID:  user.UserID,
 		}
@@ -281,7 +282,7 @@ func (h *UserHandler) Profile() http.HandlerFunc {
 	type data struct {
 		SessionData
 
-		User jahreszahlen.User
+		User x.User
 	}
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -295,7 +296,7 @@ func (h *UserHandler) Profile() http.HandlerFunc {
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
-		user := userInf.(jahreszahlen.User)
+		user := userInf.(x.User)
 
 		// Execute HTML-templates with data
 		if err := Templates["users_profile"].Execute(res, data{
@@ -319,14 +320,14 @@ func (h *UserHandler) List() http.HandlerFunc {
 		SessionData
 		CSRF template.HTML
 
-		Users []jahreszahlen.User
+		Users []x.User
 	}
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Check if an admin is logged in
 		user := req.Context().Value("user")
-		if user == nil || !user.(jahreszahlen.User).Admin {
+		if user == nil || !user.(x.User).Admin {
 			// If no user is logged in or user logged in isn't an admin, then
 			// redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error",
@@ -464,10 +465,10 @@ func (h *UserHandler) ResendVerifyEmail() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Retrieve user from session
-		user := req.Context().Value("user").(jahreszahlen.User)
+		user := req.Context().Value("user").(x.User)
 
 		// New token
-		token := jahreszahlen.Token{
+		token := x.Token{
 			TokenID: generateToken(),
 			UserID:  user.UserID,
 		}
@@ -557,7 +558,7 @@ func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 		}
 
 		// New token
-		token := jahreszahlen.Token{
+		token := x.Token{
 			TokenID: generateToken(),
 			UserID:  user.UserID,
 		}
@@ -663,7 +664,7 @@ func (h *UserHandler) ResetPasswordSubmit() http.HandlerFunc {
 		}
 
 		// Retrieve token from session
-		token := h.sessions.Get(req.Context(), "token").(jahreszahlen.Token)
+		token := h.sessions.Get(req.Context(), "token").(x.Token)
 
 		// Execute SQL statement to get user
 		user, err := h.store.GetUser(token.UserID)
@@ -709,7 +710,7 @@ func generateToken() string {
 	// Generate secret token
 	tokenKey := make([]byte, 32)
 	if _, err := rand.Read(tokenKey); err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("error generating email-token key: %w", err))
 	}
 
 	// Return token as string

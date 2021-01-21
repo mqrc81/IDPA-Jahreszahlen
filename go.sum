@@ -1,3 +1,5 @@
+github.com/DATA-DOG/go-sqlmock v1.5.0 h1:Shsta01QNfFxHCfpW6YH2STWB0MudeXXEWMr20OEh60=
+github.com/DATA-DOG/go-sqlmock v1.5.0/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
 github.com/alexedwards/scs/mysqlstore v0.0.0-20200729112010-8c9ddd400378 h1:s9CEQMSioJj0c6gAyCBGeatibTsR48KyBsLt3tFG3kw=
 github.com/alexedwards/scs/mysqlstore v0.0.0-20200729112010-8c9ddd400378/go.mod h1:Ae5jMu5Nlp7KkM7RuqHAzuYBBZf5K6HfRV1WVQXXTJA=
 github.com/alexedwards/scs/v2 v2.4.0 h1:XfnMamKnvp1muJVNr1WzikQTclopsBXWZtzz0NBjOK0=

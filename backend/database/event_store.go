@@ -8,7 +8,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
+	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
 // EventStore is the MySQL database access object.
@@ -17,8 +17,8 @@ type EventStore struct {
 }
 
 // GetEvent gets event by ID.
-func (store *EventStore) GetEvent(eventID int) (jahreszahlen.Event, error) {
-	var event jahreszahlen.Event
+func (store *EventStore) GetEvent(eventID int) (x.Event, error) {
+	var event x.Event
 
 	// Execute prepared statement
 	query := `
@@ -27,7 +27,7 @@ func (store *EventStore) GetEvent(eventID int) (jahreszahlen.Event, error) {
 		WHERE event_id = ?
 		`
 	if err := store.Get(&event, query, eventID); err != nil {
-		return jahreszahlen.Event{}, fmt.Errorf("error getting event: %w", err)
+		return x.Event{}, fmt.Errorf("error getting event: %w", err)
 	}
 
 	return event, nil
@@ -50,7 +50,7 @@ func (store *EventStore) CountEvents() (int, error) {
 }
 
 // CreateEvent creates a new event.
-func (store *EventStore) CreateEvent(event *jahreszahlen.Event) error {
+func (store *EventStore) CreateEvent(event *x.Event) error {
 
 	// Execute prepared statement
 	query := `
@@ -69,7 +69,7 @@ func (store *EventStore) CreateEvent(event *jahreszahlen.Event) error {
 }
 
 // UpdateEvent updates an existing event.
-func (store *EventStore) UpdateEvent(event *jahreszahlen.Event) error {
+func (store *EventStore) UpdateEvent(event *x.Event) error {
 
 	// Execute prepared statement
 	query := `

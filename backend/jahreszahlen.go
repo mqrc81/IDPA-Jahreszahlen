@@ -3,7 +3,7 @@
 // as 1:n relationships may be stored directly in the structure of the primary
 // object for the sake of practicality (e.g topic containing array of events).
 
-package jahreszahlen
+package backend
 
 import (
 	"time"

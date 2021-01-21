@@ -8,7 +8,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
+	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
 // TopicStore is the database access object.
@@ -17,8 +17,8 @@ type TopicStore struct {
 }
 
 // GetTopic gets a topic and its events by ID.
-func (store *TopicStore) GetTopic(topicID int) (jahreszahlen.Topic, error) {
-	var topic jahreszahlen.Topic
+func (store *TopicStore) GetTopic(topicID int) (x.Topic, error) {
+	var topic x.Topic
 
 	// Execute prepared statement
 	query := `
@@ -31,7 +31,7 @@ func (store *TopicStore) GetTopic(topicID int) (jahreszahlen.Topic, error) {
 		WHERE t.topic_id = ?
 		`
 	if err := store.Get(&topic, query, topicID); err != nil {
-		return jahreszahlen.Topic{}, fmt.Errorf("error getting topic: %w", err)
+		return x.Topic{}, fmt.Errorf("error getting topic: %w", err)
 	}
 
 	// Execute prepared statement
@@ -42,15 +42,15 @@ func (store *TopicStore) GetTopic(topicID int) (jahreszahlen.Topic, error) {
 		ORDER BY date
 		`
 	if err := store.Select(&topic.Events, query, topicID); err != nil {
-		return jahreszahlen.Topic{}, fmt.Errorf("error getting events of topic: %w", err)
+		return x.Topic{}, fmt.Errorf("error getting events of topic: %w", err)
 	}
 
 	return topic, nil
 }
 
 // GetTopics gets all topics and their events.
-func (store *TopicStore) GetTopics() ([]jahreszahlen.Topic, error) {
-	var topics []jahreszahlen.Topic
+func (store *TopicStore) GetTopics() ([]x.Topic, error) {
+	var topics []x.Topic
 
 	// Execute prepared statement
 	query := `
@@ -64,7 +64,7 @@ func (store *TopicStore) GetTopics() ([]jahreszahlen.Topic, error) {
 		ORDER BY t.start_year
 		`
 	if err := store.Select(&topics, query); err != nil {
-		return []jahreszahlen.Topic{}, fmt.Errorf("error getting topics: %w", err)
+		return []x.Topic{}, fmt.Errorf("error getting topics: %w", err)
 	}
 
 	// Loop through topics to get events
@@ -76,7 +76,7 @@ func (store *TopicStore) GetTopics() ([]jahreszahlen.Topic, error) {
 		WHERE topic_id = ?
 		`
 		if err := store.Select(&topic.Events, query, topic.TopicID); err != nil {
-			return []jahreszahlen.Topic{}, fmt.Errorf("error getting events of topics: %w", err)
+			return []x.Topic{}, fmt.Errorf("error getting events of topics: %w", err)
 		}
 	}
 
@@ -100,7 +100,7 @@ func (store *EventStore) CountTopics() (int, error) {
 }
 
 // CreateTopic creates a new topic.
-func (store *TopicStore) CreateTopic(topic *jahreszahlen.Topic) error {
+func (store *TopicStore) CreateTopic(topic *x.Topic) error {
 
 	// Execute prepared statement
 	query := `
@@ -119,7 +119,7 @@ func (store *TopicStore) CreateTopic(topic *jahreszahlen.Topic) error {
 }
 
 // UpdateTopic updates an existing topic.
-func (store *TopicStore) UpdateTopic(topic *jahreszahlen.Topic) error {
+func (store *TopicStore) UpdateTopic(topic *x.Topic) error {
 
 	// Execute prepared statement
 	query := `

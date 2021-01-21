@@ -9,7 +9,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
+	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
 // ScoreStore is the database access object.
@@ -18,8 +18,8 @@ type ScoreStore struct {
 }
 
 // GetScores gets all scores, sorted by points descending.
-func (store *ScoreStore) GetScores() ([]jahreszahlen.Score, error) {
-	var scores []jahreszahlen.Score
+func (store *ScoreStore) GetScores() ([]x.Score, error) {
+	var scores []x.Score
 
 	// Execute prepared statement
 	query := `
@@ -32,7 +32,7 @@ func (store *ScoreStore) GetScores() ([]jahreszahlen.Score, error) {
 		ORDER BY points DESC
 		`
 	if err := store.Select(&scores, query); err != nil {
-		return []jahreszahlen.Score{}, fmt.Errorf("error getting scores: %w", err)
+		return []x.Score{}, fmt.Errorf("error getting scores: %w", err)
 	}
 
 	return scores, nil
@@ -40,8 +40,8 @@ func (store *ScoreStore) GetScores() ([]jahreszahlen.Score, error) {
 
 // GetScoresByTopic gets scores of a certain topic, sorted by points
 // descending.
-func (store *ScoreStore) GetScoresByTopic(topicID int) ([]jahreszahlen.Score, error) {
-	var scores []jahreszahlen.Score
+func (store *ScoreStore) GetScoresByTopic(topicID int) ([]x.Score, error) {
+	var scores []x.Score
 
 	// Execute prepared statement
 	query := `
@@ -55,15 +55,15 @@ func (store *ScoreStore) GetScoresByTopic(topicID int) ([]jahreszahlen.Score, er
 		ORDER BY points DESC
 		`
 	if err := store.Select(&scores, query, topicID); err != nil {
-		return []jahreszahlen.Score{}, fmt.Errorf("error getting scores: %w", err)
+		return []x.Score{}, fmt.Errorf("error getting scores: %w", err)
 	}
 
 	return scores, nil
 }
 
 // GetScoresByUser gets scores of a certain user, sorted by points descending.
-func (store *ScoreStore) GetScoresByUser(userID int) ([]jahreszahlen.Score, error) {
-	var scores []jahreszahlen.Score
+func (store *ScoreStore) GetScoresByUser(userID int) ([]x.Score, error) {
+	var scores []x.Score
 
 	// Execute prepared statement
 	query := `
@@ -77,7 +77,7 @@ func (store *ScoreStore) GetScoresByUser(userID int) ([]jahreszahlen.Score, erro
 		ORDER BY points DESC
 		`
 	if err := store.Select(&scores, query, userID); err != nil {
-		return []jahreszahlen.Score{}, fmt.Errorf("error getting scores: %w", err)
+		return []x.Score{}, fmt.Errorf("error getting scores: %w", err)
 	}
 
 	return scores, nil
@@ -85,8 +85,8 @@ func (store *ScoreStore) GetScoresByUser(userID int) ([]jahreszahlen.Score, erro
 
 // GetScoresByTopicAndUser gets scores of a certain topic and user, sorted by
 // points descending.
-func (store *ScoreStore) GetScoresByTopicAndUser(topicID int, userID int) ([]jahreszahlen.Score, error) {
-	var scores []jahreszahlen.Score
+func (store *ScoreStore) GetScoresByTopicAndUser(topicID int, userID int) ([]x.Score, error) {
+	var scores []x.Score
 
 	// Execute prepared statement
 	query := `
@@ -101,14 +101,14 @@ func (store *ScoreStore) GetScoresByTopicAndUser(topicID int, userID int) ([]jah
 		ORDER BY points DESC
 		`
 	if err := store.Select(&scores, query, topicID, userID); err != nil {
-		return []jahreszahlen.Score{}, fmt.Errorf("error getting scores: %w", err)
+		return []x.Score{}, fmt.Errorf("error getting scores: %w", err)
 	}
 
 	return scores, nil
 }
 
 // CreateScore creates a new score.
-func (store *ScoreStore) CreateScore(score *jahreszahlen.Score) error {
+func (store *ScoreStore) CreateScore(score *x.Score) error {
 
 	// Execute prepared statement
 	query := `

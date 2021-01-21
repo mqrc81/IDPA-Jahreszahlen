@@ -11,7 +11,7 @@ import (
 	"github.com/gorilla/csrf"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
+	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
 // EditUsername is a GET-method that is accessible to any user.
@@ -72,7 +72,7 @@ func (h *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 		form.UsernameTaken = err == nil
 
 		// Retrieve user from session
-		user := req.Context().Value("user").(jahreszahlen.User)
+		user := req.Context().Value("user").(x.User)
 
 		// Check if password is correct
 		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password))
@@ -162,7 +162,7 @@ func (h *UserHandler) EditEmailSubmit() http.HandlerFunc {
 		form.EmailTaken = err == nil
 
 		// Retrieve user from session
-		user := req.Context().Value("user").(jahreszahlen.User)
+		user := req.Context().Value("user").(x.User)
 
 		// Check if password is correct
 		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password))
@@ -246,7 +246,7 @@ func (h *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 		}
 
 		// Retrieve user from session
-		user := req.Context().Value("user").(jahreszahlen.User)
+		user := req.Context().Value("user").(x.User)
 
 		// Compare user's password with "old password" from form
 		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.OldPassword)); err != nil {

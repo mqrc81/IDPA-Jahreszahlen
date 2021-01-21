@@ -13,12 +13,12 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/gorilla/csrf"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
+	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
 // EventHandler is the object for handlers to access sessions and database.
 type EventHandler struct {
-	store    jahreszahlen.Store
+	store    x.Store
 	sessions *scs.SessionManager
 }
 
@@ -34,8 +34,8 @@ func (h *EventHandler) List() http.HandlerFunc {
 		SessionData
 		CSRF template.HTML
 
-		Topic  jahreszahlen.Topic
-		Events []jahreszahlen.Event
+		Topic  x.Topic
+		Events []x.Event
 	}
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -86,14 +86,14 @@ func (h *EventHandler) Create() http.HandlerFunc {
 		SessionData
 		CSRF template.HTML
 
-		Topic jahreszahlen.Topic
+		Topic x.Topic
 	}
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Check if an admin is logged in
 		user := req.Context().Value("user")
-		if user == nil || !user.(jahreszahlen.User).Admin {
+		if user == nil || !user.(x.User).Admin {
 			// If no user is logged in or logged in user isn't an admin,
 			// then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
@@ -155,7 +155,7 @@ func (h *EventHandler) CreateStore() http.HandlerFunc {
 		topicID, _ := strconv.Atoi(topicIDstr)
 
 		// Execute SQL statement to create an event
-		if err := h.store.CreateEvent(&jahreszahlen.Event{
+		if err := h.store.CreateEvent(&x.Event{
 			TopicID: topicID,
 			Name:    form.Name,
 			Year:    form.Year,
@@ -208,14 +208,14 @@ func (h *EventHandler) Edit() http.HandlerFunc {
 		SessionData
 		CSRF template.HTML
 
-		Event jahreszahlen.Event
+		Event x.Event
 	}
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Check if an admin is logged in
 		user := req.Context().Value("user")
-		if user == nil || !user.(jahreszahlen.User).Admin {
+		if user == nil || !user.(x.User).Admin {
 			// If no user is logged in or logged in user isn't an admin,
 			// then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
@@ -277,7 +277,7 @@ func (h *EventHandler) EditStore() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to update event
-		if err := h.store.UpdateEvent(&jahreszahlen.Event{
+		if err := h.store.UpdateEvent(&x.Event{
 			TopicID: topicID,
 			Name:    form.Name,
 			Year:    form.Year,

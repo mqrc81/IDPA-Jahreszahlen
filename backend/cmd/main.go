@@ -5,6 +5,7 @@ package main
 
 import (
 	"crypto/rand"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -20,11 +21,11 @@ import (
 // management and CSRF-protection.
 func main() {
 	port := ":3000"
-	log.Println("Starting application...")
+	fmt.Println("Starting application...")
 
 	// Access global environment variables
 	if err := godotenv.Load("backend/.env"); err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("error loading environment variables: %w", err))
 	}
 
 	// Get data-source-name from environment variables
@@ -33,13 +34,13 @@ func main() {
 	// Establish database connection with the help of the data-source-name
 	store, err := database.NewStore(dataSourceName)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("error initializing new database store: %w", err))
 	}
 
 	// Initialize session manager
 	sessions, err := web.NewSessionManager(dataSourceName)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("error initializing new session manager: %w", err))
 	}
 
 	// Generate random 32-byte key for CSRF-protection
@@ -54,8 +55,8 @@ func main() {
 
 	// Listen on the TCP network address and call Serve with handler to handle
 	// requests on incoming connections
-	log.Println("Listening on port " + port + "...")
+	fmt.Println("Listening on port " + port + "...")
 	if err = http.ListenAndServe(port, handler); err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("error listening on the tcp network: %w", err))
 	}
 }

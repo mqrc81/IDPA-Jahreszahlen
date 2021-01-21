@@ -4,13 +4,14 @@
 package web
 
 import (
+	"fmt"
 	"log"
 	"os"
 
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
+	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
 const (
@@ -41,13 +42,13 @@ func (email Email) Send() {
 
 	// Send email
 	if _, err := client.Send(newEmail); err != nil {
-		log.Println(err)
+		log.Println(fmt.Errorf("error sending email: %w", err))
 	}
 }
 
 // PasswordResetEmail creates an email for resetting the user's password to be
 // sent out to a user.
-func PasswordResetEmail(user jahreszahlen.User, token string) Email {
+func PasswordResetEmail(user x.User, token string) Email {
 
 	// Create email body
 	body := "Hallo " + user.Username + ",\n" +
@@ -67,7 +68,7 @@ func PasswordResetEmail(user jahreszahlen.User, token string) Email {
 
 // EmailVerificationEmail creates an email to reset the password to be sent out
 // to a user.
-func EmailVerificationEmail(user jahreszahlen.User, token string) Email {
+func EmailVerificationEmail(user x.User, token string) Email {
 
 	// Create email body
 	body := "Hallo " + user.Username + ",\n" +

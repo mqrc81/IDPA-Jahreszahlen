@@ -17,7 +17,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/gorilla/csrf"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
+	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
 const (
@@ -41,9 +41,9 @@ const (
 // can only contain basic data types (int, bool, string, etc.).
 func init() {
 	gob.Register(QuizData{})
-	gob.Register(jahreszahlen.Topic{})
-	gob.Register([]jahreszahlen.Event{})
-	gob.Register(jahreszahlen.Event{})
+	gob.Register(x.Topic{})
+	gob.Register([]x.Event{})
+	gob.Register(x.Event{})
 	gob.Register([]phase1Question{})
 	gob.Register(phase1Question{})
 	gob.Register([]int{})
@@ -55,7 +55,7 @@ func init() {
 
 // QuizHandler is the object for handlers to access sessions and database.
 type QuizHandler struct {
-	store    jahreszahlen.Store
+	store    x.Store
 	sessions *scs.SessionManager
 }
 
@@ -64,7 +64,7 @@ type QuizHandler struct {
 // time expiry and current phase) in order to validate the correct playing
 // order of a quiz.
 type QuizData struct {
-	Topic          jahreszahlen.Topic // contains topic ID for validation and events for playing the quiz
+	Topic          x.Topic // contains topic ID for validation and events for playing the quiz
 	Points         int
 	CorrectGuesses int
 
@@ -638,10 +638,10 @@ func (h *QuizHandler) Phase3Submit() http.HandlerFunc {
 		}
 
 		// Retrieve user from session
-		user := req.Context().Value("user").(jahreszahlen.User)
+		user := req.Context().Value("user").(x.User)
 
 		// Add score of quiz to database
-		if err := h.store.CreateScore(&jahreszahlen.Score{
+		if err := h.store.CreateScore(&x.Score{
 			TopicID: quiz.Topic.TopicID,
 			UserID:  user.UserID,
 			Points:  quiz.Points,
@@ -855,7 +855,7 @@ type phase1Question struct {
 
 // createPhase1Questions generates 3 phase1Question structures by generating
 // 2 random years for each of the first 3 events in the array.
-func createPhase1Questions(events []jahreszahlen.Event) []phase1Question {
+func createPhase1Questions(events []x.Event) []phase1Question {
 	var questions []phase1Question
 
 	// Set seed to generate random numbers from
@@ -915,7 +915,7 @@ type phase2Question struct {
 
 // createPhase2Questions generates 4 phase2Question structures for events 3-7
 // respectively of the array of events of the topic.
-func createPhase2Questions(events []jahreszahlen.Event) []phase2Question {
+func createPhase2Questions(events []x.Event) []phase2Question {
 	var questions []phase2Question
 
 	// Loop through events 3-7 and turn them into questions
@@ -942,7 +942,7 @@ type phase3Question struct {
 
 // createPhase3Questions generates a phase3Question structure for all events of
 // the topic.
-func createPhase3Questions(events []jahreszahlen.Event) []phase3Question {
+func createPhase3Questions(events []x.Event) []phase3Question {
 	var questions []phase3Question
 
 	// Sort array of events by date, in order to add 'order' value to questions

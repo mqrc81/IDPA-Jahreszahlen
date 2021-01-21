@@ -6,7 +6,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
+	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
 // TokenStore is the database access object.
@@ -15,8 +15,8 @@ type TokenStore struct {
 }
 
 // GetToken gets a token by ID.
-func (store *TokenStore) GetToken(tokenID string) (jahreszahlen.Token, error) {
-	var token jahreszahlen.Token
+func (store *TokenStore) GetToken(tokenID string) (x.Token, error) {
+	var token x.Token
 
 	// Execute prepared statement
 	query := `
@@ -25,14 +25,14 @@ func (store *TokenStore) GetToken(tokenID string) (jahreszahlen.Token, error) {
 		WHERE token_id = ?
 		`
 	if err := store.Get(&token, query, tokenID); err != nil {
-		return jahreszahlen.Token{}, fmt.Errorf("error getting token: %w", err)
+		return x.Token{}, fmt.Errorf("error getting token: %w", err)
 	}
 
 	return token, nil
 }
 
 // CreateToken creates a new token.
-func (store *TokenStore) CreateToken(token *jahreszahlen.Token) error {
+func (store *TokenStore) CreateToken(token *x.Token) error {
 
 	// Execute prepared statement
 	query := `

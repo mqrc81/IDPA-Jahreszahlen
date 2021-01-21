@@ -13,12 +13,12 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/gorilla/csrf"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
+	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
 // TopicHandler is the object for handlers to access sessions and database.
 type TopicHandler struct {
-	store    jahreszahlen.Store
+	store    x.Store
 	sessions *scs.SessionManager
 }
 
@@ -34,7 +34,7 @@ func (h *TopicHandler) List() http.HandlerFunc {
 		SessionData
 		CSRF template.HTML
 
-		Topics []jahreszahlen.Topic
+		Topics []x.Topic
 	}
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -73,7 +73,7 @@ func (h *TopicHandler) Create() http.HandlerFunc {
 
 		// Check if an admin is logged in
 		user := req.Context().Value("user")
-		if user == nil || !user.(jahreszahlen.User).Admin {
+		if user == nil || !user.(x.User).Admin {
 			// If no user is logged in or logged in user isn't an admin,
 			// then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
@@ -120,7 +120,7 @@ func (h *TopicHandler) CreateStore() http.HandlerFunc {
 		}
 
 		// Execute SQL statement to create a topic
-		if err := h.store.CreateTopic(&jahreszahlen.Topic{
+		if err := h.store.CreateTopic(&x.Topic{
 			Name:        form.Name,
 			StartYear:   form.StartYear,
 			EndYear:     form.EndYear,
@@ -172,15 +172,15 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 		SessionData
 		CSRF template.HTML
 
-		Topic  jahreszahlen.Topic
-		Events []jahreszahlen.Event
+		Topic  x.Topic
+		Events []x.Event
 	}
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Check if an admin is logged in
 		user := req.Context().Value("user")
-		if user == nil || !user.(jahreszahlen.User).Admin {
+		if user == nil || !user.(x.User).Admin {
 			// If no user is logged in or logged in user isn't an admin,
 			// then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error",
@@ -246,7 +246,7 @@ func (h *TopicHandler) EditStore() http.HandlerFunc {
 		topicID, _ := strconv.Atoi(topicIDstr)
 
 		// Execute SQL statement to update a topic
-		if err := h.store.UpdateTopic(&jahreszahlen.Topic{
+		if err := h.store.UpdateTopic(&x.Topic{
 			TopicID:     topicID,
 			Name:        form.Name,
 			StartYear:   form.StartYear,
@@ -277,7 +277,7 @@ func (h *TopicHandler) Show() http.HandlerFunc {
 		SessionData
 		CSRF template.HTML
 
-		Topic jahreszahlen.Topic
+		Topic x.Topic
 	}
 
 	return func(res http.ResponseWriter, req *http.Request) {

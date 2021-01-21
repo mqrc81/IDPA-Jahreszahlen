@@ -34,7 +34,7 @@ func TestValidateTopicForm(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "1. Valid",
+			name: "#1 VALID",
 			form: input{
 				name:        "Topic 1",
 				startYear:   1800,
@@ -44,7 +44,7 @@ func TestValidateTopicForm(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "2. Name missing",
+			name: "#2 NAME MISSING",
 			form: input{
 				startYear:   1800,
 				endYear:     1900,
@@ -53,7 +53,7 @@ func TestValidateTopicForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "3. Name too long",
+			name: "#3 NAME TOO LONG",
 			form: input{
 				name:        "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.",
 				startYear:   1800,
@@ -63,7 +63,7 @@ func TestValidateTopicForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "4. Start-year missing",
+			name: "#4 START-YEAR MISSING",
 			form: input{
 				name:        "Topic 1",
 				endYear:     1900,
@@ -72,7 +72,7 @@ func TestValidateTopicForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "5. End-year missing",
+			name: "#5 END-YEAR MISSING",
 			form: input{
 				name:        "Topic 1",
 				startYear:   1800,
@@ -81,7 +81,7 @@ func TestValidateTopicForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "6. Start-year after End-year",
+			name: "#6 START-YEAR AFTER END-YEAR",
 			form: input{
 				name:        "Topic 1",
 				startYear:   1900,
@@ -91,7 +91,7 @@ func TestValidateTopicForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "7. End-year in the future",
+			name: "#7 END-YEAR IN THE FUTURE",
 			form: input{
 				name:        "Topic 1",
 				startYear:   1900,
@@ -101,7 +101,7 @@ func TestValidateTopicForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "8. Description too long",
+			name: "#8 DESCRIPTION TOO LONG",
 			form: input{
 				name:      "Topic 1",
 				startYear: 1800,
@@ -152,7 +152,7 @@ func TestValidateEventForm(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "1. Valid (dd.mm.yyy)",
+			name: "#1 VALID (DD.MM.YYYY)",
 			form: input{
 				name:       "Event 1",
 				yearOrDate: "25.10.1800",
@@ -160,7 +160,7 @@ func TestValidateEventForm(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "2. Valid (mm.yyyy)",
+			name: "#2 VALID (MM.YYYY)",
 			form: input{
 				name:       "Event 1",
 				yearOrDate: "10.1800",
@@ -168,7 +168,7 @@ func TestValidateEventForm(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "3. Valid (yyyy)",
+			name: "#3 VALID (YYYY)",
 			form: input{
 				name:       "Event 1",
 				yearOrDate: "1800",
@@ -176,7 +176,7 @@ func TestValidateEventForm(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "4. Date invalid (d.m.yyyy)",
+			name: "#4 DATE INVALID (D.M.YYYY)",
 			form: input{
 				name:       "Event 1",
 				yearOrDate: "5.1.1800",
@@ -184,7 +184,7 @@ func TestValidateEventForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "5. Date invalid 'dd.mm.yy'",
+			name: "#5 DATE INVALID (DD.MM.YY)",
 			form: input{
 				name:       "Event 1",
 				yearOrDate: "25.10.50",
@@ -192,7 +192,7 @@ func TestValidateEventForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "6. Date format incorrect 'dd-mm-yyy'",
+			name: "#6 DATE FORMAT INCORRECT (DD-MM-YYYY)",
 			form: input{
 				name:       "Event 1",
 				yearOrDate: "25-10-1800",
@@ -200,7 +200,7 @@ func TestValidateEventForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "7. Date invalid 'dd.mm'",
+			name: "#7 DATE INVALID (DD.MM)",
 			form: input{
 				name:       "Event 1",
 				yearOrDate: "25.10",
@@ -208,46 +208,46 @@ func TestValidateEventForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "8. Name missing",
+			name: "#8 NAME MISSING",
 			form: input{
-				yearOrDate: "",
+				yearOrDate: "02.05.1800",
 			},
 			want: false,
 		},
 		{
-			name: "9. Date missing",
+			name: "#9 DATE MISSING",
 			form: input{
 				name: "Event 1",
 			},
 			want: false,
 		},
 		{
-			name: "10. Name too long",
+			name: "#10 NAME TOO LONG",
 			form: input{
 				name: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. " +
 					"Aenean massa. Cum sociis.",
-				yearOrDate: "25.10.1800",
+				yearOrDate: "2#5#101800",
 			},
 			want: false,
 		},
 		{
-			name: "11. Date in the future (dd.mm.yyyy)",
+			name: "#11 DATE IN THE FUTURE (DD.MM.YYYY)",
 			form: input{
 				name:       "Event 1",
-				yearOrDate: future.Format("02.01.2006"),
+				yearOrDate: future.Format("0#20#12006"),
 			},
 			want: false,
 		},
 		{
-			name: "12. Date in the future (mm.yyyy)",
+			name: "#12 DATE IN THE FUTURE (MM.YYYY)",
 			form: input{
 				name:       "Event 1",
-				yearOrDate: future.Format("01.2006"),
+				yearOrDate: future.Format("0#12006"),
 			},
 			want: false,
 		},
 		{
-			name: "13. Date in the future (yyyy)",
+			name: "#13 DATE IN THE FUTURE (YYYY)",
 			form: input{
 				name:       "Event 1",
 				yearOrDate: future.Format("2006"),
@@ -255,7 +255,7 @@ func TestValidateEventForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "14. Day out of bounds",
+			name: "#14 DAY OUT OF BOUNDS",
 			form: input{
 				name:       "Event 1",
 				yearOrDate: "32.10.1800",
@@ -263,7 +263,7 @@ func TestValidateEventForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "15. Month out of bounds",
+			name: "#15 MONTH OUT OF BOUNDS",
 			form: input{
 				name:       "Event 1",
 				yearOrDate: "25.13.1800",
@@ -309,7 +309,7 @@ func TestValidateRegisterForm(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "1. Valid",
+			name: "#1 VALID",
 			form: input{
 				username:      "user1",
 				email:         "test@mail.com",
@@ -320,7 +320,7 @@ func TestValidateRegisterForm(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "2. Username invalid",
+			name: "#2 USERNAME INVALID",
 			form: input{
 				username:      ".user#name_",
 				email:         "test@mail.com",
@@ -331,7 +331,7 @@ func TestValidateRegisterForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "3. email invalid",
+			name: "#3 EMAIL INVALID",
 			form: input{
 				username:      "user1",
 				email:         "test@.com",
@@ -342,7 +342,7 @@ func TestValidateRegisterForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "4. Password invalid",
+			name: "#4 PASSWORD INVALID",
 			form: input{
 				username:      "user1",
 				email:         "test@mail.com",
@@ -353,7 +353,7 @@ func TestValidateRegisterForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "5. Username taken",
+			name: "#5 USERNAME TAKEN",
 			form: input{
 				username:      "user1",
 				email:         "test@mail.com",
@@ -364,7 +364,7 @@ func TestValidateRegisterForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "6. Email taken",
+			name: "#6 EMAIL TAKEN",
 			form: input{
 				username:      "user1",
 				email:         "test@mail.com",
@@ -413,7 +413,7 @@ func TestValidateLoginForm(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "1. Valid (username)",
+			name: "#1 VALID (USERNAME)",
 			form: input{
 				usernameOrEmail:          "user1",
 				password:                 "Passw0rd!",
@@ -423,7 +423,7 @@ func TestValidateLoginForm(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "2. Valid (email)",
+			name: "#2 VALID (EMAIL)",
 			form: input{
 				usernameOrEmail:          "test@mail.com",
 				password:                 "Passw0rd!",
@@ -433,7 +433,7 @@ func TestValidateLoginForm(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "3. Username or email incorrect",
+			name: "#3 USERNAME OR EMAIL INCORRECT",
 			form: input{
 				usernameOrEmail:          "user1",
 				password:                 "Passw0rd!",
@@ -443,7 +443,7 @@ func TestValidateLoginForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "4. Password incorrect",
+			name: "#4 PASSWORD INCORRECT",
 			form: input{
 				usernameOrEmail:          "user1",
 				password:                 "Passw0rd!",
@@ -490,7 +490,7 @@ func TestValidateEditUsernameForm(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "1. Valid",
+			name: "#1 VALID",
 			form: input{
 				newUsername:       "user1",
 				password:          "Passw0rd!",
@@ -500,7 +500,7 @@ func TestValidateEditUsernameForm(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "2. New username missing",
+			name: "#2 NEW USERNAME MISSING",
 			form: input{
 				password:          "Passw0rd!",
 				usernameTaken:     false,
@@ -509,7 +509,7 @@ func TestValidateEditUsernameForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "3. Password missing",
+			name: "#3 PASSWORD MISSING",
 			form: input{
 				newUsername:       "user1",
 				usernameTaken:     false,
@@ -518,7 +518,7 @@ func TestValidateEditUsernameForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "4. New username invalid",
+			name: "#4 NEW USERNAME INVALID",
 			form: input{
 				newUsername:       ".user#name_",
 				password:          "Passw0rd!",
@@ -528,7 +528,7 @@ func TestValidateEditUsernameForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "5. Username taken",
+			name: "#5 USERNAME TAKEN",
 			form: input{
 				newUsername:       "user1",
 				password:          "Passw0rd!",
@@ -538,7 +538,7 @@ func TestValidateEditUsernameForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "6. Password incorrect",
+			name: "#6 PASSWORD TAKEN",
 			form: input{
 				newUsername:       "user1",
 				password:          "Passw0rd!",
@@ -585,7 +585,7 @@ func TestValidateEditEmailForm(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "1. Valid",
+			name: "#1 VALID",
 			form: input{
 				newEmail:          "test@mail.com",
 				password:          "Passw0rd!",
@@ -595,7 +595,7 @@ func TestValidateEditEmailForm(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "2. New email missing",
+			name: "#2 NEW EMAIL MISSING",
 			form: input{
 				password:          "Passw0rd!",
 				emailTaken:        false,
@@ -604,7 +604,7 @@ func TestValidateEditEmailForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "3. Password missing",
+			name: "#3 PASSWORD MISSING",
 			form: input{
 				newEmail:          "test@mail.com",
 				emailTaken:        false,
@@ -613,7 +613,7 @@ func TestValidateEditEmailForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "4. New email invalid",
+			name: "#4 NEW EMAIL INVALID",
 			form: input{
 				newEmail:          "test@.com",
 				password:          "Passw0rd!",
@@ -623,7 +623,7 @@ func TestValidateEditEmailForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "5. Email taken",
+			name: "#5 EMAIL TAKEN",
 			form: input{
 				newEmail:          "test@mail.com",
 				password:          "Passw0rd!",
@@ -633,7 +633,7 @@ func TestValidateEditEmailForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "6. Password incorrect",
+			name: "#6 PASSWORD INCORRECT",
 			form: input{
 				newEmail:          "test@mail.com",
 				password:          "Passw0rd!",
@@ -679,7 +679,7 @@ func TestValidateEditPasswordForm(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "1. Valid",
+			name: "#1 VALID",
 			form: input{
 				newPassword:          "Passw0rd!",
 				oldPassword:          "Passw0rd!",
@@ -688,7 +688,7 @@ func TestValidateEditPasswordForm(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "2. New password missing",
+			name: "#2 NEW PASSWORD MISSING",
 			form: input{
 				oldPassword:          "Passw0rd!",
 				incorrectOldPassword: false,
@@ -696,7 +696,7 @@ func TestValidateEditPasswordForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "3. Old password missing",
+			name: "#3 OLD PASSWORD MISSING",
 			form: input{
 				newPassword:          "Passw0rd",
 				incorrectOldPassword: false,
@@ -704,7 +704,7 @@ func TestValidateEditPasswordForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "4. New password invalid",
+			name: "#4 NEW PASSWORD INVALID",
 			form: input{
 				newPassword:          "Pwd",
 				oldPassword:          "Passw0rd!",
@@ -713,7 +713,7 @@ func TestValidateEditPasswordForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "5. Old password invalid",
+			name: "#5 OLD PASSWORD INVALID",
 			form: input{
 				newPassword:          "Passw0rd",
 				oldPassword:          "Pwd",
@@ -722,7 +722,7 @@ func TestValidateEditPasswordForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "6. Old password incorrect",
+			name: "#6 OLD PASSWORD INCORRECT",
 			form: input{
 				newPassword:          "Passw0rd!",
 				oldPassword:          "Passw0rd!",
@@ -766,7 +766,7 @@ func TestValidateForgotPasswordForm(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "1. Valid",
+			name: "#1 VALID",
 			form: input{
 				email:           "test@mail.com",
 				incorrectEmail:  false,
@@ -775,7 +775,7 @@ func TestValidateForgotPasswordForm(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "2. Email incorrect",
+			name: "#2 EMAIL INCORRECT",
 			form: input{
 				email:           "test@mail.com",
 				incorrectEmail:  true,
@@ -784,7 +784,7 @@ func TestValidateForgotPasswordForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "3. Email unverified",
+			name: "#3 EMAIL UNVERIFIED",
 			form: input{
 				email:           "test@mail.com",
 				incorrectEmail:  false,
@@ -825,14 +825,14 @@ func TestValidateResetPasswordForm(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "1. Valid",
+			name: "#1 VALID",
 			form: input{
 				password: "Passw0rd!",
 			},
 			want: true,
 		},
 		{
-			name: "2. Invalid",
+			name: "#2 INVALID",
 			form: input{
 				password: "Pwd",
 			},
@@ -864,58 +864,58 @@ func TestValidateUsername(t *testing.T) {
 		want     bool
 	}{
 		{
-			name:     "1. Valid",
+			name:     "#1 VALID",
 			username: "username",
 			want:     true,
 		},
 		{
-			name:     "2. Valid",
+			name:     "#2 VALID",
 			username: "Us.er7na_mE",
 			want:     true,
 		},
 		{
-			name:     "3. Too short",
+			name:     "#3 TOO SHORT",
 			username: "no",
 			want:     false,
 		},
 		{
-			name:     "4. Too long",
+			name:     "#4 TOO LONG",
 			username: "ThisUsernameIsTooLong",
 			want:     false,
 		},
 		{
-			name:     "5. Starting with '.'",
+			name:     "#5 STARTING WITH PERIOD",
 			username: ".username",
 			want:     false,
 		},
 		{
-			name:     "6. Starting with '_'",
+			name:     "#6 SARTING WITH UNDERSCORE",
 			username: "_username",
 			want:     false,
 		},
 		{
-			name:     "7. Ending with '.'",
+			name:     "#7 ENDING WITH PERIOD",
 			username: "username.",
 			want:     false,
 		},
 		{
-			name:     "8. Ending with '_'",
+			name:     "#8 ENDING WITH UNDERSCORE",
 			username: "username_",
 			want:     false,
 		},
 		{
-			name:     "9. Forbidden special-char",
+			name:     "#9 FORBIDDEN SPECIAL-CHAR",
 			username: "user-name",
 			want:     false,
 		},
 		{
-			name:     "10. Adjacent '.' and '_'",
+			name:     "#10 ADJACENT PERIOD AND UNDERSCORE",
 			username: "user._name",
 			want:     false,
 		},
 		{
-			name:     "11. No letters",
-			username: "123.456_789",
+			name:     "#11 NO LETTERS",
+			username: "12#3456_789",
 			want:     false,
 		},
 	}
@@ -942,32 +942,32 @@ func TestValidateEmail(t *testing.T) {
 		want  bool
 	}{
 		{
-			name:  "1. Valid",
+			name:  "#1 VALID",
 			email: "test@mail.com",
 			want:  true,
 		},
 		{
-			name:  "2. No '.'",
+			name:  "#2 NO PERIOD",
 			email: "test@mailcom",
 			want:  false,
 		},
 		{
-			name:  "3. No '@'",
+			name:  "#3 NO AT",
 			email: "testmail.com",
 			want:  false,
 		},
 		{
-			name:  "4. No name",
+			name:  "#4 NO NAME",
 			email: "@mail.com",
 			want:  false,
 		},
 		{
-			name:  "5. No domain base",
+			name:  "#5 NO DOMAIN-BASE",
 			email: "test@.com",
 			want:  false,
 		},
 		{
-			name:  "6. No domain suffix",
+			name:  "#6 NO DOMAIN-SUFFIX",
 			email: "test@mail.",
 			want:  false,
 		},
@@ -995,32 +995,32 @@ func TestValidatePassword(t *testing.T) {
 		want     bool
 	}{
 		{
-			name:     "1. Valid",
+			name:     "#1 VALID",
 			password: "Passw0rd!",
 			want:     true,
 		},
 		{
-			name:     "2. No number",
+			name:     "#2 NO NUMBER",
 			password: "Password!",
 			want:     false,
 		},
 		{
-			name:     "3. No uppercase",
+			name:     "#3 NO UPPERCASE",
 			password: "passw0rd!",
 			want:     false,
 		},
 		{
-			name:     "4. No lowercase",
+			name:     "#4 NO LOWERCASE",
 			password: "PASSW0RD!",
 			want:     false,
 		},
 		{
-			name:     "5. No special-char",
+			name:     "#5 NO SPECIAL-CHAR",
 			password: "Passw0rd",
 			want:     false,
 		},
 		{
-			name:     "6. Too short",
+			name:     "#6 TOO SHORT",
 			password: "Pswrd0!",
 			want:     false,
 		},

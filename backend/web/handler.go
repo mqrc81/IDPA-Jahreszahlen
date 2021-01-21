@@ -15,7 +15,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/gorilla/csrf"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
+	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
 var (
@@ -91,7 +91,7 @@ func init() {
 }
 
 // NewHandler initializes HTTP-handlers, including router and middleware.
-func NewHandler(store jahreszahlen.Store, sessions *scs.SessionManager, csrfKey []byte) *Handler {
+func NewHandler(store x.Store, sessions *scs.SessionManager, csrfKey []byte) *Handler {
 	handler := &Handler{
 		Mux:      chi.NewMux(),
 		store:    store,
@@ -193,7 +193,7 @@ func NewHandler(store jahreszahlen.Store, sessions *scs.SessionManager, csrfKey 
 type Handler struct {
 	*chi.Mux
 
-	store    jahreszahlen.Store
+	store    x.Store
 	sessions *scs.SessionManager
 }
 
@@ -205,7 +205,7 @@ func (handler *Handler) Home() http.HandlerFunc {
 	type data struct {
 		SessionData
 
-		Topics []jahreszahlen.Topic
+		Topics []x.Topic
 	}
 
 	return func(res http.ResponseWriter, req *http.Request) {

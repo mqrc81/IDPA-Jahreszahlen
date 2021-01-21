@@ -389,7 +389,7 @@ func (errors *FormErrors) validatePassword(password string, errorName string) {
 func regex(str string, regex string) bool {
 	match, err := regexp.MatchString(regex, str)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("error comparing regular-expression to string: %w", err))
 	}
 
 	return match

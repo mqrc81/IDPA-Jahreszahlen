@@ -12,7 +12,7 @@ import (
 	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/v2"
 
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/jahreszahlen"
+	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
 // NewSessionManager initializes new session management.
@@ -40,7 +40,7 @@ type SessionData struct {
 	FlashMessageSuccess string
 	FlashMessageError   string
 	Form                interface{}
-	User                jahreszahlen.User
+	User                x.User
 	LoggedIn            bool
 }
 
@@ -61,10 +61,10 @@ func GetSessionData(session *scs.SessionManager, ctx context.Context) SessionDat
 	// Retrieve user from session
 	userInf := ctx.Value("user")
 	if userInf != nil { // 'If there is a user in the session'
-		data.User = userInf.(jahreszahlen.User)
+		data.User = userInf.(x.User)
 		data.LoggedIn = true
 	} else {
-		data.User = jahreszahlen.User{}
+		data.User = x.User{}
 		data.LoggedIn = false
 	}
 
