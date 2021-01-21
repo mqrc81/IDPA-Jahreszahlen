@@ -1,5 +1,5 @@
-// Collection of tests for functions accessing the database evolving around
-// events.
+// Collection of tests for the database access layer of functions evolving
+// around events.
 
 package database
 
@@ -65,23 +65,18 @@ func TestGetEvent(t *testing.T) {
 
 	// New mock database
 	db, mock := NewMock()
-	store := &EventStore{db}
+	store := &EventStore{DB: db}
 	defer db.Close()
-
-	// Expected result
-	type want struct {
-		event x.Event
-		error bool
-	}
 
 	query := regexp.QuoteMeta(getEventQuery)
 
 	// Declare test cases
 	tests := []struct {
-		name    string
-		eventID int
-		mock    func()
-		want    want
+		name      string
+		eventID   int
+		mock      func()
+		wantEvent x.Event
+		wantError bool
 	}{
 		{
 			name:    "#1 OK",
@@ -92,10 +87,8 @@ func TestGetEvent(t *testing.T) {
 
 				mock.ExpectQuery(query).WithArgs(testEvent.EventID).WillReturnRows(rows)
 			},
-			want: want{
-				event: testEvent,
-				error: false,
-			},
+			wantEvent: testEvent,
+			wantError: false,
 		},
 		{
 			name:    "#2 NOT FOUND",
@@ -106,10 +99,8 @@ func TestGetEvent(t *testing.T) {
 
 				mock.ExpectQuery(query).WithArgs(testEvent.EventID).WillReturnRows(rows)
 			},
-			want: want{
-				event: x.Event{},
-				error: true,
-			},
+			wantEvent: x.Event{},
+			wantError: true,
 		},
 	}
 
@@ -118,12 +109,12 @@ func TestGetEvent(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			test.mock()
 			event, err := store.GetEvent(test.eventID)
-			if (err != nil) != test.want.error {
-				t.Errorf("GetEvent() error = %v, want error %v", err, test.want.error)
+			if (err != nil) != test.wantError {
+				t.Errorf("GetEvent() error = %v, want error %v", err, test.wantError)
 				return
 			}
-			if err == nil && !reflect.DeepEqual(event, test.want.event) {
-				t.Errorf("Get() = %v, want %v", event, test.want.event)
+			if err == nil && !reflect.DeepEqual(event, test.wantEvent) {
+				t.Errorf("GetEvent() = %v, want %v", event, test.wantEvent)
 			}
 		})
 	}
@@ -131,53 +122,39 @@ func TestGetEvent(t *testing.T) {
 
 // TestCountEvents tests getting amount of events.
 func TestCountEvents(t *testing.T) {
+
 	// New mock database
 	db, mock := NewMock()
-	store := &EventStore{db}
+	store := &EventStore{DB: db}
 	defer db.Close()
-
-	// Expected results
-	type want struct {
-		eventsCount int
-		error       bool
-	}
 
 	query := regexp.QuoteMeta(countEventsQuery)
 
 	// Declare test cases
 	tests := []struct {
-		name string
-		mock func()
-		want want
+		name            string
+		mock            func()
+		wantEventsCount int
+		wantError       bool
 	}{
 		{
 			name: "#1 OK",
 			mock: func() {
-				rows := mock.NewRows([]string{"event_id", "topic_id", "name", "year", "date"})
-				for _, event := range testEvents {
-					rows = rows.AddRow(event.EventID, event.TopicID, event.Name, event.Year, event.Date)
-				}
+				rows := sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(len(testEvents))
 
-				amount := sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(len(testEvents))
-				mock.ExpectQuery(query).WillReturnRows(amount)
+				mock.ExpectQuery(query).WillReturnRows(rows)
 			},
-			want: want{
-				eventsCount: len(testEvents),
-				error:       false,
-			},
+			wantEventsCount: len(testEvents),
+			wantError:       false,
 		},
 		{
 			name: "#2 OK (NO ROWS)",
 			mock: func() {
-				mock.NewRows([]string{"event_id", "topic_id", "name", "year", "date"})
-
-				amount := sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(0)
-				mock.ExpectQuery(query).WillReturnRows(amount)
+				rows := sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(0)
+				mock.ExpectQuery(query).WillReturnRows(rows)
 			},
-			want: want{
-				eventsCount: 0,
-				error:       false,
-			},
+			wantEventsCount: 0,
+			wantError:       false,
 		},
 	}
 
@@ -186,12 +163,12 @@ func TestCountEvents(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			test.mock()
 			eventsCount, err := store.CountEvents()
-			if (err != nil) != test.want.error {
-				t.Errorf("GetEvent() error = %v, want error %v", err, test.want.error)
+			if (err != nil) != test.wantError {
+				t.Errorf("CountEvents() error = %v, want error %v", err, test.wantError)
 				return
 			}
-			if err == nil && !reflect.DeepEqual(eventsCount, test.want.eventsCount) {
-				t.Errorf("Get() = %v, want %v", eventsCount, test.want.eventsCount)
+			if err == nil && !reflect.DeepEqual(eventsCount, test.wantEventsCount) {
+				t.Errorf("CountEvents() = %v, want %v", eventsCount, test.wantEventsCount)
 			}
 		})
 	}
@@ -200,14 +177,122 @@ func TestCountEvents(t *testing.T) {
 // TestCreateEvent tests creating a new event.
 func TestCreateEvent(t *testing.T) {
 
+	// New mock database
+	db, _ := NewMock()
+	store := EventStore{DB: db}
+	defer db.Close()
+
+	_ = regexp.QuoteMeta(createEventQuery)
+
+	// Declare test cases
+	tests := []struct {
+		name      string
+		event     x.Event
+		mock      func()
+		wantError bool
+	}{
+		{
+			name:  "#1 OK",
+			event: testEvent,
+			mock: func() {
+				// TODO
+			},
+			wantError: false,
+		},
+		// TODO
+	}
+
+	// Run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			test.mock()
+			err := store.CreateEvent(&test.event)
+			if (err != nil) != test.wantError {
+				t.Errorf("CreateEvent() error = %v, want error %v", err, test.wantError)
+				return
+			}
+		})
+	}
 }
 
 // TestUpdateEvent tests updating an existing event.
 func TestUpdateEvent(t *testing.T) {
 
+	// New mock database
+	db, _ := NewMock()
+	store := EventStore{DB: db}
+	defer db.Close()
+
+	_ = regexp.QuoteMeta(createEventQuery)
+
+	// Declare test cases
+	tests := []struct {
+		name      string
+		event     x.Event
+		mock      func()
+		wantError bool
+	}{
+		{
+			name:  "#1 OK",
+			event: testEvent,
+			mock: func() {
+				// TODO
+			},
+			wantError: false,
+		},
+		// TODO
+	}
+
+	// Run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			test.mock()
+			err := store.UpdateEvent(&test.event)
+			if (err != nil) != test.wantError {
+				t.Errorf("UpdateEvent() error = %v, want error %v", err, test.wantError)
+				return
+			}
+		})
+	}
 }
 
 // TestDeleteEvent tests deleting an existing event.
 func TestDeleteEvent(t *testing.T) {
 
+	// New mock database
+	db, _ := NewMock()
+	store := EventStore{DB: db}
+	defer db.Close()
+
+	_ = regexp.QuoteMeta(deleteEventQuery)
+
+	// Declare test cases
+	tests := []struct {
+		name      string
+		eventID   int
+		mock      func()
+		wantError bool
+	}{
+		{
+			name:    "#1 OK",
+			eventID: testEvent.EventID,
+			mock: func() {
+				// TODO
+			},
+			wantError: false,
+		},
+		// TODO
+	}
+
+	// Run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			test.mock()
+			err := store.DeleteEvent(test.eventID)
+			if (err != nil) != test.wantError {
+				t.Errorf("UpdateEvent() error = %v, want error %v", err, test.wantError)
+				return
+			}
+		})
+	}
 }
