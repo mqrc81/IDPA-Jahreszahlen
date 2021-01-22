@@ -5,7 +5,6 @@ package database
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/jmoiron/sqlx"
 
@@ -124,7 +123,7 @@ func (store *ScoreStore) CreateScore(score *x.Score) error {
 		score.TopicID,
 		score.UserID,
 		score.Points,
-		time.Now(),
+		score.Date,
 	); err != nil {
 		return fmt.Errorf("error creating score: %w", err)
 	}

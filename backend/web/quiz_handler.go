@@ -645,6 +645,7 @@ func (h *QuizHandler) Phase3Submit() http.HandlerFunc {
 			TopicID: quiz.Topic.TopicID,
 			UserID:  user.UserID,
 			Points:  quiz.Points,
+			Date:    time.Now(),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return

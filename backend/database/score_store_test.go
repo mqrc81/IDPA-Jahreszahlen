@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/DATA-DOG/go-sqlmock"
+
 	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
@@ -374,4 +376,106 @@ func TestGetScoresByTopicAndUser(t *testing.T) {
 // TestCreateScore tests creating a new score
 func TestCreateScore(t *testing.T) {
 
+	// New mock database
+	db, mock := NewMock()
+	store := &ScoreStore{DB: db}
+	defer db.Close()
+
+	queryMatch := "INSERT INTO scores"
+
+	// Declare test cases
+	tests := []struct {
+		name      string
+		score     x.Score
+		mock      func(score x.Score)
+		wantError bool
+	}{
+		{
+			// When everything works as intended
+			name:  "#1 OK",
+			score: tScore,
+			mock: func(score x.Score) {
+				mock.ExpectExec(queryMatch).WithArgs(score.TopicID, score.UserID, score.Points, score.Date).
+					WillReturnResult(sqlmock.NewResult(int64(score.ScoreID), 1))
+			},
+			wantError: false,
+		},
+		{
+			// When topic with given topic ID doesn't exist
+			name: "#2 TOPIC NOT FOUND",
+			score: x.Score{
+				ScoreID: tScore.ScoreID,
+				TopicID: 0,
+				UserID:  tScore.UserID,
+				Points:  tScore.Points,
+				Date:    tScore.Date,
+			},
+			mock: func(score x.Score) {
+				mock.ExpectExec(queryMatch).WithArgs(score.TopicID, score.UserID, score.Points, score.Date).
+					WillReturnError(errors.New("topic with given id does not exist"))
+			},
+			wantError: true,
+		},
+		{
+			// When user with given user ID doesn't exist
+			name: "#3 USER NOT FOUND",
+			score: x.Score{
+				ScoreID: tScore.ScoreID,
+				TopicID: tScore.TopicID,
+				UserID:  0,
+				Points:  tScore.Points,
+				Date:    tScore.Date,
+			},
+			mock: func(score x.Score) {
+				mock.ExpectExec(queryMatch).WithArgs(score.TopicID, score.UserID, score.Points, score.Date).
+					WillReturnError(errors.New("user with given id does not exist"))
+			},
+			wantError: true,
+		},
+		{
+			// When points are missing
+			name: "#4 POINTS MISSING",
+			score: x.Score{
+				ScoreID: tScore.ScoreID,
+				TopicID: tScore.TopicID,
+				UserID:  tScore.UserID,
+				Date:    tScore.Date,
+			},
+			mock: func(score x.Score) {
+				mock.ExpectExec(queryMatch).WithArgs(score.TopicID, score.UserID, score.Points, score.Date).
+					WillReturnError(errors.New("points can not be empty"))
+			},
+			wantError: true,
+		},
+		{
+			// When date is missing
+			name: "#5 DATE MISSING",
+			score: x.Score{
+				ScoreID: tScore.ScoreID,
+				TopicID: tScore.TopicID,
+				UserID:  tScore.UserID,
+				Points:  tScore.Points,
+			},
+			mock: func(score x.Score) {
+				mock.ExpectExec(queryMatch).WithArgs(score.TopicID, score.UserID, score.Points, score.Date).
+					WillReturnError(errors.New("date can not be empty"))
+			},
+			wantError: true,
+		},
+	}
+
+	// Run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			test.mock(test.score)
+
+			err := store.CreateScore(&test.score)
+
+			if (err != nil) != test.wantError {
+				t.Errorf("CreateScore() error = %v, want error %v", err, test.wantError)
+				return
+			}
+		})
+	}
 }
