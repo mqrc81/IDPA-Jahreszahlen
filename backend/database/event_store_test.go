@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	// Mock event for testing
+	// Mock event for testing purposes
 	ee = x.Event{
 		EventID: 1,
 		TopicID: 1,
@@ -26,7 +26,7 @@ var (
 	}
 )
 
-// TestGetEvent tests getting event by ID.
+// TestGetEvent tests getting an event by ID.
 func TestGetEvent(t *testing.T) {
 
 	// New mock database
