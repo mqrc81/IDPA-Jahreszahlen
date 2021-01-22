@@ -120,6 +120,7 @@ func TestValidateTopicForm(t *testing.T) {
 	// Run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+
 			form := &TopicForm{
 				Name:        test.form.name,
 				StartYear:   test.form.startYear,
@@ -127,6 +128,7 @@ func TestValidateTopicForm(t *testing.T) {
 				Description: test.form.description,
 				Errors:      FormErrors{},
 			}
+
 			if got := form.Validate(); got != test.want {
 				t.Errorf("Validate() = %v, want %v", got, test.want)
 			}
@@ -275,6 +277,7 @@ func TestValidateEventForm(t *testing.T) {
 	// Run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+
 			form := &EventForm{
 				Name:       test.form.name,
 				Year:       0,
@@ -282,6 +285,7 @@ func TestValidateEventForm(t *testing.T) {
 				YearOrDate: test.form.yearOrDate,
 				Errors:     FormErrors{},
 			}
+
 			if got := form.Validate(); got != test.want {
 				t.Errorf("Validate() = %v, want %v", got, test.want)
 			}
@@ -379,6 +383,7 @@ func TestValidateRegisterForm(t *testing.T) {
 	// Run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+
 			form := &RegisterForm{
 				Username:      test.form.username,
 				Email:         test.form.email,
@@ -387,6 +392,7 @@ func TestValidateRegisterForm(t *testing.T) {
 				EmailTaken:    test.form.emailTaken,
 				Errors:        FormErrors{},
 			}
+
 			if got := form.Validate(); got != test.want {
 				t.Errorf("Validate() = %v, want %v", got, test.want)
 			}
@@ -457,6 +463,7 @@ func TestValidateLoginForm(t *testing.T) {
 	// Run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+
 			form := &LoginForm{
 				UsernameOrEmail:          test.form.usernameOrEmail,
 				Password:                 test.form.password,
@@ -464,6 +471,7 @@ func TestValidateLoginForm(t *testing.T) {
 				IncorrectPassword:        test.form.incorrectPassword,
 				Errors:                   FormErrors{},
 			}
+
 			if got := form.Validate(); got != test.want {
 				t.Errorf("Validate() = %v, want %v", got, test.want)
 			}
@@ -552,6 +560,7 @@ func TestValidateEditUsernameForm(t *testing.T) {
 	// Run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+
 			form := &EditUsernameForm{
 				NewUsername:       test.form.newUsername,
 				Password:          test.form.password,
@@ -559,6 +568,7 @@ func TestValidateEditUsernameForm(t *testing.T) {
 				IncorrectPassword: test.form.incorrectPassword,
 				Errors:            FormErrors{},
 			}
+
 			if got := form.Validate(); got != test.want {
 				t.Errorf("Validate() = %v, want %v", got, test.want)
 			}
@@ -647,6 +657,7 @@ func TestValidateEditEmailForm(t *testing.T) {
 	// Run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+
 			form := &EditEmailForm{
 				NewEmail:          test.form.newEmail,
 				Password:          test.form.password,
@@ -654,6 +665,7 @@ func TestValidateEditEmailForm(t *testing.T) {
 				IncorrectPassword: test.form.incorrectPassword,
 				Errors:            FormErrors{},
 			}
+
 			if got := form.Validate(); got != test.want {
 				t.Errorf("Validate() = %v, want %v", got, test.want)
 			}
@@ -735,12 +747,14 @@ func TestValidateEditPasswordForm(t *testing.T) {
 	// Run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+
 			form := &EditPasswordForm{
 				NewPassword:          test.form.newPassword,
 				OldPassword:          test.form.oldPassword,
 				IncorrectOldPassword: test.form.incorrectOldPassword,
 				Errors:               FormErrors{},
 			}
+
 			if got := form.Validate(); got != test.want {
 				t.Errorf("Validate() = %v, want %v", got, test.want)
 			}
@@ -797,12 +811,14 @@ func TestValidateForgotPasswordForm(t *testing.T) {
 	// Run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+
 			form := &ForgotPasswordForm{
 				Email:           test.form.email,
 				IncorrectEmail:  test.form.incorrectEmail,
 				UnverifiedEmail: test.form.unverifiedEmail,
 				Errors:          FormErrors{},
 			}
+
 			if got := form.Validate(); got != test.want {
 				t.Errorf("Validate() = %v, want %v", got, test.want)
 			}
@@ -843,6 +859,7 @@ func TestValidateResetPasswordForm(t *testing.T) {
 	// Run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+
 			form := &ResetPasswordForm{
 				Password: test.form.password,
 				Errors:   FormErrors{},
@@ -922,13 +939,17 @@ func TestValidateUsername(t *testing.T) {
 
 	// Run tests
 	for _, test := range tests {
-		errors := FormErrors{}
+
 		t.Run(test.name, func(t *testing.T) {
+
+			errors := FormErrors{}
+
 			errors.validateUsername(test.username)
+
+			if got := len(errors) == 0; got != test.want {
+				t.Errorf("Validate() = %v, want %v", got, test.want)
+			}
 		})
-		if got := len(errors) == 0; got != test.want {
-			t.Errorf("Validate() = %v, want %v", got, test.want)
-		}
 	}
 }
 
@@ -975,13 +996,16 @@ func TestValidateEmail(t *testing.T) {
 
 	// Run tests
 	for _, test := range tests {
-		errors := FormErrors{}
 		t.Run(test.name, func(t *testing.T) {
+
+			errors := FormErrors{}
+
 			errors.validateEmail(test.email)
+
+			if got := len(errors) == 0; got != test.want {
+				t.Errorf("Validate() = %v, want %v", got, test.want)
+			}
 		})
-		if got := len(errors) == 0; got != test.want {
-			t.Errorf("Validate() = %v, want %v", got, test.want)
-		}
 	}
 }
 
@@ -1028,12 +1052,15 @@ func TestValidatePassword(t *testing.T) {
 
 	// Run tests
 	for _, test := range tests {
-		errors := FormErrors{}
 		t.Run(test.name, func(t *testing.T) {
+
+			errors := FormErrors{}
+
 			errors.validatePassword(test.password, "Password")
+
+			if got := len(errors) == 0; got != test.want {
+				t.Errorf("Validate() = %v, want %v", got, test.want)
+			}
 		})
-		if got := len(errors) == 0; got != test.want {
-			t.Errorf("Validate() = %v, want %v", got, test.want)
-		}
 	}
 }

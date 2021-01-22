@@ -19,14 +19,14 @@ import (
 )
 
 var (
-	// Flag to skip init function when testing
+	// _testing is a flag to skip init function when testing
 	_testing = false
 
-	// Parsed HTML-templates to be executed in their respective HTTP-handler
-	// functions when needed
+	// Templates is a map of parsed HTML-templates to be executed in their
+	// respective HTTP-handler functions when needed
 	Templates = make(map[string]*template.Template)
 
-	// A map of custom functions to be used in an HTML-template
+	// funcMap is a map of custom functions to be used in an HTML-template
 	funcMap = template.FuncMap{
 		"is_even": func(num int) bool {
 			return num%2 == 0
@@ -268,12 +268,4 @@ func (handler *Handler) NotFound404() http.HandlerFunc {
 			return
 		}
 	}
-}
-
-// Abs gets absolute value of an int number (-10 => 10)
-func Abs(num int) int {
-	if num < 0 {
-		return -num
-	}
-	return num
 }

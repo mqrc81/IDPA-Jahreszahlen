@@ -8,10 +8,10 @@ package web
 import (
 	"encoding/gob"
 	"fmt"
-	"log"
-	"regexp"
 	"strconv"
 	"time"
+
+	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
 // init gets initialized with the package.
@@ -342,15 +342,15 @@ func (errors *FormErrors) validateUsername(username string) {
 		(*errors)["Username"] = "Benutzername muss mindestens 3 Zeichen lang sein."
 	} else if len(username) > 20 {
 		(*errors)["Username"] = "Benutzername darf höchstens 20 Zeichen lang sein."
-	} else if !regex(username, "^[a-zA-Z0-9._]*$") {
+	} else if !x.Regex(username, "^[a-zA-Z0-9._]*$") {
 		(*errors)["Username"] = "Benutzername darf nur Buchstaben, Zahlen, '.' und '_' enthalten."
-	} else if !regex(username, "[a-zA-Z]") {
+	} else if !x.Regex(username, "[a-zA-Z]") {
 		(*errors)["Username"] = "Benutzername muss mindestens 1 Buchstaben enthalten."
-	} else if regex(username, "^[._]") {
+	} else if x.Regex(username, "^[._]") {
 		(*errors)["Username"] = "Benutzername darf nicht mit '.' oder '_' beginnen."
-	} else if regex(username, "[._]$") {
+	} else if x.Regex(username, "[._]$") {
 		(*errors)["Username"] = "Benutzername darf nicht mit '.' oder '_' enden."
-	} else if regex(username, "[_.]{2}") {
+	} else if x.Regex(username, "[_.]{2}") {
 		(*errors)["Username"] = "Benutzername darf '.' und '_' nicht aufeinanderfolgend haben."
 	}
 }
@@ -363,7 +363,7 @@ func (errors *FormErrors) validateEmail(email string) {
 		(*errors)["Email"] = "Email muss mindestens 3 Zeichen lang sein."
 	} else if len(email) > 100 {
 		(*errors)["Email"] = "Email darf höchstens 100 Zeichen lang sein."
-	} else if !regex(email, "^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,4}$") {
+	} else if !x.Regex(email, "^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,4}$") {
 		(*errors)["Email"] = "Ungültiges Email-Format."
 	}
 }
@@ -374,25 +374,15 @@ func (errors *FormErrors) validatePassword(password string, errorName string) {
 		(*errors)[errorName] = "Bitte Passwort angeben."
 	} else if len(password) < 8 {
 		(*errors)[errorName] = "Passwort muss mindestens 8 Zeichen lang sein."
-	} else if !regex(password, "[!@#$%^&*]") {
+	} else if !x.Regex(password, "[!@#$%^&*]") {
 		(*errors)[errorName] = "Passwort muss ein Sonderzeichen enthalten (!@#$%^&*)."
-	} else if !regex(password, "[a-z]") {
+	} else if !x.Regex(password, "[a-z]") {
 		(*errors)[errorName] = "Passwort muss mindestens ein Kleinbuchstaben enthalten."
-	} else if !regex(password, "[A-Z]") {
+	} else if !x.Regex(password, "[A-Z]") {
 		(*errors)[errorName] = "Passwort muss mindestens ein Grossbuchstaben enthalten."
-	} else if !regex(password, "\\d") {
+	} else if !x.Regex(password, "\\d") {
 		(*errors)[errorName] = "Passwort muss mindestens eine Zahl enthalten."
 	}
-}
-
-// regex checks if a certain regular expression matches a certain string.
-func regex(str string, regex string) bool {
-	match, err := regexp.MatchString(regex, str)
-	if err != nil {
-		log.Fatal(fmt.Errorf("error comparing regular-expression to string: %w", err))
-	}
-
-	return match
 }
 
 // TODO form validation for:

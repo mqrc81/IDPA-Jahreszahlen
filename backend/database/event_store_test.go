@@ -8,7 +8,6 @@ import (
 	"errors"
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 
@@ -16,13 +15,13 @@ import (
 )
 
 var (
-	// Mock event for testing purposes
-	ee = x.Event{
+	// tEvent is a mock event for testing purposes
+	tEvent = x.Event{
 		EventID: 1,
 		TopicID: 1,
 		Name:    "Test Event 1",
 		Year:    1800,
-		Date:    time.Date(1800, time.January, 1, 0, 0, 0, 0, time.UTC),
+		Date:    x.Date(1800, 1, 1),
 	}
 )
 
@@ -35,6 +34,8 @@ func TestGetEvent(t *testing.T) {
 	defer db.Close()
 
 	queryMatch := "SELECT (.+) FROM events"
+
+	table := []string{"event_id", "topic_id", "name", "year", "date"}
 
 	// Declare test cases
 	tests := []struct {
@@ -49,20 +50,20 @@ func TestGetEvent(t *testing.T) {
 			name:    "#1 OK",
 			eventID: 1,
 			mock: func(eventID int) {
-				rows := sqlmock.NewRows([]string{"event_id", "topic_id", "name", "year", "date"}).
-					AddRow(ee.EventID, ee.TopicID, ee.Name, ee.Year, ee.Date)
+				rows := sqlmock.NewRows(table).
+					AddRow(tEvent.EventID, tEvent.TopicID, tEvent.Name, tEvent.Year, tEvent.Date)
 
 				mock.ExpectQuery(queryMatch).WithArgs(eventID).WillReturnRows(rows)
 			},
-			wantEvent: ee,
+			wantEvent: tEvent,
 			wantError: false,
 		},
 		{
-			// When event with given ID doesn't exist
+			// When event with given event ID doesn't exist
 			name:    "#2 NOT FOUND",
 			eventID: 0,
 			mock: func(eventID int) {
-				rows := sqlmock.NewRows([]string{"event_id", "topic_id", "name", "year", "date"})
+				rows := sqlmock.NewRows(table)
 
 				mock.ExpectQuery(queryMatch).WithArgs(eventID).WillReturnRows(rows)
 			},
@@ -74,8 +75,11 @@ func TestGetEvent(t *testing.T) {
 	// Run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+
 			test.mock(test.eventID)
+
 			event, err := store.GetEvent(test.eventID)
+
 			if (err != nil) != test.wantError {
 				t.Errorf("GetEvent() error = %v, want error %v", err, test.wantError)
 				return
@@ -97,6 +101,8 @@ func TestCountEvents(t *testing.T) {
 
 	queryMatch := "SELECT COUNT((.+)) FROM events"
 
+	table := []string{"COUNT(*)"}
+
 	// Declare test cases
 	tests := []struct {
 		name            string
@@ -108,7 +114,7 @@ func TestCountEvents(t *testing.T) {
 			// When everything works as intended
 			name: "#1 OK",
 			mock: func() {
-				rows := sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(3)
+				rows := sqlmock.NewRows(table).AddRow(3)
 
 				mock.ExpectQuery(queryMatch).WillReturnRows(rows)
 			},
@@ -120,8 +126,11 @@ func TestCountEvents(t *testing.T) {
 	// Run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+
 			test.mock()
+
 			eventsCount, err := store.CountEvents()
+
 			if (err != nil) != test.wantError {
 				t.Errorf("CountEvents() error = %v, want error %v", err, test.wantError)
 				return
@@ -153,7 +162,7 @@ func TestCreateEvent(t *testing.T) {
 		{
 			// When everything works as intended
 			name:  "#1 OK",
-			event: ee,
+			event: tEvent,
 			mock: func(event x.Event) {
 				mock.ExpectExec(queryMatch).WithArgs(event.TopicID, event.Name, event.Year, event.Date).
 					WillReturnResult(sqlmock.NewResult(int64(event.TopicID), 1))
@@ -161,14 +170,14 @@ func TestCreateEvent(t *testing.T) {
 			wantError: false,
 		},
 		{
-			// When topic with given ID doesn't exist
+			// When topic with given topic ID doesn't exist
 			name: "#2 TOPIC NOT FOUND",
 			event: x.Event{
-				EventID: ee.EventID,
+				EventID: tEvent.EventID,
 				TopicID: 0,
-				Name:    ee.Name,
-				Year:    ee.Year,
-				Date:    ee.Date,
+				Name:    tEvent.Name,
+				Year:    tEvent.Year,
+				Date:    tEvent.Date,
 			},
 			mock: func(event x.Event) {
 				mock.ExpectExec(queryMatch).WithArgs(event.TopicID, event.Name, event.Year, event.Date).
@@ -180,10 +189,10 @@ func TestCreateEvent(t *testing.T) {
 			// When title is missing
 			name: "#3 NAME MISSING",
 			event: x.Event{
-				EventID: ee.EventID,
-				TopicID: ee.TopicID,
-				Year:    ee.Year,
-				Date:    ee.Date,
+				EventID: tEvent.EventID,
+				TopicID: tEvent.TopicID,
+				Year:    tEvent.Year,
+				Date:    tEvent.Date,
 			},
 			mock: func(event x.Event) {
 				mock.ExpectExec(queryMatch).WithArgs(event.TopicID, event.Name, event.Year, event.Date).
@@ -195,10 +204,10 @@ func TestCreateEvent(t *testing.T) {
 			// When year is missing
 			name: "#4 YEAR MISSING",
 			event: x.Event{
-				EventID: ee.EventID,
-				TopicID: ee.TopicID,
-				Name:    ee.Name,
-				Date:    ee.Date,
+				EventID: tEvent.EventID,
+				TopicID: tEvent.TopicID,
+				Name:    tEvent.Name,
+				Date:    tEvent.Date,
 			},
 			mock: func(event x.Event) {
 				mock.ExpectExec(queryMatch).WithArgs(event.TopicID, event.Name, event.Year, event.Date).
@@ -210,10 +219,10 @@ func TestCreateEvent(t *testing.T) {
 			// When date is missing
 			name: "#5 DATE MISSING",
 			event: x.Event{
-				EventID: ee.EventID,
-				TopicID: ee.TopicID,
-				Name:    ee.Name,
-				Year:    ee.Year,
+				EventID: tEvent.EventID,
+				TopicID: tEvent.TopicID,
+				Name:    tEvent.Name,
+				Year:    tEvent.Year,
 			},
 			mock: func(event x.Event) {
 				mock.ExpectExec(queryMatch).WithArgs(event.TopicID, event.Name, event.Year, event.Date).
@@ -226,8 +235,11 @@ func TestCreateEvent(t *testing.T) {
 	// Run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+
 			test.mock(test.event)
+
 			err := store.CreateEvent(&test.event)
+
 			if (err != nil) != test.wantError {
 				t.Errorf("CreateEvent() error = %v, want error %v", err, test.wantError)
 				return
@@ -256,24 +268,25 @@ func TestUpdateEvent(t *testing.T) {
 		{
 			// When everything works as intended
 			name:  "#1 OK",
-			event: ee,
+			event: tEvent,
 			mock: func(event x.Event) {
-				mock.ExpectExec(queryMatch).WithArgs(ee.Name, ee.Year, ee.Date, ee.EventID).
+				mock.ExpectExec(queryMatch).WithArgs(tEvent.Name, tEvent.Year, tEvent.Date, tEvent.EventID).
 					WillReturnResult(sqlmock.NewResult(0, 1))
 			},
 			wantError: false,
 		},
 		{
+			// When event with given event ID doesn't exist
 			name: "#2 NOT FOUND",
 			event: x.Event{
 				EventID: 0,
-				TopicID: ee.TopicID,
-				Name:    ee.Name,
-				Year:    ee.Year,
-				Date:    ee.Date,
+				TopicID: tEvent.TopicID,
+				Name:    tEvent.Name,
+				Year:    tEvent.Year,
+				Date:    tEvent.Date,
 			},
 			mock: func(event x.Event) {
-				mock.ExpectExec(queryMatch).WithArgs(ee.Name, ee.Year, ee.Date, ee.EventID).
+				mock.ExpectExec(queryMatch).WithArgs(tEvent.Name, tEvent.Year, tEvent.Date, tEvent.EventID).
 					WillReturnError(errors.New("event with given id does not exist"))
 			},
 			wantError: true,
@@ -282,10 +295,10 @@ func TestUpdateEvent(t *testing.T) {
 			// When title is missing
 			name: "#3 NAME MISSING",
 			event: x.Event{
-				EventID: ee.EventID,
-				TopicID: ee.TopicID,
-				Year:    ee.Year,
-				Date:    ee.Date,
+				EventID: tEvent.EventID,
+				TopicID: tEvent.TopicID,
+				Year:    tEvent.Year,
+				Date:    tEvent.Date,
 			},
 			mock: func(event x.Event) {
 				mock.ExpectExec(queryMatch).WithArgs(event.Name, event.Year, event.Date, event.EventID).
@@ -297,10 +310,10 @@ func TestUpdateEvent(t *testing.T) {
 			// When year is missing
 			name: "#4 YEAR MISSING",
 			event: x.Event{
-				EventID: ee.EventID,
-				TopicID: ee.TopicID,
-				Name:    ee.Name,
-				Date:    ee.Date,
+				EventID: tEvent.EventID,
+				TopicID: tEvent.TopicID,
+				Name:    tEvent.Name,
+				Date:    tEvent.Date,
 			},
 			mock: func(event x.Event) {
 				mock.ExpectExec(queryMatch).WithArgs(event.Name, event.Year, event.Date, event.EventID).
@@ -312,10 +325,10 @@ func TestUpdateEvent(t *testing.T) {
 			// When date is missing
 			name: "#5 DATE MISSING",
 			event: x.Event{
-				EventID: ee.EventID,
-				TopicID: ee.TopicID,
-				Name:    ee.Name,
-				Year:    ee.Year,
+				EventID: tEvent.EventID,
+				TopicID: tEvent.TopicID,
+				Name:    tEvent.Name,
+				Year:    tEvent.Year,
 			},
 			mock: func(event x.Event) {
 				mock.ExpectExec(queryMatch).WithArgs(event.Name, event.Year, event.Date, event.EventID).
@@ -328,8 +341,11 @@ func TestUpdateEvent(t *testing.T) {
 	// Run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+
 			test.mock(test.event)
+
 			err := store.UpdateEvent(&test.event)
+
 			if (err != nil) != test.wantError {
 				t.Errorf("UpdateEvent() error = %v, want error %v", err, test.wantError)
 				return
@@ -356,8 +372,9 @@ func TestDeleteEvent(t *testing.T) {
 		wantError bool
 	}{
 		{
+			// When everything works as intended
 			name:    "#1 OK",
-			eventID: ee.EventID,
+			eventID: tEvent.EventID,
 			mock: func(eventID int) {
 				mock.ExpectExec(queryMatch).WithArgs(eventID).
 					WillReturnResult(sqlmock.NewResult(0, 1))
@@ -365,6 +382,7 @@ func TestDeleteEvent(t *testing.T) {
 			wantError: false,
 		},
 		{
+			// When event with given event ID doesn't exist
 			name:    "#2 NOT FOUND",
 			eventID: 0,
 			mock: func(eventID int) {
@@ -378,8 +396,11 @@ func TestDeleteEvent(t *testing.T) {
 	// Run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+
 			test.mock(test.eventID)
+
 			err := store.DeleteEvent(test.eventID)
+
 			if (err != nil) != test.wantError {
 				t.Errorf("DeleteEvent() error = %v, want error %v", err, test.wantError)
 				return

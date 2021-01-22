@@ -397,7 +397,7 @@ func (h *QuizHandler) Phase2Submit() http.HandlerFunc {
 			} else {
 				// Get absolute value of difference between user's guess and
 				// correct year
-				difference := Abs(correctYear - guess)
+				difference := x.Abs(correctYear - guess)
 
 				// Check if the user's guess is close and potentially add
 				// partial points (the closer the guess, the more points)
@@ -623,7 +623,7 @@ func (h *QuizHandler) Phase3Submit() http.HandlerFunc {
 
 			// Get absolute value of difference between user's guess and
 			// correct order
-			difference := Abs(order - num) // num represents the user's order
+			difference := x.Abs(order - num) // num represents the user's order
 
 			// Check if guess was correct
 			if difference == 0 {
