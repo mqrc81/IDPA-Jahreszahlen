@@ -138,7 +138,7 @@ func TestGetScoresByTopic(t *testing.T) {
 		{
 			// When everything works as intended
 			name:    "#1 OK",
-			topicID: tScore.TopicID,
+			topicID: tScores[0].TopicID,
 			mock: func(topicID int) {
 				rows := mock.NewRows(table)
 				for _, s := range tScores {
@@ -153,7 +153,7 @@ func TestGetScoresByTopic(t *testing.T) {
 		{
 			// When the scores table is empty
 			name:    "#2 OK (NO ROWS)",
-			topicID: tScore.TopicID,
+			topicID: tScores[0].TopicID,
 			mock: func(topicID int) {
 				rows := mock.NewRows(table)
 
@@ -197,12 +197,178 @@ func TestGetScoresByTopic(t *testing.T) {
 // TestGetScoresByUser tests getting all scores of a certain user
 func TestGetScoresByUser(t *testing.T) {
 
+	// New mock database
+	db, mock := NewMock()
+	store := &ScoreStore{DB: db}
+	defer db.Close()
+
+	queryMatch := "SELECT (.+) FROM scores"
+
+	tScores := []x.Score{tScore, tScore3}
+	table := []string{"score_id", "topic_id", "user_id", "points", "date", "topic_name", "user_name"}
+
+	// Declare test cases
+	tests := []struct {
+		name       string
+		userID     int
+		mock       func(userID int)
+		wantScores []x.Score
+		wantError  bool
+	}{
+		{
+			// When everything works as intended
+			name:   "#1 OK",
+			userID: tScores[0].UserID,
+			mock: func(userID int) {
+				rows := mock.NewRows(table)
+				for _, s := range tScores {
+					rows = rows.AddRow(s.ScoreID, s.TopicID, s.UserID, s.Points, s.Date, s.TopicName, s.UserName)
+				}
+
+				mock.ExpectQuery(queryMatch).WithArgs(userID).WillReturnRows(rows)
+			},
+			wantScores: tScores,
+			wantError:  false,
+		},
+		{
+			// When the scores table is empty
+			name:   "#2 OK (NO ROWS)",
+			userID: tScores[0].UserID,
+			mock: func(userID int) {
+				rows := mock.NewRows(table)
+
+				mock.ExpectQuery(queryMatch).WithArgs(userID).WillReturnRows(rows)
+			},
+			wantScores: nilScores,
+			wantError:  false,
+		},
+		{
+			// When user with given user ID doesn't exist
+			name:   "#3 USER NOT FOUND",
+			userID: 0,
+			mock: func(userID int) {
+				mock.ExpectQuery(queryMatch).WithArgs(userID).
+					WillReturnError(errors.New("user with given id does not exist"))
+			},
+			wantScores: nilScores,
+			wantError:  true,
+		},
+	}
+
+	// Run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			test.mock(test.userID)
+
+			scores, err := store.GetScoresByUser(test.userID)
+
+			if (err != nil) != test.wantError {
+				t.Errorf("GetScoresByUser() error = %v, want error %v", err, test.wantError)
+				return
+			}
+			if err == nil && !reflect.DeepEqual(scores, test.wantScores) {
+				t.Errorf("GetScoresByUser() = %v, want %v", scores, test.wantScores)
+			}
+		})
+	}
 }
 
 // TestGetScoresByTopicAndUser tests getting all scores of a certain topic and
 // a certain user.
 func TestGetScoresByTopicAndUser(t *testing.T) {
 
+	// New mock database
+	db, mock := NewMock()
+	store := &ScoreStore{DB: db}
+	defer db.Close()
+
+	queryMatch := "SELECT (.+) FROM scores"
+
+	tScores := []x.Score{tScore}
+	table := []string{"score_id", "topic_id", "user_id", "points", "date", "topic_name", "user_name"}
+
+	// Declare test cases
+	tests := []struct {
+		name       string
+		topicID    int
+		userID     int
+		mock       func(topicID int, userID int)
+		wantScores []x.Score
+		wantError  bool
+	}{
+		{
+			// When everything works as intended
+			name:    "#1 OK",
+			topicID: tScores[0].TopicID,
+			userID:  tScores[0].UserID,
+			mock: func(topicID int, userID int) {
+				rows := mock.NewRows(table)
+				for _, s := range tScores {
+					rows = rows.AddRow(s.ScoreID, s.TopicID, s.UserID, s.Points, s.Date, s.TopicName, s.UserName)
+				}
+
+				mock.ExpectQuery(queryMatch).WithArgs(topicID, userID).WillReturnRows(rows)
+			},
+			wantScores: tScores,
+			wantError:  false,
+		},
+		{
+			// When the scores table is empty
+			name:    "#2 OK (NO ROWS)",
+			topicID: tScores[0].TopicID,
+			userID:  tScores[0].UserID,
+			mock: func(topicID int, userID int) {
+				rows := mock.NewRows(table)
+
+				mock.ExpectQuery(queryMatch).WithArgs(topicID, userID).WillReturnRows(rows)
+			},
+			wantScores: nilScores,
+			wantError:  false,
+		},
+		{
+			// When topic with given topic ID doesn't exist
+			name:    "#3 TOPIC NOT FOUND",
+			topicID: 0,
+			userID:  tScores[0].UserID,
+			mock: func(topicID int, userID int) {
+				mock.ExpectQuery(queryMatch).WithArgs(topicID, userID).
+					WillReturnError(errors.New("topic with given id does not exist"))
+			},
+			wantScores: nilScores,
+			wantError:  true,
+		},
+		{
+			// When user with given user ID doesn't exist
+			name:    "#4 USER NOT FOUND",
+			topicID: tScores[0].TopicID,
+			userID:  0,
+			mock: func(topicID int, userID int) {
+				mock.ExpectQuery(queryMatch).WithArgs(topicID, userID).
+					WillReturnError(errors.New("user with given id does not exist"))
+			},
+			wantScores: nilScores,
+			wantError:  true,
+		},
+	}
+
+	// Run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			test.mock(test.topicID, test.userID)
+
+			scores, err := store.GetScoresByTopicAndUser(test.topicID, test.userID)
+
+			if (err != nil) != test.wantError {
+				t.Errorf("GetScoresByTopicAndUser() error = %v, want error %v", err, test.wantError)
+				return
+			}
+			if err == nil && !reflect.DeepEqual(scores, test.wantScores) {
+				t.Errorf("GetScoresByTopicAndUser() = %v, want %v", scores, test.wantScores)
+			}
+		})
+	}
 }
 
 // TestCreateScore tests creating a new score
