@@ -48,7 +48,7 @@ type Store struct {
 func NewMock() (*sqlx.DB, sqlmock.Sqlmock) {
 	dbMock, mock, err := sqlmock.New()
 	if err != nil {
-		log.Fatal(fmt.Errorf("error initializing mock database: %w", err))
+		log.Fatalf("error initializing mock database: %v", err)
 	}
 
 	db := sqlx.NewDb(dbMock, "sqlmock")

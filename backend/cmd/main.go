@@ -4,7 +4,6 @@
 package main
 
 import (
-	"crypto/rand"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,6 +12,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/database"
+	"github.com/mqrc81/IDPA-Jahreszahlen/backend/util"
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/web"
 )
 
@@ -25,7 +25,7 @@ func main() {
 
 	// Access global environment variables
 	if err := godotenv.Load("backend/.env"); err != nil {
-		log.Fatal(fmt.Errorf("error loading environment variables: %w", err))
+		log.Fatalf("error loading environment variables: %v", err)
 	}
 
 	// Get data-source-name from environment variables
@@ -34,21 +34,17 @@ func main() {
 	// Establish database connection with the help of the data-source-name
 	store, err := database.NewStore(dataSourceName)
 	if err != nil {
-		log.Fatal(fmt.Errorf("error initializing new database store: %w", err))
+		log.Fatalf("error initializing new database store: %v", err)
 	}
 
 	// Initialize session manager
 	sessions, err := web.NewSessionManager(dataSourceName)
 	if err != nil {
-		log.Fatal(fmt.Errorf("error initializing new session manager: %w", err))
+		log.Fatalf("error initializing new session manager: %v", err)
 	}
 
 	// Generate random 32-byte key for CSRF-protection
-	csrfKey := make([]byte, 32)
-	_, err = rand.Read(csrfKey)
-	if err != nil {
-		log.Fatalf("error generating csrf-protection key: %v", err)
-	}
+	csrfKey := util.GenerateBytes(32)
 
 	// Initialize HTTP-handlers, including router and middleware
 	handler := web.NewHandler(store, sessions, csrfKey)
@@ -57,6 +53,6 @@ func main() {
 	// requests on incoming connections
 	fmt.Println("Listening on port " + port + "...")
 	if err = http.ListenAndServe(port, handler); err != nil {
-		log.Fatal(fmt.Errorf("error listening on the tcp network: %w", err))
+		log.Fatalf("error listening on the tcp network: %v", err)
 	}
 }

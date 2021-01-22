@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
+	"github.com/mqrc81/IDPA-Jahreszahlen/backend/util"
 )
 
 // init gets initialized with the package.
@@ -342,15 +342,15 @@ func (errors *FormErrors) validateUsername(username string) {
 		(*errors)["Username"] = "Benutzername muss mindestens 3 Zeichen lang sein."
 	} else if len(username) > 20 {
 		(*errors)["Username"] = "Benutzername darf höchstens 20 Zeichen lang sein."
-	} else if !x.Regex(username, "^[a-zA-Z0-9._]*$") {
+	} else if !util.Regex(username, "^[a-zA-Z0-9._]*$") {
 		(*errors)["Username"] = "Benutzername darf nur Buchstaben, Zahlen, '.' und '_' enthalten."
-	} else if !x.Regex(username, "[a-zA-Z]") {
+	} else if !util.Regex(username, "[a-zA-Z]") {
 		(*errors)["Username"] = "Benutzername muss mindestens 1 Buchstaben enthalten."
-	} else if x.Regex(username, "^[._]") {
+	} else if util.Regex(username, "^[._]") {
 		(*errors)["Username"] = "Benutzername darf nicht mit '.' oder '_' beginnen."
-	} else if x.Regex(username, "[._]$") {
+	} else if util.Regex(username, "[._]$") {
 		(*errors)["Username"] = "Benutzername darf nicht mit '.' oder '_' enden."
-	} else if x.Regex(username, "[_.]{2}") {
+	} else if util.Regex(username, "[_.]{2}") {
 		(*errors)["Username"] = "Benutzername darf '.' und '_' nicht aufeinanderfolgend haben."
 	}
 }
@@ -363,7 +363,7 @@ func (errors *FormErrors) validateEmail(email string) {
 		(*errors)["Email"] = "Email muss mindestens 3 Zeichen lang sein."
 	} else if len(email) > 100 {
 		(*errors)["Email"] = "Email darf höchstens 100 Zeichen lang sein."
-	} else if !x.Regex(email, "^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,4}$") {
+	} else if !util.Regex(email, "^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,4}$") {
 		(*errors)["Email"] = "Ungültiges Email-Format."
 	}
 }
@@ -374,13 +374,13 @@ func (errors *FormErrors) validatePassword(password string, errorName string) {
 		(*errors)[errorName] = "Bitte Passwort angeben."
 	} else if len(password) < 8 {
 		(*errors)[errorName] = "Passwort muss mindestens 8 Zeichen lang sein."
-	} else if !x.Regex(password, "[!@#$%^&*]") {
+	} else if !util.Regex(password, "[!@#$%^&*]") {
 		(*errors)[errorName] = "Passwort muss ein Sonderzeichen enthalten (!@#$%^&*)."
-	} else if !x.Regex(password, "[a-z]") {
+	} else if !util.Regex(password, "[a-z]") {
 		(*errors)[errorName] = "Passwort muss mindestens ein Kleinbuchstaben enthalten."
-	} else if !x.Regex(password, "[A-Z]") {
+	} else if !util.Regex(password, "[A-Z]") {
 		(*errors)[errorName] = "Passwort muss mindestens ein Grossbuchstaben enthalten."
-	} else if !x.Regex(password, "\\d") {
+	} else if !util.Regex(password, "\\d") {
 		(*errors)[errorName] = "Passwort muss mindestens eine Zahl enthalten."
 	}
 }

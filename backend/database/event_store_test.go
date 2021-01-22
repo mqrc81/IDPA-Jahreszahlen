@@ -12,6 +12,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 
 	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
+	"github.com/mqrc81/IDPA-Jahreszahlen/backend/util"
 )
 
 var (
@@ -21,7 +22,7 @@ var (
 		TopicID: 1,
 		Name:    "Test Event 1",
 		Year:    1800,
-		Date:    x.Date(1800, 1, 1),
+		Date:    util.Date(1800, 1, 1),
 	}
 )
 
@@ -147,7 +148,7 @@ func TestCreateEvent(t *testing.T) {
 
 	// New mock database
 	db, mock := NewMock()
-	store := EventStore{DB: db}
+	store := &EventStore{DB: db}
 	defer db.Close()
 
 	queryMatch := "INSERT INTO events"
@@ -253,7 +254,7 @@ func TestUpdateEvent(t *testing.T) {
 
 	// New mock database
 	db, mock := NewMock()
-	store := EventStore{DB: db}
+	store := &EventStore{DB: db}
 	defer db.Close()
 
 	queryMatch := "UPDATE events"
@@ -359,7 +360,7 @@ func TestDeleteEvent(t *testing.T) {
 
 	// New mock database
 	db, mock := NewMock()
-	store := EventStore{DB: db}
+	store := &EventStore{DB: db}
 	defer db.Close()
 
 	queryMatch := "DELETE FROM events"

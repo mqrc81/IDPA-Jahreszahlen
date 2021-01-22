@@ -18,6 +18,7 @@ import (
 	"github.com/gorilla/csrf"
 
 	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
+	"github.com/mqrc81/IDPA-Jahreszahlen/backend/util"
 )
 
 const (
@@ -397,7 +398,7 @@ func (h *QuizHandler) Phase2Submit() http.HandlerFunc {
 			} else {
 				// Get absolute value of difference between user's guess and
 				// correct year
-				difference := x.Abs(correctYear - guess)
+				difference := util.Abs(correctYear - guess)
 
 				// Check if the user's guess is close and potentially add
 				// partial points (the closer the guess, the more points)
@@ -623,7 +624,7 @@ func (h *QuizHandler) Phase3Submit() http.HandlerFunc {
 
 			// Get absolute value of difference between user's guess and
 			// correct order
-			difference := x.Abs(order - num) // num represents the user's order
+			difference := util.Abs(order - num) // num represents the user's order
 
 			// Check if guess was correct
 			if difference == 0 {

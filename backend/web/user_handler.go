@@ -5,12 +5,8 @@
 package web
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"encoding/gob"
-	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -22,6 +18,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
+	"github.com/mqrc81/IDPA-Jahreszahlen/backend/util"
+)
+
+const (
+	TokenLength = 43
 )
 
 // init gets initialized with the package.
@@ -141,7 +142,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 
 		// New token
 		token := x.Token{
-			TokenID: generateToken(),
+			TokenID: util.GenerateString(TokenLength),
 			UserID:  user.UserID,
 		}
 
@@ -469,7 +470,7 @@ func (h *UserHandler) ResendVerifyEmail() http.HandlerFunc {
 
 		// New token
 		token := x.Token{
-			TokenID: generateToken(),
+			TokenID: util.GenerateString(TokenLength),
 			UserID:  user.UserID,
 		}
 
@@ -559,7 +560,7 @@ func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 
 		// New token
 		token := x.Token{
-			TokenID: generateToken(),
+			TokenID: util.GenerateString(TokenLength),
 			UserID:  user.UserID,
 		}
 
@@ -702,17 +703,4 @@ func (h *UserHandler) ResetPasswordSubmit() http.HandlerFunc {
 		// Redirect to login
 		http.Redirect(res, req, "/users/login", http.StatusNotFound)
 	}
-}
-
-// generateToken generates a secret key as the token ID
-func generateToken() string {
-
-	// Generate secret token
-	tokenKey := make([]byte, 32)
-	if _, err := rand.Read(tokenKey); err != nil {
-		log.Fatal(fmt.Errorf("error generating email-token key: %w", err))
-	}
-
-	// Return token as string
-	return base64.URLEncoding.EncodeToString(tokenKey)[:43]
 }

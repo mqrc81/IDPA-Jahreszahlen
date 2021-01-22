@@ -4,7 +4,6 @@
 package web
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -42,7 +41,7 @@ func (email Email) Send() {
 
 	// Send email
 	if _, err := client.Send(newEmail); err != nil {
-		log.Println(fmt.Errorf("error sending email: %w", err))
+		log.Printf("error sending email: %v", err)
 	}
 }
 

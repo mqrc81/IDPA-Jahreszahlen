@@ -1,3 +1,6 @@
+// Collection of tests for the database access layer of functions evolving
+// around scores.
+
 package database
 
 import (
@@ -46,7 +49,7 @@ var (
 	}
 
 	// nilScores is a nil slice of scores, since "var s []Score" is a nil slice
-	// and "s := []Score" is an empty slice
+	// and "s := []Score{}" is an empty slice (so we can't use the latter for this use case)
 	nilScores []x.Score
 )
 
