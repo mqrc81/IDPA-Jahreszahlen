@@ -86,6 +86,7 @@ type UserStore interface {
 	GetUserByUsername(username string) (User, error)
 	GetUserByEmail(email string) (User, error)
 	GetUsers() ([]User, error)
+	GetAdmins() ([]User, error)
 	CountUsers() (int, error) // unused
 	CreateUser(user *User) error
 	UpdateUser(user *User) error

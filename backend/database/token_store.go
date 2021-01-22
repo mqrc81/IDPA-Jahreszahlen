@@ -18,12 +18,13 @@ type TokenStore struct {
 func (store *TokenStore) GetToken(tokenID string) (x.Token, error) {
 	var token x.Token
 
-	// Execute prepared statement
 	query := `
 		SELECT * 
 		FROM tokens 
 		WHERE token_id = ?
 		`
+
+	// Execute prepared statement
 	if err := store.Get(&token, query, tokenID); err != nil {
 		return x.Token{}, fmt.Errorf("error getting token: %w", err)
 	}
@@ -34,15 +35,17 @@ func (store *TokenStore) GetToken(tokenID string) (x.Token, error) {
 // CreateToken creates a new token.
 func (store *TokenStore) CreateToken(token *x.Token) error {
 
-	// Execute prepared statement
 	query := `
 		INSERT INTO tokens(token_id, user_id, expiry) 
 		VALUES (?, ?, ?)
 		`
+
+	// Execute prepared statement
 	if _, err := store.Exec(query,
 		token.TokenID,
 		token.UserID,
-		time.Now().Add(time.Hour)); err != nil {
+		time.Now().Add(time.Hour),
+	); err != nil {
 		return fmt.Errorf("error creating token: %w", err)
 	}
 
@@ -52,11 +55,12 @@ func (store *TokenStore) CreateToken(token *x.Token) error {
 // DeleteTokensByUser deletes all existing tokens of a certain user.
 func (store *TokenStore) DeleteTokensByUser(userID int) error {
 
-	// Execute prepared statement
 	query := `
 		DELETE FROM tokens 
 		WHERE user_id = ?
 		`
+
+	// Execute prepared statement
 	if _, err := store.Exec(query, userID); err != nil {
 		return fmt.Errorf("error deleting tokens: %w", err)
 	}

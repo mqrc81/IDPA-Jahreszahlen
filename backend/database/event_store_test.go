@@ -5,10 +5,10 @@ package database
 
 import (
 	_ "database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"reflect"
-	"regexp"
 	"testing"
 	"time"
 
@@ -21,30 +21,12 @@ import (
 var (
 	past = time.Date(1800, time.January, 1, 0, 0, 0, 0, time.UTC)
 
-	testEvent = x.Event{
+	ee = x.Event{
 		EventID: 1,
 		TopicID: 1,
 		Name:    "Test Event 1",
 		Year:    1800,
 		Date:    past,
-	}
-
-	testEvents = []x.Event{
-		testEvent,
-		{
-			EventID: 2,
-			TopicID: 1,
-			Name:    "Test Event 2",
-			Year:    1800,
-			Date:    past,
-		},
-		{
-			EventID: 3,
-			TopicID: 2,
-			Name:    "Test Event 3",
-			Year:    1800,
-			Date:    past,
-		},
 	}
 )
 
@@ -68,36 +50,37 @@ func TestGetEvent(t *testing.T) {
 	store := &EventStore{DB: db}
 	defer db.Close()
 
-	query := regexp.QuoteMeta(getEventQuery)
+	queryMatch := "SELECT (.+) FROM events"
 
 	// Declare test cases
 	tests := []struct {
 		name      string
 		eventID   int
-		mock      func()
+		mock      func(eventID int)
 		wantEvent x.Event
 		wantError bool
 	}{
 		{
+			// When everything works as intended
 			name:    "#1 OK",
 			eventID: 1,
-			mock: func() {
+			mock: func(eventID int) {
 				rows := sqlmock.NewRows([]string{"event_id", "topic_id", "name", "year", "date"}).
-					AddRow(testEvent.EventID, testEvent.TopicID, testEvent.Name, testEvent.Year, testEvent.Date)
+					AddRow(ee.EventID, ee.TopicID, ee.Name, ee.Year, ee.Date)
 
-				mock.ExpectQuery(query).WithArgs(testEvent.EventID).WillReturnRows(rows)
+				mock.ExpectQuery(queryMatch).WithArgs(eventID).WillReturnRows(rows)
 			},
-			wantEvent: testEvent,
+			wantEvent: ee,
 			wantError: false,
 		},
 		{
+			// When event with given ID doesn't exist
 			name:    "#2 NOT FOUND",
-			eventID: 20,
-			mock: func() {
-				rows := sqlmock.NewRows([]string{"event_id", "topic_id", "name", "year", "date"}).
-					AddRow(testEvent.EventID, testEvent.TopicID, testEvent.Name, testEvent.Year, testEvent.Date)
+			eventID: 100,
+			mock: func(eventID int) {
+				rows := sqlmock.NewRows([]string{"event_id", "topic_id", "name", "year", "date"})
 
-				mock.ExpectQuery(query).WithArgs(testEvent.EventID).WillReturnRows(rows)
+				mock.ExpectQuery(queryMatch).WithArgs(eventID).WillReturnRows(rows)
 			},
 			wantEvent: x.Event{},
 			wantError: true,
@@ -107,7 +90,7 @@ func TestGetEvent(t *testing.T) {
 	// Run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			test.mock()
+			test.mock(test.eventID)
 			event, err := store.GetEvent(test.eventID)
 			if (err != nil) != test.wantError {
 				t.Errorf("GetEvent() error = %v, want error %v", err, test.wantError)
@@ -128,7 +111,7 @@ func TestCountEvents(t *testing.T) {
 	store := &EventStore{DB: db}
 	defer db.Close()
 
-	query := regexp.QuoteMeta(countEventsQuery)
+	queryMatch := "SELECT COUNT((.+)) FROM events"
 
 	// Declare test cases
 	tests := []struct {
@@ -138,22 +121,14 @@ func TestCountEvents(t *testing.T) {
 		wantError       bool
 	}{
 		{
+			// When everything works as intended
 			name: "#1 OK",
 			mock: func() {
-				rows := sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(len(testEvents))
+				rows := sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(3)
 
-				mock.ExpectQuery(query).WillReturnRows(rows)
+				mock.ExpectQuery(queryMatch).WillReturnRows(rows)
 			},
-			wantEventsCount: len(testEvents),
-			wantError:       false,
-		},
-		{
-			name: "#2 OK (NO ROWS)",
-			mock: func() {
-				rows := sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(0)
-				mock.ExpectQuery(query).WillReturnRows(rows)
-			},
-			wantEventsCount: 0,
+			wantEventsCount: 3,
 			wantError:       false,
 		},
 	}
@@ -178,34 +153,96 @@ func TestCountEvents(t *testing.T) {
 func TestCreateEvent(t *testing.T) {
 
 	// New mock database
-	db, _ := NewMock()
+	db, mock := NewMock()
 	store := EventStore{DB: db}
 	defer db.Close()
 
-	_ = regexp.QuoteMeta(createEventQuery)
+	queryMatch := "INSERT INTO events"
 
 	// Declare test cases
 	tests := []struct {
 		name      string
 		event     x.Event
-		mock      func()
+		mock      func(event x.Event)
 		wantError bool
 	}{
 		{
+			// When everything works as intended
 			name:  "#1 OK",
-			event: testEvent,
-			mock: func() {
-				// TODO
+			event: ee,
+			mock: func(event x.Event) {
+				mock.ExpectExec(queryMatch).WithArgs(event.TopicID, event.Name, event.Year, event.Date).
+					WillReturnResult(sqlmock.NewResult(int64(event.TopicID), 1))
 			},
 			wantError: false,
 		},
-		// TODO
+		{
+			// When topic with given ID doesn't exist
+			name: "#2 TOPIC NOT FOUND",
+			event: x.Event{
+				EventID: ee.EventID,
+				TopicID: 100,
+				Name:    ee.Name,
+				Year:    ee.Year,
+				Date:    ee.Date,
+			},
+			mock: func(event x.Event) {
+				mock.ExpectExec(queryMatch).WithArgs(event.TopicID, event.Name, event.Year, event.Date).
+					WillReturnError(errors.New("topic does not exist"))
+			},
+			wantError: true,
+		},
+		{
+			// When title is missing
+			name: "#3 NAME MISSING",
+			event: x.Event{
+				EventID: ee.EventID,
+				TopicID: ee.TopicID,
+				Year:    ee.Year,
+				Date:    ee.Date,
+			},
+			mock: func(event x.Event) {
+				mock.ExpectExec(queryMatch).WithArgs(event.TopicID, event.Name, event.Year, event.Date).
+					WillReturnError(errors.New("name can not be empty"))
+			},
+			wantError: true,
+		},
+		{
+			// When year is missing
+			name: "#4 YEAR MISSING",
+			event: x.Event{
+				EventID: ee.EventID,
+				TopicID: ee.TopicID,
+				Name:    ee.Name,
+				Date:    ee.Date,
+			},
+			mock: func(event x.Event) {
+				mock.ExpectExec(queryMatch).WithArgs(event.TopicID, event.Name, event.Year, event.Date).
+					WillReturnError(errors.New("year can not be empty"))
+			},
+			wantError: true,
+		},
+		{
+			// When date is missing
+			name: "#5 DATE MISSING",
+			event: x.Event{
+				EventID: ee.EventID,
+				TopicID: ee.TopicID,
+				Name:    ee.Name,
+				Year:    ee.Year,
+			},
+			mock: func(event x.Event) {
+				mock.ExpectExec(queryMatch).WithArgs(event.TopicID, event.Name, event.Year, event.Date).
+					WillReturnError(errors.New("date can not be empty"))
+			},
+			wantError: true,
+		},
 	}
 
 	// Run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			test.mock()
+			test.mock(test.event)
 			err := store.CreateEvent(&test.event)
 			if (err != nil) != test.wantError {
 				t.Errorf("CreateEvent() error = %v, want error %v", err, test.wantError)
@@ -219,24 +256,26 @@ func TestCreateEvent(t *testing.T) {
 func TestUpdateEvent(t *testing.T) {
 
 	// New mock database
-	db, _ := NewMock()
+	db, mock := NewMock()
 	store := EventStore{DB: db}
 	defer db.Close()
 
-	_ = regexp.QuoteMeta(createEventQuery)
+	queryMatch := "UPDATE events"
 
 	// Declare test cases
 	tests := []struct {
 		name      string
 		event     x.Event
-		mock      func()
+		mock      func(event x.Event)
 		wantError bool
 	}{
 		{
+			// When everything works as intended
 			name:  "#1 OK",
-			event: testEvent,
-			mock: func() {
-				// TODO
+			event: ee,
+			mock: func(event x.Event) {
+				mock.ExpectPrepare(queryMatch).ExpectExec().
+					WillReturnResult(sqlmock.NewResult(int64(event.EventID), 1))
 			},
 			wantError: false,
 		},
@@ -246,7 +285,7 @@ func TestUpdateEvent(t *testing.T) {
 	// Run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			test.mock()
+			test.mock(test.event)
 			err := store.UpdateEvent(&test.event)
 			if (err != nil) != test.wantError {
 				t.Errorf("UpdateEvent() error = %v, want error %v", err, test.wantError)
@@ -260,24 +299,25 @@ func TestUpdateEvent(t *testing.T) {
 func TestDeleteEvent(t *testing.T) {
 
 	// New mock database
-	db, _ := NewMock()
+	db, mock := NewMock()
 	store := EventStore{DB: db}
 	defer db.Close()
 
-	_ = regexp.QuoteMeta(deleteEventQuery)
+	queryMatch := "DELETE FROM events"
 
 	// Declare test cases
 	tests := []struct {
 		name      string
 		eventID   int
-		mock      func()
+		mock      func(eventID int)
 		wantError bool
 	}{
 		{
 			name:    "#1 OK",
-			eventID: testEvent.EventID,
-			mock: func() {
-				// TODO
+			eventID: ee.EventID,
+			mock: func(eventID int) {
+				mock.ExpectPrepare(queryMatch).ExpectExec().WithArgs().
+					WillReturnResult(sqlmock.NewResult(0, 1))
 			},
 			wantError: false,
 		},
@@ -287,10 +327,10 @@ func TestDeleteEvent(t *testing.T) {
 	// Run tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			test.mock()
+			test.mock(test.eventID)
 			err := store.DeleteEvent(test.eventID)
 			if (err != nil) != test.wantError {
-				t.Errorf("UpdateEvent() error = %v, want error %v", err, test.wantError)
+				t.Errorf("DeleteEvent() error = %v, want error %v", err, test.wantError)
 				return
 			}
 		})
