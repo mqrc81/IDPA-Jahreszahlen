@@ -6,7 +6,9 @@ package database
 
 import (
 	"fmt"
+	"log"
 
+	"github.com/DATA-DOG/go-sqlmock"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 )
@@ -40,4 +42,16 @@ type Store struct {
 	*UserStore
 	*ScoreStore
 	*TokenStore
+}
+
+// NewMock creates a new mock sqlx database for testing purposes.
+func NewMock() (*sqlx.DB, sqlmock.Sqlmock) {
+	dbMock, mock, err := sqlmock.New()
+	if err != nil {
+		log.Fatal(fmt.Errorf("error initializing mock database: %w", err))
+	}
+
+	db := sqlx.NewDb(dbMock, "sqlmock")
+
+	return db, mock
 }
