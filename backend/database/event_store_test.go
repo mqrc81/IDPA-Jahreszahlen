@@ -122,6 +122,17 @@ func TestCountEvents(t *testing.T) {
 			wantEventsCount: 3,
 			wantError:       false,
 		},
+		{
+			// When the events table is empty
+			name: "#2 NO ROWS",
+			mock: func() {
+				mock.NewRows(table)
+
+				mock.ExpectQuery(queryMatch).WillReturnError(errors.New("no users found"))
+			},
+			wantEventsCount: 0,
+			wantError:       true,
+		},
 	}
 
 	// Run tests

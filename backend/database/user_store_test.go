@@ -4,6 +4,7 @@
 package database
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 
@@ -288,14 +289,14 @@ func TestGetUsers(t *testing.T) {
 		},
 		{
 			// When users table is empty
-			name: "#2 OK (NO ROWS)",
+			name: "#2 NO ROWS",
 			mock: func() {
-				rows := mock.NewRows(table)
+				mock.NewRows(table)
 
-				mock.ExpectQuery(queryMatch).WillReturnRows(rows)
+				mock.ExpectQuery(queryMatch).WillReturnError(errors.New("no users found"))
 			},
 			wantUsers: nilUsers,
-			wantError: false,
+			wantError: true,
 		},
 	}
 
@@ -321,6 +322,61 @@ func TestGetUsers(t *testing.T) {
 // TestCountUsers tests getting amount of users.
 func TestCountUsers(t *testing.T) {
 
+	// New mock database
+	db, mock := NewMock()
+	store := &UserStore{DB: db}
+	defer db.Close()
+
+	queryMatch := "SELECT COUNT((.+)) FROM users"
+
+	table := []string{"COUNT(*)"}
+
+	// Declare test cases
+	tests := []struct {
+		name           string
+		mock           func()
+		wantUsersCount int
+		wantError      bool
+	}{
+		{
+			name: "#1 OK",
+			mock: func() {
+				rows := mock.NewRows(table).AddRow(3)
+
+				mock.ExpectQuery(queryMatch).WillReturnRows(rows)
+			},
+			wantUsersCount: 3,
+			wantError:      false,
+		},
+		{
+			name: "#2 OK (NO ROWS)",
+			mock: func() {
+				rows := mock.NewRows(table)
+
+				mock.ExpectQuery(queryMatch).WillReturnRows(rows)
+			},
+			wantUsersCount: 0,
+			wantError:      true,
+		},
+	}
+
+	// Run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			test.mock()
+
+			usersCount, err := store.CountUsers()
+
+			if (err != nil) != test.wantError {
+				t.Errorf("CountUsers() error = %v, want error %v", err, test.wantError)
+				return
+			}
+			if err == nil && !reflect.DeepEqual(usersCount, test.wantUsersCount) {
+				t.Errorf("CountUsers() = %v, want %v", usersCount, test.wantUsersCount)
+			}
+		})
+	}
 }
 
 // TestCreateUser tests creating a new user.
