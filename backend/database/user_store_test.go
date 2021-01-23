@@ -425,7 +425,7 @@ func TestCreateUser(t *testing.T) {
 		},
 		{
 			// When email is missing
-			name: "#2 EMAIL MISSING",
+			name: "#3 EMAIL MISSING",
 			user: x.User{
 				Username: tUser.Username,
 				Password: tUser.Password,
@@ -439,7 +439,7 @@ func TestCreateUser(t *testing.T) {
 		},
 		{
 			// When password is missing
-			name: "#2 PASSWORD MISSING",
+			name: "#4 PASSWORD MISSING",
 			user: x.User{
 				Username: tUser.Username,
 				Email:    tUser.Email,
@@ -472,6 +472,114 @@ func TestCreateUser(t *testing.T) {
 // TestUpdateUser tests updating an existing user.
 func TestUpdateUser(t *testing.T) {
 
+	// New mock database
+	db, mock := NewMock()
+	store := &UserStore{DB: db}
+	defer db.Close()
+
+	queryMatch := "UPDATE users"
+
+	// Declare test cases
+	tests := []struct {
+		name      string
+		user      x.User
+		mock      func(user x.User)
+		wantError bool
+	}{
+		{
+			// When everything works as intended
+			name: "#1 OK",
+			user: tUser,
+			mock: func(user x.User) {
+				mock.ExpectExec(queryMatch).WithArgs(user.Username, user.Email, user.Password, user.Admin,
+					user.Verified, user.UserID).WillReturnResult(sqlmock.NewResult(int64(user.UserID), 1))
+			},
+			wantError: false,
+		},
+		{
+			// When user with given user ID doesn't exist
+			name: "#2 NOT FOUND",
+			user: x.User{
+				UserID:   0,
+				Username: tUser.Username,
+				Email:    tUser.Email,
+				Password: tUser.Password,
+				Admin:    tUser.Admin,
+				Verified: tUser.Verified,
+			},
+			mock: func(user x.User) {
+				mock.ExpectExec(queryMatch).WithArgs(user.Username, user.Email, user.Password, user.Admin,
+					user.Verified, user.UserID).WillReturnError(errors.New("user with given id does not exist"))
+			},
+			wantError: true,
+		},
+		{
+			// When username is missing
+			name: "#3 USERNAME MISSING",
+			user: x.User{
+				UserID:   tUser.UserID,
+				Email:    tUser.Email,
+				Password: tUser.Password,
+				Admin:    tUser.Admin,
+				Verified: tUser.Verified,
+			},
+			mock: func(user x.User) {
+				mock.ExpectExec(queryMatch).WithArgs(user.Username, user.Email, user.Password, user.Admin,
+					user.Verified, user.UserID).
+					WillReturnError(errors.New("username can not be empty"))
+			},
+			wantError: true,
+		},
+		{
+			// When email is missing
+			name: "#4 EMAIL MISSING",
+			user: x.User{
+				UserID:   tUser.UserID,
+				Username: tUser.Username,
+				Password: tUser.Password,
+				Admin:    tUser.Admin,
+				Verified: tUser.Verified,
+			},
+			mock: func(user x.User) {
+				mock.ExpectExec(queryMatch).WithArgs(user.Username, user.Email, user.Password, user.Admin,
+					user.Verified, user.UserID).
+					WillReturnError(errors.New("email can not be empty"))
+			},
+			wantError: true,
+		},
+		{
+			// When password is missing
+			name: "#5 PASSWORD MISSING",
+			user: x.User{
+				UserID:   tUser.UserID,
+				Username: tUser.Username,
+				Email:    tUser.Email,
+				Admin:    tUser.Admin,
+				Verified: tUser.Verified,
+			},
+			mock: func(user x.User) {
+				mock.ExpectExec(queryMatch).WithArgs(user.Username, user.Email, user.Password, user.Admin,
+					user.Verified, user.UserID).
+					WillReturnError(errors.New("password can not be empty"))
+			},
+			wantError: true,
+		},
+	}
+
+	// Run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			test.mock(test.user)
+
+			err := store.UpdateUser(&test.user)
+
+			if (err != nil) != test.wantError {
+				t.Errorf("UpdateUser() error = %v, want error %v", err, test.wantError)
+				return
+			}
+		})
+	}
 }
 
 // TestDeleteUser tests deleting an existing user.

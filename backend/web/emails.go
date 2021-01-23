@@ -4,6 +4,7 @@
 package web
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -57,6 +58,7 @@ func PasswordResetEmail(user x.User, token string) Email {
 
 	// New recipient
 	to := mail.NewEmail(user.Username, user.Email)
+	fmt.Println("Sent email to " + user.Username + " <" + user.Email + ">")
 
 	return Email{
 		To:      to,

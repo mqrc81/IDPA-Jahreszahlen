@@ -71,7 +71,7 @@ func TestDate(t *testing.T) {
 			want: time.Date(2001, time.October, 12, 0, 0, 0, 0, time.UTC),
 		},
 		{
-			name: "#2 MONTH OUT OF BOUNDS",
+			name: "#2 OK (MONTH OUT OF BOUNDS)",
 			date: date{
 				year:  2001,
 				month: 13,
@@ -80,7 +80,7 @@ func TestDate(t *testing.T) {
 			want: time.Date(2002, time.January, 12, 0, 0, 0, 0, time.UTC),
 		},
 		{
-			name: "#3 DAY OUT OF BOUNDS",
+			name: "#3 OK (DAY OUT OF BOUNDS)",
 			date: date{
 				year:  2001,
 				month: 10,
