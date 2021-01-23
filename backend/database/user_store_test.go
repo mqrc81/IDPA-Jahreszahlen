@@ -86,6 +86,18 @@ func TestGetUser(t *testing.T) {
 			wantUser:  tUser,
 			wantError: false,
 		},
+		{
+			// When user with given user ID doesn't exist
+			name:   "#2 NOT FOUND",
+			userID: 0,
+			mock: func(userID int) {
+				rows := sqlmock.NewRows(table)
+
+				mock.ExpectQuery(queryMatch).WithArgs(userID).WillReturnRows(rows)
+			},
+			wantUser:  x.User{},
+			wantError: true,
+		},
 	}
 
 	// Run tests
@@ -103,7 +115,6 @@ func TestGetUser(t *testing.T) {
 			if err == nil && !reflect.DeepEqual(user, test.wantUser) {
 				t.Errorf("GetUser() = %v, want %v", user, test.wantUser)
 			}
-
 		})
 	}
 }
@@ -111,11 +122,135 @@ func TestGetUser(t *testing.T) {
 // TestGetUserByUsername tests getting a user by its username.
 func TestGetUserByUsername(t *testing.T) {
 
+	// New mock database
+	db, mock := NewMock()
+	store := &UserStore{DB: db}
+	defer db.Close()
+
+	queryMatch := "SELECT (.+) FROM users"
+
+	table := []string{"user_id", "username", "email", "password", "admin", "verified", "scores_count"}
+
+	// Declare test cases
+	tests := []struct {
+		name      string
+		username  string
+		mock      func(username string)
+		wantUser  x.User
+		wantError bool
+	}{
+		{
+			// When everything works as intended
+			name:     "#1 OK",
+			username: tUser.Username,
+			mock: func(username string) {
+				rows := sqlmock.NewRows(table).
+					AddRow(tUser.UserID, tUser.Username, tUser.Email, tUser.Password, tUser.Admin, tUser.Verified,
+						tUser.ScoresCount)
+
+				mock.ExpectQuery(queryMatch).WithArgs(username).WillReturnRows(rows)
+			},
+			wantUser:  tUser,
+			wantError: false,
+		},
+		{
+			// When user with given username doesn't exist
+			name:     "#2 USERNAME NOT FOUND",
+			username: "",
+			mock: func(username string) {
+				rows := sqlmock.NewRows(table)
+
+				mock.ExpectQuery(queryMatch).WithArgs(username).WillReturnRows(rows)
+			},
+			wantUser:  x.User{},
+			wantError: true,
+		},
+	}
+
+	// Run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			test.mock(test.username)
+
+			user, err := store.GetUserByUsername(test.username)
+
+			if (err != nil) != test.wantError {
+				t.Errorf("GetUserByUsername() error = %v, want error %v", err, test.wantError)
+				return
+			}
+			if err == nil && !reflect.DeepEqual(user, test.wantUser) {
+				t.Errorf("GetUserByUsername() = %v, want %v", user, test.wantUser)
+			}
+		})
+	}
 }
 
 // TestGetUserByEmail tests getting a user by its email.
 func TestGetUserByEmail(t *testing.T) {
 
+	// New mock database
+	db, mock := NewMock()
+	store := &UserStore{DB: db}
+	defer db.Close()
+
+	queryMatch := "SELECT (.+) FROM users"
+
+	table := []string{"user_id", "username", "email", "password", "admin", "verified", "scores_count"}
+
+	// Declare test cases
+	tests := []struct {
+		name      string
+		email     string
+		mock      func(email string)
+		wantUser  x.User
+		wantError bool
+	}{
+		{
+			// When everything works as intended
+			name:  "#1 OK",
+			email: tUser.Email,
+			mock: func(email string) {
+				rows := sqlmock.NewRows(table).
+					AddRow(tUser.UserID, tUser.Username, tUser.Email, tUser.Password, tUser.Admin, tUser.Verified,
+						tUser.ScoresCount)
+
+				mock.ExpectQuery(queryMatch).WithArgs(email).WillReturnRows(rows)
+			},
+			wantUser:  tUser,
+			wantError: false,
+		},
+		{
+			// When user with given email doesn't exist
+			name:  "#2 EMAIL NOT FOUND",
+			email: "",
+			mock: func(email string) {
+				rows := sqlmock.NewRows(table)
+
+				mock.ExpectQuery(queryMatch).WithArgs(email).WillReturnRows(rows)
+			},
+			wantUser:  x.User{},
+			wantError: true,
+		},
+	}
+
+	// Run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			test.mock(test.email)
+
+			user, err := store.GetUserByEmail(test.email)
+
+			if (err != nil) != test.wantError {
+				t.Errorf("GetUserByEmail() error = %v, want error %v", err, test.wantError)
+				return
+			}
+			if err == nil && !reflect.DeepEqual(user, test.wantUser) {
+				t.Errorf("GetUserByEmail() = %v, want %v", user, test.wantUser)
+			}
+		})
+	}
 }
 
 // TestGetUsers tests getting all users.
