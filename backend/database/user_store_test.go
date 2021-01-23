@@ -585,4 +585,54 @@ func TestUpdateUser(t *testing.T) {
 // TestDeleteUser tests deleting an existing user.
 func TestDeleteUser(t *testing.T) {
 
+	// New mock database
+	db, mock := NewMock()
+	store := &UserStore{DB: db}
+	defer db.Close()
+
+	queryMatch := "DELETE FROM users"
+
+	// Declare test cases
+	tests := []struct {
+		name      string
+		userID    int
+		mock      func(userID int)
+		wantError bool
+	}{
+		{
+			// When everything works as intended
+			name:   "#1 OK",
+			userID: tUser.UserID,
+			mock: func(userID int) {
+				mock.ExpectExec(queryMatch).WithArgs(userID).
+					WillReturnResult(sqlmock.NewResult(0, 1))
+			},
+			wantError: false,
+		},
+		{
+			// When user with given user ID doesn't exist
+			name:   "#2 NOT FOUND",
+			userID: 0,
+			mock: func(userID int) {
+				mock.ExpectExec(queryMatch).WithArgs(userID).
+					WillReturnError(errors.New("user with given id does not exist"))
+			},
+			wantError: true,
+		},
+	}
+
+	// Run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			test.mock(test.userID)
+
+			err := store.DeleteUser(test.userID)
+
+			if (err != nil) != test.wantError {
+				t.Errorf("DeleteUser() error = %v, want error %v", err, test.wantError)
+				return
+			}
+		})
+	}
 }

@@ -373,6 +373,7 @@ func (h *UserHandler) Delete() http.HandlerFunc {
 			return
 		}
 
+		// Redirect to list of users
 		http.Redirect(res, req, "/users", http.StatusFound)
 	}
 }
