@@ -372,6 +372,8 @@ func (h *UserHandler) Delete() http.HandlerFunc {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		http.Redirect(res, req, "/users", http.StatusFound)
 	}
 }
 
