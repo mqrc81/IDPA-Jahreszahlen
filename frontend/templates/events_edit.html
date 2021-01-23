@@ -12,7 +12,7 @@
         <br><br>
     </h5>
 
-    <form action="/topics/{{.Topic.TopicID}}/events" method="UPDATE" class="form">
+    <form action="/events" method="POST" class="form">
         {{.CSRF}}
         <label for="name">Ereignis:</label>
         <div class="form-group">
@@ -26,7 +26,7 @@
             <div class="x-invalid-form">{{.}}</div>
         {{end}}
 
-        <h5><br></h5>
+        <br>
         <label for="year">Jahr:</label>
         <div class="form-group">
             <input type="text" name="year" id="year"
@@ -39,7 +39,7 @@
             <div class="x-invalid-form">{{.}}</div>
         {{end}}
 
-        <h5><br></h5>
-        <button type="submit" class="x-button">Ereignis erstellen</button>
+        <br>
+        <button type="submit" class="x-button">Änderungen speichern</button>
     </form>
 {{end}}

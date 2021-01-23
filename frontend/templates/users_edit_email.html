@@ -1,0 +1,35 @@
+{{define "title"}}
+    <title>Email ändern</title>
+{{end}}
+
+{{define "header"}}
+    <h1 class="mb-0">Email ändern</h1>
+{{end}}
+
+{{define "content"}}
+    <div class="x-card">
+        <div class="card-body">
+            <form action="/email" method="POST" class="form">
+                {{.CSRF}}
+                <label for="email">Email</label>
+                <div class="form-group">
+                    <input type="text" name="email" id="email"
+                           class="form-control {{with .Form.Errors.Email}}is-invalid{{end}}"
+                           placeholder="Email"
+                           value="{{with .Form.Email}}{{.}}{{end}}">
+                </div>
+
+                {{with .Form.Errors.Email}}
+                    <div class="x-invalid-form">{{.}}</div>
+                {{end}}
+                <br>
+                <button type="submit" class="x-button">ändern</button>
+            </form>
+        </div>
+    </div>
+
+{{end}}
+
+{{define "sidebar"}}
+
+{{end}}

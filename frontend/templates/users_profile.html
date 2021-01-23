@@ -1,13 +1,40 @@
 {{define "title"}}
-    <title>Title</title>
+    <title>Profil</title>
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Header</h1>
+    <h1 class="mb-0">Profil von '{{.User.Username}}'</h1>
 {{end}}
 
 {{define "content"}}
-
+<div class="x-card">
+    <div class="card-body">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th scope="row">Benutzername:</th>
+                    <td>{{.User.Username}}</td>
+                    <td><a href="/users/edit/username"><i class="fas fa-pencil-alt"></i></a></td>
+                </tr>
+                <tr>
+                    <th scope="row">Email:</th>
+                    <td>{{.User.Email}}</td>
+                    <td><a href="/users/edit/email"><i class="fas fa-pencil-alt"></i></a></td>
+                </tr>
+                <tr>
+                    <th scope="row">Passwort:</th>
+                    <td>{{.User.Password}}</td>
+                    <td><a href="/users/edit/password"><i class="fas fa-pencil-alt"></i></a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="x-card">
+    <div class="card-body">
+        <a>Anzahl Spiele: {{.User.ScoresCount}}, Punkte: </a>
+    </div>
+</div>
 {{end}}
 
 {{define "sidebar"}}

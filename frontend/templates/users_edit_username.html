@@ -1,12 +1,32 @@
 {{define "title"}}
-    <title>Title</title>
+    <title>Benutzername ändern</title>
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Header</h1>
+    <h1 class="mb-0">Benutzername ändern</h1>
 {{end}}
 
 {{define "content"}}
+<div class="x-card">
+    <div class="card-body">
+        <form action="/username" method="POST" class="form">
+            {{.CSRF}}
+            <label for="username">Geben Sie einen neuen Benutzernamen ein</label>
+            <div class="form-group">
+                <input type="text" name="username" id="username"
+                       class="form-control {{with .Form.Errors.Username}}is-invalid{{end}}"
+                       placeholder="Benutzername"
+                       value="{{with .Form.Username}}{{.}}{{end}}">
+            </div>
+
+            {{with .Form.Errors.Username}}
+                <div class="x-invalid-form">{{.}}</div>
+            {{end}}
+            <br>
+            <button type="submit" class="x-button">ändern</button>
+        </form>
+    </div>
+</div>
 
 {{end}}
 
