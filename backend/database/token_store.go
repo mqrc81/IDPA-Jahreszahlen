@@ -2,7 +2,6 @@ package database
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/jmoiron/sqlx"
 
@@ -44,7 +43,7 @@ func (store *TokenStore) CreateToken(token *x.Token) error {
 	if _, err := store.Exec(query,
 		token.TokenID,
 		token.UserID,
-		time.Now().Add(time.Hour),
+		token.Expiry,
 	); err != nil {
 		return fmt.Errorf("error creating token: %w", err)
 	}

@@ -472,6 +472,7 @@ func (h *UserHandler) ResendVerifyEmail() http.HandlerFunc {
 		token := x.Token{
 			TokenID: util.GenerateString(TokenLength),
 			UserID:  user.UserID,
+			Expiry:  time.Now().Add(time.Hour),
 		}
 
 		// Execute SQL statement to create a token
@@ -562,6 +563,7 @@ func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 		token := x.Token{
 			TokenID: util.GenerateString(TokenLength),
 			UserID:  user.UserID,
+			Expiry:  time.Now().Add(time.Hour),
 		}
 
 		// Execute SQL statement to create new token
