@@ -282,7 +282,7 @@ func TestUpdateEvent(t *testing.T) {
 			event: tEvent,
 			mock: func(event x.Event) {
 				mock.ExpectExec(queryMatch).WithArgs(tEvent.Name, tEvent.Year, tEvent.Date, tEvent.EventID).
-					WillReturnResult(sqlmock.NewResult(0, 1))
+					WillReturnResult(sqlmock.NewResult(int64(event.EventID), 1))
 			},
 			wantError: false,
 		},

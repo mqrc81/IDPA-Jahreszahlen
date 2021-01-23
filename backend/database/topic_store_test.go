@@ -374,9 +374,179 @@ func TestCreateTopic(t *testing.T) {
 // TestUpdateTopic tests updating an existing topic.
 func TestUpdateTopic(t *testing.T) {
 
+	// New mock database
+	db, mock := NewMock()
+	store := &TopicStore{DB: db}
+	defer db.Close()
+
+	queryMatch := "UPDATE topics"
+
+	// Declare test cases
+	tests := []struct {
+		name      string
+		topic     x.Topic
+		mock      func(topic x.Topic)
+		wantError bool
+	}{
+		{
+			// When everything works as intended
+			name:  "#1 OK",
+			topic: tTopic,
+			mock: func(topic x.Topic) {
+				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description,
+					topic.TopicID).
+					WillReturnResult(sqlmock.NewResult(int64(topic.TopicID), 1))
+			},
+			wantError: false,
+		},
+		{
+			// When topic with given topic ID doesn't exist
+			name: "#2 NOT FOUND",
+			topic: x.Topic{
+				TopicID:     0,
+				Name:        tTopic.Name,
+				StartYear:   tTopic.StartYear,
+				EndYear:     tTopic.EndYear,
+				Description: tTopic.Description,
+			},
+			mock: func(topic x.Topic) {
+				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description,
+					topic.TopicID).
+					WillReturnError(errors.New("topic with given id does not exist"))
+			},
+			wantError: true,
+		},
+		{
+			// When name is missing
+			name: "#3 NAME MISSING",
+			topic: x.Topic{
+				TopicID:     tTopic.TopicID,
+				StartYear:   tTopic.StartYear,
+				EndYear:     tTopic.EndYear,
+				Description: tTopic.Description,
+			},
+			mock: func(topic x.Topic) {
+				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description,
+					topic.TopicID).
+					WillReturnError(errors.New("name can not be empty"))
+			},
+			wantError: true,
+		},
+		{
+			// When start-year is missing
+			name: "#4 START-YEAR MISSING",
+			topic: x.Topic{
+				TopicID:     tTopic.TopicID,
+				Name:        tTopic.Name,
+				EndYear:     tTopic.EndYear,
+				Description: tTopic.Description,
+			},
+			mock: func(topic x.Topic) {
+				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description,
+					topic.TopicID).
+					WillReturnError(errors.New("start-year can not be empty"))
+			},
+			wantError: true,
+		},
+		{
+			// When end-year is missing
+			name: "#5 END-YEAR MISSING",
+			topic: x.Topic{
+				TopicID:     tTopic.TopicID,
+				Name:        tTopic.Name,
+				StartYear:   tTopic.StartYear,
+				Description: tTopic.Description,
+			},
+			mock: func(topic x.Topic) {
+				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description,
+					topic.TopicID).
+					WillReturnError(errors.New("end-year can not be empty"))
+			},
+			wantError: true,
+		},
+		{
+			// When description is missing
+			name: "#6 OK (DESCRIPTION MISSING)",
+			topic: x.Topic{
+				TopicID:   tTopic.TopicID,
+				Name:      tTopic.Name,
+				StartYear: tTopic.StartYear,
+				EndYear:   tTopic.EndYear,
+			},
+			mock: func(topic x.Topic) {
+				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description,
+					topic.TopicID).
+					WillReturnResult(sqlmock.NewResult(int64(topic.TopicID), 1))
+			},
+			wantError: false,
+		},
+	}
+
+	// Run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			test.mock(test.topic)
+
+			err := store.UpdateTopic(&test.topic)
+
+			if (err != nil) != test.wantError {
+				t.Errorf("UpdateTopic() error = %v, want error %v", err, test.wantError)
+			}
+		})
+	}
 }
 
 // TestDeleteTopic tests deleting an existing topic.
 func TestDeleteTopic(t *testing.T) {
 
+	// New mock database
+	db, mock := NewMock()
+	store := &TopicStore{DB: db}
+	defer db.Close()
+
+	queryMatch := "DELETE FROM topics"
+
+	// Declare test cases
+	tests := []struct {
+		name      string
+		topicID   int
+		mock      func(topicID int)
+		wantError bool
+	}{
+		{
+			// When everything works as intended
+			name:    "#1 OK",
+			topicID: tTopic.TopicID,
+			mock: func(topicID int) {
+				mock.ExpectExec(queryMatch).WithArgs(topicID).
+					WillReturnResult(sqlmock.NewResult(0, 1))
+			},
+			wantError: false,
+		},
+		{
+			// When topic with given topic ID doesn't exist
+			name:    "#2 NOT FOUND",
+			topicID: 0,
+			mock: func(topicID int) {
+				mock.ExpectExec(queryMatch).WithArgs(topicID).
+					WillReturnError(errors.New("topic with given id does not exist"))
+			},
+			wantError: true,
+		},
+	}
+
+	// Run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			test.mock(test.topicID)
+
+			err := store.DeleteTopic(test.topicID)
+
+			if (err != nil) != test.wantError {
+				t.Errorf("DeleteTopic() error = %v, want error %v", err, test.wantError)
+			}
+		})
+	}
 }

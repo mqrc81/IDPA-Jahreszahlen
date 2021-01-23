@@ -492,7 +492,8 @@ func TestUpdateUser(t *testing.T) {
 			user: tUser,
 			mock: func(user x.User) {
 				mock.ExpectExec(queryMatch).WithArgs(user.Username, user.Email, user.Password, user.Admin,
-					user.Verified, user.UserID).WillReturnResult(sqlmock.NewResult(int64(user.UserID), 1))
+					user.Verified, user.UserID).
+					WillReturnResult(sqlmock.NewResult(int64(user.UserID), 1))
 			},
 			wantError: false,
 		},
