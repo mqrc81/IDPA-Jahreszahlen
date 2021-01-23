@@ -26,7 +26,7 @@ func Regex(str string, regex string) bool {
 
 	match, err := regexp.MatchString(regex, str)
 	if err != nil {
-		log.Fatalf("error comparing regular-expression to string: %v", err)
+		log.Printf("error comparing regular-expression to string: %v", err)
 	}
 
 	return match
