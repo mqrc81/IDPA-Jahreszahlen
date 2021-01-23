@@ -1,4 +1,4 @@
-// General helper functions to be used throughout the project
+// General helper functions to be used throughout the project.
 
 package util
 

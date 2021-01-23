@@ -545,8 +545,7 @@ func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 
 		// Check if email is valid
 		user, err := h.store.GetUserByEmail(form.Email)
-		// If error is nil, a user with that username was found, which means
-		// the username is already taken.
+		// If error is nil, a user with that email was found.
 		form.IncorrectEmail = err != nil
 		// If user's email isn't verified, he/she can't reset the password via
 		// email

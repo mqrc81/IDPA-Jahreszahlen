@@ -85,36 +85,13 @@ func (store *UserStore) GetUsers() ([]x.User, error) {
 		       COUNT(DISTINCT s.score_id) AS scores_count
 		FROM users u
 		    LEFT JOIN scores s ON s.user_id = u.user_id
-		WHERE admin = false
-		GROUP BY u.user_id, u.username
-		ORDER BY u.username 
-		` // Sorted in alphabetical order
+		GROUP BY u.user_id, u.admin, u.username
+		ORDER BY u.admin DESC, u.username 
+		` // Sorted in alphabetical order, but all admins first
 
 	// Execute prepared statement
 	if err := store.Select(&users, query); err != nil {
 		return []x.User{}, fmt.Errorf("error getting users: %w", err)
-	}
-
-	return users, nil
-}
-
-// GetAdmins gets all admins.
-func (store *UserStore) GetAdmins() ([]x.User, error) {
-	var users []x.User
-
-	query := `
-		SELECT u.*,
-		       COUNT(DISTINCT s.score_id) AS scores_count
-		FROM users u
-		    LEFT JOIN scores s ON s.user_id = u.user_id
-		WHERE admin = true
-		GROUP BY u.user_id, u.username
-		ORDER BY u.username 
-		`
-
-	// Execute prepared statement
-	if err := store.Select(&users, query); err != nil {
-		return []x.User{}, fmt.Errorf("error getting admins: %w", err)
 	}
 
 	return users, nil

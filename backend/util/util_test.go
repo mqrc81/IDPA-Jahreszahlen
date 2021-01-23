@@ -1,3 +1,5 @@
+// Collection of tests for util helper functions.
+
 package util
 
 import (

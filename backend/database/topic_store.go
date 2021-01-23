@@ -89,7 +89,7 @@ func (store *TopicStore) GetTopics() ([]x.Topic, error) {
 }
 
 // CountTopics gets amount of topics.
-func (store *EventStore) CountTopics() (int, error) {
+func (store *TopicStore) CountTopics() (int, error) {
 	var topicCount int
 
 	query := `

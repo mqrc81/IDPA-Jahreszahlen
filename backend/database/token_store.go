@@ -1,3 +1,6 @@
+// The database store evolving around tokens, with all necessary methods that
+// access the database.
+
 package database
 
 import (
