@@ -140,14 +140,15 @@ func (store *UserStore) UpdateUser(user *x.User) error {
 
 	query := `
 		UPDATE users 
-		SET password = ?, username = ?, admin = ?, verified = ? 
+		SET username = ?, email = ?, password = ?, admin = ?, verified = ? 
 		WHERE user_id = ?
 		`
 
 	// Execute prepared statement
 	if _, err := store.Exec(query,
-		user.Password,
 		user.Username,
+		user.Email,
+		user.Password,
 		user.Admin,
 		user.Verified,
 		user.UserID,
