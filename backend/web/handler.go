@@ -116,11 +116,13 @@ func NewHandler(store x.Store, sessions *scs.SessionManager, csrfKey []byte) *Ha
 	// Topics
 	handler.Route("/topics", func(r chi.Router) {
 		r.Get("/", topics.List())
+		r.Get("/{topicID}", topics.Show())
 		r.Get("/new", topics.Create())
 		r.Post("/", topics.CreateStore())
 		r.Post("/{topicID}/delete", topics.Delete())
 		r.Get("/{topicID}/edit", topics.Edit())
-		r.Get("/{topicID}", topics.Show())
+		r.Post("/{topicID}/edit", topics.EditStore())
+		r.Post("/{topicID}/edit/prepare", topics.EditPrepare())
 	})
 
 	// Events
@@ -129,8 +131,9 @@ func NewHandler(store x.Store, sessions *scs.SessionManager, csrfKey []byte) *Ha
 		router.Get("/new", events.Create())
 		router.Post("/", events.CreateStore())
 		router.Post("/{eventID}/delete", events.Delete())
-		router.Get("/edit", events.Edit())
-		router.Post("/edit", events.EditStore())
+		router.Get("/{eventID}/edit", events.Edit())
+		router.Post("/{eventID}/edit", events.EditStore())
+		router.Post("/{eventID}/edit/prepare", events.EditPrepare())
 	})
 
 	// Quiz

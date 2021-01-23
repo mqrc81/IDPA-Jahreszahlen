@@ -197,6 +197,42 @@ func (h *EventHandler) Delete() http.HandlerFunc {
 	}
 }
 
+// EditPrepare is a POST-method that is accessible to any admin.
+//
+// It creates a form from the event's values, so that values are already filled
+// out when editing the event.
+func (h *EventHandler) EditPrepare() http.HandlerFunc {
+
+	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Retrieve values from URL parameters
+		topicID := chi.URLParam(req, "topicID")
+		eventIDstr := chi.URLParam(req, "topicID")
+		eventID, _ := strconv.Atoi(eventIDstr)
+
+		// Execute SQL statement to get topic
+		event, err := h.store.GetEvent(eventID)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Create form to add to session, so that values are already filled out
+		// when editing a topic
+		form := EventForm{
+			Name:   event.Name,
+			Year:   event.Year,
+			Errors: FormErrors{},
+		}
+
+		// Add form to session
+		h.sessions.Put(req.Context(), "form", form)
+
+		// Redirect to edit-page of topic
+		http.Redirect(res, req, "/topics/"+topicID+"/events/"+eventIDstr+"edit", http.StatusFound)
+	}
+}
+
 // Edit is a GET-method that is accessible to any admin.
 //
 // It displays a form in which values for modifying the current event can be
