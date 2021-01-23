@@ -50,7 +50,7 @@ func (store *TopicStore) GetTopic(topicID int) (x.Topic, error) {
 	return topic, nil
 }
 
-// GetTopics gets all topics and their events.
+// GetTopics gets all topics.
 func (store *TopicStore) GetTopics() ([]x.Topic, error) {
 	var topics []x.Topic
 
@@ -68,21 +68,6 @@ func (store *TopicStore) GetTopics() ([]x.Topic, error) {
 	// Execute prepared statement
 	if err := store.Select(&topics, query); err != nil {
 		return []x.Topic{}, fmt.Errorf("error getting topics: %w", err)
-	}
-
-	query = `
-		SELECT * 
-		FROM events 
-		WHERE topic_id = ?
-		`
-
-	// Loop through topics to get events
-	for _, topic := range topics {
-
-		// Execute prepared statement
-		if err := store.Select(&topic.Events, query, topic.TopicID); err != nil {
-			return []x.Topic{}, fmt.Errorf("error getting events of topics: %w", err)
-		}
 	}
 
 	return topics, nil

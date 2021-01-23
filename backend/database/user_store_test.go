@@ -49,7 +49,7 @@ var (
 	}
 
 	// nilUsers is a nil slice of users, since "var u []User" is a nil slice
-	// and "u := []User{}" is an empty slice (so we can't use the latter for
+	// but "u := []User{}" is an empty slice (so we can't use the latter for
 	// this use case)
 	nilUsers []x.User
 )
@@ -278,9 +278,10 @@ func TestGetUsers(t *testing.T) {
 			// When everything works as intended
 			name: "#1 OK",
 			mock: func() {
-				rows := mock.NewRows(table)
-				for _, u := range tUsers {
-					rows = rows.AddRow(u.UserID, u.Username, u.Email, u.Password, u.Admin, u.Verified, u.ScoresCount)
+				rows := sqlmock.NewRows(table)
+				for _, user := range tUsers {
+					rows = rows.AddRow(user.UserID, user.Username, user.Email, user.Password, user.Admin,
+						user.Verified, user.ScoresCount)
 				}
 
 				mock.ExpectQuery(queryMatch).WillReturnRows(rows)
@@ -292,7 +293,7 @@ func TestGetUsers(t *testing.T) {
 			// When users table is empty
 			name: "#2 OK (NO ROWS)",
 			mock: func() {
-				rows := mock.NewRows(table)
+				rows := sqlmock.NewRows(table)
 
 				mock.ExpectQuery(queryMatch).WillReturnRows(rows)
 			},
@@ -343,7 +344,7 @@ func TestCountUsers(t *testing.T) {
 			// When everything works as intended
 			name: "#1 OK",
 			mock: func() {
-				rows := mock.NewRows(table).AddRow(3)
+				rows := sqlmock.NewRows(table).AddRow(3)
 
 				mock.ExpectQuery(queryMatch).WillReturnRows(rows)
 			},
@@ -354,7 +355,7 @@ func TestCountUsers(t *testing.T) {
 			// When the users table is empty
 			name: "#2 NO ROWS",
 			mock: func() {
-				rows := mock.NewRows(table)
+				rows := sqlmock.NewRows(table)
 
 				mock.ExpectQuery(queryMatch).WillReturnRows(rows).WillReturnError(errors.New("no users found"))
 			},
@@ -463,7 +464,6 @@ func TestCreateUser(t *testing.T) {
 
 			if (err != nil) != test.wantError {
 				t.Errorf("CreateUser() error = %v, want error %v", err, test.wantError)
-				return
 			}
 		})
 	}
@@ -576,7 +576,6 @@ func TestUpdateUser(t *testing.T) {
 
 			if (err != nil) != test.wantError {
 				t.Errorf("UpdateUser() error = %v, want error %v", err, test.wantError)
-				return
 			}
 		})
 	}
@@ -631,7 +630,6 @@ func TestDeleteUser(t *testing.T) {
 
 			if (err != nil) != test.wantError {
 				t.Errorf("DeleteUser() error = %v, want error %v", err, test.wantError)
-				return
 			}
 		})
 	}

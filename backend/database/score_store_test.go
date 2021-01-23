@@ -49,7 +49,7 @@ var (
 	}
 
 	// nilScores is a nil slice of scores, since "var s []Score" is a nil slice
-	// and "s := []Score{}" is an empty slice (so we can't use the latter for
+	// but "s := []Score{}" is an empty slice (so we can't use the latter for
 	// this use case)
 	nilScores []x.Score
 )
@@ -78,9 +78,10 @@ func TestGetScores(t *testing.T) {
 			// When everything works as intended
 			name: "#1 OK",
 			mock: func() {
-				rows := mock.NewRows(table)
-				for _, s := range tScores {
-					rows = rows.AddRow(s.ScoreID, s.TopicID, s.UserID, s.Points, s.Date, s.TopicName, s.UserName)
+				rows := sqlmock.NewRows(table)
+				for _, score := range tScores {
+					rows = rows.AddRow(score.ScoreID, score.TopicID, score.UserID, score.Points, score.Date,
+						score.TopicName, score.UserName)
 				}
 
 				mock.ExpectQuery(queryMatch).WillReturnRows(rows)
@@ -92,7 +93,7 @@ func TestGetScores(t *testing.T) {
 			// When the scores table is empty
 			name: "#2 OK (NO ROWS)",
 			mock: func() {
-				rows := mock.NewRows(table)
+				rows := sqlmock.NewRows(table)
 
 				mock.ExpectQuery(queryMatch).WillReturnRows(rows)
 			},
@@ -146,9 +147,10 @@ func TestGetScoresByTopic(t *testing.T) {
 			name:    "#1 OK",
 			topicID: tScores[0].TopicID,
 			mock: func(topicID int) {
-				rows := mock.NewRows(table)
-				for _, s := range tScores {
-					rows = rows.AddRow(s.ScoreID, s.TopicID, s.UserID, s.Points, s.Date, s.TopicName, s.UserName)
+				rows := sqlmock.NewRows(table)
+				for _, score := range tScores {
+					rows = rows.AddRow(score.ScoreID, score.TopicID, score.UserID, score.Points, score.Date,
+						score.TopicName, score.UserName)
 				}
 
 				mock.ExpectQuery(queryMatch).WithArgs(topicID).WillReturnRows(rows)
@@ -161,7 +163,7 @@ func TestGetScoresByTopic(t *testing.T) {
 			name:    "#2 OK (NO ROWS)",
 			topicID: tScores[0].TopicID,
 			mock: func(topicID int) {
-				rows := mock.NewRows(table)
+				rows := sqlmock.NewRows(table)
 
 				mock.ExpectQuery(queryMatch).WithArgs(topicID).WillReturnRows(rows)
 			},
@@ -226,9 +228,10 @@ func TestGetScoresByUser(t *testing.T) {
 			name:   "#1 OK",
 			userID: tScores[0].UserID,
 			mock: func(userID int) {
-				rows := mock.NewRows(table)
-				for _, s := range tScores {
-					rows = rows.AddRow(s.ScoreID, s.TopicID, s.UserID, s.Points, s.Date, s.TopicName, s.UserName)
+				rows := sqlmock.NewRows(table)
+				for _, score := range tScores {
+					rows = rows.AddRow(score.ScoreID, score.TopicID, score.UserID, score.Points, score.Date,
+						score.TopicName, score.UserName)
 				}
 
 				mock.ExpectQuery(queryMatch).WithArgs(userID).WillReturnRows(rows)
@@ -241,7 +244,7 @@ func TestGetScoresByUser(t *testing.T) {
 			name:   "#2 OK (NO ROWS)",
 			userID: tScores[0].UserID,
 			mock: func(userID int) {
-				rows := mock.NewRows(table)
+				rows := sqlmock.NewRows(table)
 
 				mock.ExpectQuery(queryMatch).WithArgs(userID).WillReturnRows(rows)
 			},
@@ -309,9 +312,10 @@ func TestGetScoresByTopicAndUser(t *testing.T) {
 			topicID: tScores[0].TopicID,
 			userID:  tScores[0].UserID,
 			mock: func(topicID int, userID int) {
-				rows := mock.NewRows(table)
-				for _, s := range tScores {
-					rows = rows.AddRow(s.ScoreID, s.TopicID, s.UserID, s.Points, s.Date, s.TopicName, s.UserName)
+				rows := sqlmock.NewRows(table)
+				for _, score := range tScores {
+					rows = rows.AddRow(score.ScoreID, score.TopicID, score.UserID, score.Points, score.Date,
+						score.TopicName, score.UserName)
 				}
 
 				mock.ExpectQuery(queryMatch).WithArgs(topicID, userID).WillReturnRows(rows)
@@ -325,7 +329,7 @@ func TestGetScoresByTopicAndUser(t *testing.T) {
 			topicID: tScores[0].TopicID,
 			userID:  tScores[0].UserID,
 			mock: func(topicID int, userID int) {
-				rows := mock.NewRows(table)
+				rows := sqlmock.NewRows(table)
 
 				mock.ExpectQuery(queryMatch).WithArgs(topicID, userID).WillReturnRows(rows)
 			},
@@ -478,7 +482,6 @@ func TestCreateScore(t *testing.T) {
 
 			if (err != nil) != test.wantError {
 				t.Errorf("CreateScore() error = %v, want error %v", err, test.wantError)
-				return
 			}
 		})
 	}

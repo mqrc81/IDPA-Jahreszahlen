@@ -170,7 +170,6 @@ func TestCreateToken(t *testing.T) {
 
 			if (err != nil) != test.wantError {
 				t.Errorf("CreateToken() error = %v, want error %v", err, test.wantError)
-				return
 			}
 		})
 	}
@@ -225,7 +224,6 @@ func TestDeleteTokensByUser(t *testing.T) {
 
 			if (err != nil) != test.wantError {
 				t.Errorf("DeleteTokensByUser() error = %v, want error %v", err, test.wantError)
-				return
 			}
 		})
 	}

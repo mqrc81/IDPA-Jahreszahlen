@@ -126,7 +126,7 @@ func TestCountEvents(t *testing.T) {
 			// When the events table is empty
 			name: "#2 NO ROWS",
 			mock: func() {
-				rows := mock.NewRows(table)
+				rows := sqlmock.NewRows(table)
 
 				mock.ExpectQuery(queryMatch).WillReturnRows(rows).WillReturnError(errors.New("no users found"))
 			},
@@ -254,7 +254,6 @@ func TestCreateEvent(t *testing.T) {
 
 			if (err != nil) != test.wantError {
 				t.Errorf("CreateEvent() error = %v, want error %v", err, test.wantError)
-				return
 			}
 		})
 	}
@@ -360,7 +359,6 @@ func TestUpdateEvent(t *testing.T) {
 
 			if (err != nil) != test.wantError {
 				t.Errorf("UpdateEvent() error = %v, want error %v", err, test.wantError)
-				return
 			}
 		})
 	}
@@ -415,7 +413,6 @@ func TestDeleteEvent(t *testing.T) {
 
 			if (err != nil) != test.wantError {
 				t.Errorf("DeleteEvent() error = %v, want error %v", err, test.wantError)
-				return
 			}
 		})
 	}
