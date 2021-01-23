@@ -24,26 +24,27 @@ var (
 		ScoresCount: 20,
 	}
 
-	// tUser2 is a mock user for testing purposes
-	tUser2 = x.User{
-		UserID:      2,
-		Username:    "user_2",
-		Email:       "user2@mail.com",
-		Password:    "Passw0rd!",
-		Admin:       false,
-		Verified:    true,
-		ScoresCount: 30,
-	}
-
-	// tUser3 is a mock user for testing purposes
-	tUser3 = x.User{
-		UserID:      3,
-		Username:    "admin_1",
-		Email:       "admin_1@mail.com",
-		Password:    "Passw0rd!",
-		Admin:       true,
-		Verified:    true,
-		ScoresCount: 50,
+	// tUsers is a mock array of users for testing purposes
+	tUsers = []x.User{
+		tUser,
+		{
+			UserID:      2,
+			Username:    "user_2",
+			Email:       "user2@mail.com",
+			Password:    "Passw0rd!",
+			Admin:       false,
+			Verified:    true,
+			ScoresCount: 30,
+		},
+		{
+			UserID:      3,
+			Username:    "admin_1",
+			Email:       "admin_1@mail.com",
+			Password:    "Passw0rd!",
+			Admin:       true,
+			Verified:    true,
+			ScoresCount: 50,
+		},
 	}
 
 	// nilUsers is a nil slice of users, since "var u []User" is a nil slice
@@ -255,7 +256,66 @@ func TestGetUserByEmail(t *testing.T) {
 
 // TestGetUsers tests getting all users.
 func TestGetUsers(t *testing.T) {
+	// New mock database
+	db, mock := NewMock()
+	store := &UserStore{DB: db}
+	defer db.Close()
 
+	queryMatch := "SELECT (.+) FROM users"
+
+	table := []string{"user_id", "username", "email", "password", "admin", "verified", "scores_count"}
+
+	// Declare test cases
+	tests := []struct {
+		name      string
+		mock      func()
+		wantUsers []x.User
+		wantError bool
+	}{
+		{
+			// When everything works as intended
+			name: "#1 OK",
+			mock: func() {
+				rows := mock.NewRows(table)
+				for _, u := range tUsers {
+					rows = rows.AddRow(u.UserID, u.Username, u.Email, u.Password, u.Admin, u.Verified, u.ScoresCount)
+				}
+
+				mock.ExpectQuery(queryMatch).WillReturnRows(rows)
+			},
+			wantUsers: tUsers,
+			wantError: false,
+		},
+		{
+			// When users table is empty
+			name: "#2 OK (NO ROWS)",
+			mock: func() {
+				rows := mock.NewRows(table)
+
+				mock.ExpectQuery(queryMatch).WillReturnRows(rows)
+			},
+			wantUsers: nilUsers,
+			wantError: false,
+		},
+	}
+
+	// Run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			test.mock()
+
+			scores, err := store.GetUsers()
+
+			if (err != nil) != test.wantError {
+				t.Errorf("GetUsers() error = %v, want error %v", err, test.wantError)
+				return
+			}
+			if err == nil && !reflect.DeepEqual(scores, test.wantUsers) {
+				t.Errorf("GetUsers() = %v, want %v", scores, test.wantError)
+			}
+		})
+	}
 }
 
 // TestCountUsers tests getting amount of users.
