@@ -13,7 +13,7 @@
         <div class="form-group">
             <input type="text" name="username" id="username"
                    class="form-control {{with .Form.Errors.Username}}is-invalid{{end}}"
-                   placeholder="Username"
+                   placeholder="Benutzername"
                    value="{{with .Form.Username}}{{.}}{{end}}">
         </div>
 
@@ -21,7 +21,7 @@
             <div class="x-invalid-form">{{.}}</div>
         {{end}}
 
-        <h5><br></h5>
+        <br>
 
         <label for="email">Email</label>
         <div class="form-group">
@@ -35,7 +35,7 @@
             <div class="x-invalid-form">{{.}}</div>
         {{end}}
 
-        <h5><br></h5>
+        <br>
 
         <label for="password">Passwort</label>
         <div class="form-group">
@@ -49,7 +49,7 @@
             <div class="x-invalid-form">{{.}}</div>
         {{end}}
 
-        <h5><br></h5>
+        <br>
         <button type="submit" class="x-button">Registrieren</button>
     </form>
 {{end}}

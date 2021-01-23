@@ -30,18 +30,18 @@
     </button>
 
     <button class="x-button">
-        <a href="/"><i class="fas fa-list"></i> Ereignisse anzeigen</a>
+        <a href="/topics/{{.Topic.TopicID}}/events/"><i class="fas fa-list"></i> Ereignisse anzeigen</a>
     </button>
 
     {{if .User.Admin}}
 
-    <button class="edit-icon">
-        <a href="/topics/{{.Topic.TopicID}}/edit"></a>
-        <i class="far fa-edit"></i>
-    </button>
-
-    <form class="formbutton" action="/topics/{{.Topic.TopicID}}/delete" method="POST">
-        {{.CSRF}}
+    <form class="formbutton1" action="/topics/{{.Topic.TopicID}}/edit" method="GET">
+        <button type="submit"class="edit-icon">
+            <i class="far fa-edit"></i>
+        </button>
+    </form>
+    <form class="formbutton1" action="/topics/{{.Topic.TopicID}}/delete" method="POST">
+        {{$.CSRF}}
         <button type="submit" class="delete-icon">
             <i class="far fa-trash-alt"></i>
         </button>
