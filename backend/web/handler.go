@@ -178,7 +178,7 @@ func NewHandler(store x.Store, sessions *scs.SessionManager, csrfKey []byte) *Ha
 		router.Get("/edit/password", users.EditPassword())
 		router.Post("/edit/password", users.EditPasswordSubmit())
 
-		router.Post("/verify/email", users.VerifyEmail())
+		router.Get("/verify/email", users.VerifyEmail())
 		router.Post("/resend/email", users.ResendVerifyEmail())
 		router.Get("/forgot/password", users.ForgotPassword())
 		router.Post("/forgot/password", users.ForgotPasswordSubmit())

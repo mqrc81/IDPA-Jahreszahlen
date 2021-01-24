@@ -138,7 +138,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 		// Add flash message
 		h.sessions.Put(req.Context(), "flash_success",
 			"Willkommen "+form.Username+"! Ihre Registrierung war erfolgreich. Loggen Sie sich bitte ein.\n"+
-				"Es wurde eine Bestätigungs-Email an "+form.Email+" versandt, um ihr Account zu validieren.")
+				"Dazu wurde eine Bestätigungs-Email an "+form.Email+" versandt, um Ihre Email zu verifizieren.")
 
 		// New token
 		token := x.Token{
@@ -426,7 +426,7 @@ func (h *UserHandler) VerifyEmail() http.HandlerFunc {
 		if err != nil {
 			// If token doesn't exist, then redirect to home-page with flash
 			// message.
-			h.sessions.Put(req.Context(), "flash_error", "Ihr Token zum Zurücksetzen des Passworts ist ungültig.")
+			h.sessions.Put(req.Context(), "flash_error", "Ihr Token zum Bestätigen des Emails ist ungültig.")
 			http.Redirect(res, req, "/", http.StatusFound)
 			return
 		}
