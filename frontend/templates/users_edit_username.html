@@ -9,21 +9,35 @@
 {{define "content"}}
 <div class="x-card">
     <div class="card-body">
-        <form action="/username" method="POST" class="form">
+        <form action="/users/edit/username" method="POST" class="form">
             {{.CSRF}}
-            <label for="username">Geben Sie einen neuen Benutzernamen ein</label>
+            <label for="username">Neuer Benutzername</label>
             <div class="form-group">
                 <input type="text" name="username" id="username"
-                       class="form-control {{with .Form.Errors.Username}}is-invalid{{end}}"
+                       class="form-control {{with .Form.Errors.NewUsername}}is-invalid{{end}}"
                        placeholder="Benutzername"
-                       value="{{with .Form.Username}}{{.}}{{end}}">
+                       value="{{with .Form.NewUsername}}{{.}}{{end}}">
             </div>
 
-            {{with .Form.Errors.Username}}
-                <div class="x-invalid-form">{{.}}</div>
+            {{with .Form.Errors.NewUsername}}
+            <div class="x-invalid-form">{{.}}</div>
             {{end}}
             <br>
-            <button type="submit" class="x-button">ändern</button>
+
+            <label for="password">Passwort</label>
+            <div class="form-group">
+                <input type="password" name="password" id="password"
+                       class="form-control {{with .Form.Errors.Password}}is-invalid{{end}}"
+                       placeholder="Password"
+                       value="{{with .Form.Password}}{{.}}{{end}}">
+            </div>
+
+            {{with .Form.Errors.Password}}
+            <div class="x-invalid-form">{{.}}</div>
+            {{end}}
+            <br>
+
+            <button type="submit" class="x-button">Ändern</button>
         </form>
     </div>
 </div>

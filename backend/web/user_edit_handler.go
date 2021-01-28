@@ -242,15 +242,15 @@ func (h *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 		// Retrieve values from form
 		form := EditPasswordForm{
 			NewPassword: req.FormValue("new_password"),
-			OldPassword: req.FormValue("old_password"),
+			Password:    req.FormValue("password"),
 		}
 
 		// Retrieve user from session
 		user := req.Context().Value("user").(x.User)
 
 		// Compare user's password with "old password" from form
-		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.OldPassword)); err != nil {
-			form.IncorrectOldPassword = true
+		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password)); err != nil {
+			form.IncorrectPassword = true
 		}
 
 		// Validate form

@@ -156,14 +156,14 @@ func (form *RegisterForm) Validate() bool {
 	if form.UsernameTaken {
 		form.Errors["Username"] = "Benutzername ist bereits vergeben."
 	} else {
-		form.Errors.validateUsername(form.Username)
+		form.Errors.validateUsername(form.Username, "Username")
 	}
 
 	// Validate email
 	if form.EmailTaken {
 		form.Errors["Email"] = "Email ist bereits vergeben."
 	} else {
-		form.Errors.validateEmail(form.Email)
+		form.Errors.validateEmail(form.Email, "Email")
 	}
 
 	// Validate password
@@ -213,22 +213,22 @@ type EditUsernameForm struct {
 	Errors FormErrors
 }
 
-// Validate validates the form input when editing a password.
+// Validate validates the form input when editing a username.
 func (form *EditUsernameForm) Validate() bool {
 	form.Errors = FormErrors{}
 
 	// Validate new username
 	if form.UsernameTaken {
-		form.Errors["Username"] = "Benutzername ist bereits vergeben."
+		form.Errors["NewUsername"] = "Benutzername ist bereits vergeben."
 	} else {
-		form.Errors.validateUsername(form.NewUsername)
+		form.Errors.validateUsername(form.NewUsername, "NewUsername")
 	}
 
 	// Validate password
 	if form.Password == "" {
-		form.Errors["OldPassword"] = "Geben Sie Ihr Passwort ein."
+		form.Errors["Password"] = "Geben Sie Ihr Passwort ein."
 	} else if form.IncorrectPassword {
-		form.Errors["OldPassword"] = "Passwort ist inkorrekt."
+		form.Errors["Password"] = "Passwort ist inkorrekt."
 	}
 
 	return len(form.Errors) == 0
@@ -244,22 +244,22 @@ type EditEmailForm struct {
 	Errors FormErrors
 }
 
-// Validate validates the form input when editing a password.
+// Validate validates the form input when editing an email.
 func (form *EditEmailForm) Validate() bool {
 	form.Errors = FormErrors{}
 
 	// Validate new username
 	if form.EmailTaken {
-		form.Errors["Email"] = "Email ist bereits vergeben."
+		form.Errors["NewEmail"] = "Email ist bereits vergeben."
 	} else {
-		form.Errors.validateEmail(form.NewEmail)
+		form.Errors.validateEmail(form.NewEmail, "NewEmail")
 	}
 
 	// Validate password
 	if form.Password == "" {
-		form.Errors["OldPassword"] = "Geben Sie Ihr Passwort ein."
+		form.Errors["Password"] = "Geben Sie Ihr Passwort ein."
 	} else if form.IncorrectPassword {
-		form.Errors["OldPassword"] = "Passwort ist inkorrekt."
+		form.Errors["Password"] = "Passwort ist inkorrekt."
 	}
 
 	return len(form.Errors) == 0
@@ -267,9 +267,9 @@ func (form *EditEmailForm) Validate() bool {
 
 // EditPasswordForm holds values of the form input when editing a password.
 type EditPasswordForm struct {
-	NewPassword          string
-	OldPassword          string
-	IncorrectOldPassword bool
+	NewPassword       string
+	Password          string
+	IncorrectPassword bool
 
 	Errors FormErrors
 }
@@ -278,15 +278,15 @@ type EditPasswordForm struct {
 func (form *EditPasswordForm) Validate() bool {
 	form.Errors = FormErrors{}
 
-	// Validate old password
-	if form.OldPassword == "" {
-		form.Errors["OldPassword"] = "Geben Sie Ihr altes Passwort ein."
-	} else if form.IncorrectOldPassword {
-		form.Errors["OldPassword"] = "Altes Passwort ist inkorrekt."
-	}
-
 	// Validate new password
 	form.Errors.validatePassword(form.NewPassword, "NewPassword")
+
+	// Validate old password
+	if form.Password == "" {
+		form.Errors["Password"] = "Geben Sie Ihr altes Passwort ein."
+	} else if form.IncorrectPassword {
+		form.Errors["Password"] = "Altes Passwort ist inkorrekt."
+	}
 
 	return len(form.Errors) == 0
 }
@@ -335,36 +335,36 @@ func (form *ResetPasswordForm) Validate() bool {
 }
 
 // validateUsername validates a username.
-func (errors *FormErrors) validateUsername(username string) {
+func (errors *FormErrors) validateUsername(username string, errorName string) {
 	if username == "" {
-		(*errors)["Username"] = "Bitte Benutzernamen angeben."
+		(*errors)[errorName] = "Bitte Benutzernamen angeben."
 	} else if len(username) < 3 {
-		(*errors)["Username"] = "Benutzername muss mindestens 3 Zeichen lang sein."
+		(*errors)[errorName] = "Benutzername muss mindestens 3 Zeichen lang sein."
 	} else if len(username) > 20 {
-		(*errors)["Username"] = "Benutzername darf höchstens 20 Zeichen lang sein."
+		(*errors)[errorName] = "Benutzername darf höchstens 20 Zeichen lang sein."
 	} else if !util.Regex(username, "^[a-zA-Z0-9._]*$") {
-		(*errors)["Username"] = "Benutzername darf nur Buchstaben, Zahlen, '.' und '_' enthalten."
+		(*errors)[errorName] = "Benutzername darf nur Buchstaben, Zahlen, '.' und '_' enthalten."
 	} else if !util.Regex(username, "[a-zA-Z]") {
-		(*errors)["Username"] = "Benutzername muss mindestens 1 Buchstaben enthalten."
+		(*errors)[errorName] = "Benutzername muss mindestens 1 Buchstaben enthalten."
 	} else if util.Regex(username, "^[._]") {
-		(*errors)["Username"] = "Benutzername darf nicht mit '.' oder '_' beginnen."
+		(*errors)[errorName] = "Benutzername darf nicht mit '.' oder '_' beginnen."
 	} else if util.Regex(username, "[._]$") {
-		(*errors)["Username"] = "Benutzername darf nicht mit '.' oder '_' enden."
+		(*errors)[errorName] = "Benutzername darf nicht mit '.' oder '_' enden."
 	} else if util.Regex(username, "[_.]{2}") {
-		(*errors)["Username"] = "Benutzername darf '.' und '_' nicht aufeinanderfolgend haben."
+		(*errors)[errorName] = "Benutzername darf '.' und '_' nicht aufeinanderfolgend haben."
 	}
 }
 
 // validateEmail validates an email.
-func (errors *FormErrors) validateEmail(email string) {
+func (errors *FormErrors) validateEmail(email string, errorName string) {
 	if email == "" {
-		(*errors)["Email"] = "Bitte Email angeben."
+		(*errors)[errorName] = "Bitte Email angeben."
 	} else if len(email) < 3 {
-		(*errors)["Email"] = "Email muss mindestens 3 Zeichen lang sein."
+		(*errors)[errorName] = "Email muss mindestens 3 Zeichen lang sein."
 	} else if len(email) > 100 {
-		(*errors)["Email"] = "Email darf höchstens 100 Zeichen lang sein."
+		(*errors)[errorName] = "Email darf höchstens 100 Zeichen lang sein."
 	} else if !util.Regex(email, "^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,4}$") {
-		(*errors)["Email"] = "Ungültiges Email-Format."
+		(*errors)[errorName] = "Ungültiges Email-Format."
 	}
 }
 

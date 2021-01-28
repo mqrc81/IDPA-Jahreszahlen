@@ -749,10 +749,10 @@ func TestValidateEditPasswordForm(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 
 			form := &EditPasswordForm{
-				NewPassword:          test.form.newPassword,
-				OldPassword:          test.form.oldPassword,
-				IncorrectOldPassword: test.form.incorrectOldPassword,
-				Errors:               FormErrors{},
+				NewPassword:       test.form.newPassword,
+				Password:          test.form.oldPassword,
+				IncorrectPassword: test.form.incorrectOldPassword,
+				Errors:            FormErrors{},
 			}
 
 			if got := form.Validate(); got != test.want {
@@ -944,7 +944,7 @@ func TestValidateUsername(t *testing.T) {
 
 			errors := FormErrors{}
 
-			errors.validateUsername(test.username)
+			errors.validateUsername(test.username, "Username")
 
 			if got := len(errors) == 0; got != test.want {
 				t.Errorf("Validate() = %v, want %v", got, test.want)
@@ -1000,7 +1000,7 @@ func TestValidateEmail(t *testing.T) {
 
 			errors := FormErrors{}
 
-			errors.validateEmail(test.email)
+			errors.validateEmail(test.email, "Email")
 
 			if got := len(errors) == 0; got != test.want {
 				t.Errorf("Validate() = %v, want %v", got, test.want)

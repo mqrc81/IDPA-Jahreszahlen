@@ -38,6 +38,8 @@ var (
 			return num - 1
 		},
 	}
+
+	handler *Handler
 )
 
 // init gets initialized with the package.
@@ -46,7 +48,7 @@ var (
 // needed. This is way more efficient than parsing the HTML-templates every
 // time a request is sent.
 func init() {
-	if _testing {
+	if _testing { // skip initialization of templates when running tests
 		return
 	}
 
@@ -82,8 +84,9 @@ func init() {
 	Templates["users_login"] = template.Must(template.ParseFiles(layout, css, path+"users_login.html"))
 	Templates["users_profile"] = template.Must(template.ParseFiles(layout, css, path+"users_profile.html"))
 	Templates["users_list"] = template.Must(template.ParseFiles(layout, css, path+"users_list.html"))
-	Templates["users_edit_password"] = template.Must(template.ParseFiles(layout, css, path+"users_edit_password.html"))
 	Templates["users_edit_username"] = template.Must(template.ParseFiles(layout, css, path+"users_edit_username.html"))
+	Templates["users_edit_email"] = template.Must(template.ParseFiles(layout, css, path+"users_edit_email.html"))
+	Templates["users_edit_password"] = template.Must(template.ParseFiles(layout, css, path+"users_edit_password.html"))
 	Templates["users_forgot_password"] = template.Must(template.ParseFiles(layout, css,
 		path+"users_forgot_password.html"))
 	Templates["users_reset_password"] = template.Must(template.ParseFiles(layout, css,
@@ -92,7 +95,7 @@ func init() {
 
 // NewHandler initializes HTTP-handlers, including router and middleware.
 func NewHandler(store x.Store, sessions *scs.SessionManager, csrfKey []byte) *Handler {
-	handler := &Handler{
+	handler = &Handler{
 		Mux:      chi.NewMux(),
 		store:    store,
 		sessions: sessions,
@@ -157,7 +160,6 @@ func NewHandler(store x.Store, sessions *scs.SessionManager, csrfKey []byte) *Ha
 		router.Get("/", scores.List())
 		router.Post("/", scores.Filter())
 	})
-	handler.Get("/scores", scores.List())
 
 	// Users
 	handler.Route("/users", func(router chi.Router) {
@@ -203,7 +205,8 @@ type Handler struct {
 // Home is a GET-method that is accessible to anyone.
 //
 // It displays the home-page.
-func (handler *Handler) Home() http.HandlerFunc {
+func (h *Handler) Home() http.HandlerFunc {
+
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -213,7 +216,7 @@ func (handler *Handler) Home() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Execute SQL statement to get topics
-		topics, err := handler.store.GetTopics()
+		topics, err := h.store.GetTopics()
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -221,7 +224,7 @@ func (handler *Handler) Home() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err := Templates["home"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			Topics:      topics,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -231,17 +234,18 @@ func (handler *Handler) Home() http.HandlerFunc {
 }
 
 // withUser is a middleware that replaces the potential user ID with a user object.
-func (handler *Handler) withUser(next http.Handler) http.Handler {
+func (h *Handler) withUser(next http.Handler) http.Handler {
+
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		// Retrieve user ID from session
 		var userID int
-		userIDinf := handler.sessions.Get(req.Context(), "user_id")
+		userIDinf := h.sessions.Get(req.Context(), "user_id")
 		if userIDinf != nil {
 			userID = userIDinf.(int)
 		}
 
 		// Execute SQL statement to get user
-		user, err := handler.store.GetUser(userID)
+		user, err := h.store.GetUser(userID)
 		if err != nil {
 			// No user in session => continue to HTTP-handler
 			next.ServeHTTP(res, req)
@@ -257,7 +261,8 @@ func (handler *Handler) withUser(next http.Handler) http.Handler {
 }
 
 // NotFound404 gets called when a non-existing URL has been entered.
-func (handler *Handler) NotFound404() http.HandlerFunc {
+func (h *Handler) NotFound404() http.HandlerFunc {
+
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -265,7 +270,7 @@ func (handler *Handler) NotFound404() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		if err := Templates["http_not_found"].Execute(res, data{
-			SessionData: GetSessionData(handler.sessions, req.Context()),
+			SessionData: GetSessionData(h.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
