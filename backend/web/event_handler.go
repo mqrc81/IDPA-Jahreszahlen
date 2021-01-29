@@ -337,7 +337,7 @@ func (h *EventHandler) EditStore() http.HandlerFunc {
 		}
 
 		// Add flash message to session
-		h.sessions.Put(req.Context(), "flash_success", "Thema wurde erfolgreich bearbeitet.")
+		h.sessions.Put(req.Context(), "flash_success", "Ereignis wurde erfolgreich bearbeitet.")
 
 		// Redirect to list of events
 		http.Redirect(res, req, "/topics/"+topicIDstr+"/events", http.StatusFound)

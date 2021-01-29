@@ -12,7 +12,7 @@
         <br><br>
     </h5>
 
-    <form action="/events" method="POST" class="form">
+    <form action="/topics/{{.Event.TopicID}}/events/{{.Event.EventID}}/edit" method="POST" class="form">
         {{.CSRF}}
         <label for="name">Ereignis:</label>
         <div class="form-group">

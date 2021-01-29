@@ -28,9 +28,6 @@ var (
 
 	// funcMap is a map of custom functions to be used in an HTML-template
 	funcMap = template.FuncMap{
-		"is_even": func(num int) bool {
-			return num%2 == 0
-		},
 		"increment": func(num int) int {
 			return num + 1
 		},

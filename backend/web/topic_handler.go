@@ -298,7 +298,7 @@ func (h *TopicHandler) EditStore() http.HandlerFunc {
 		}
 
 		// Retrieve topic ID from URL
-		topicIDstr := req.URL.Query().Get("topicID")
+		topicIDstr := chi.URLParam(req, "topicID")
 		topicID, _ := strconv.Atoi(topicIDstr)
 
 		// Execute SQL statement to update a topic
@@ -317,7 +317,7 @@ func (h *TopicHandler) EditStore() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "flash_success", "Thema wurde erfolgreich bearbeitet.")
 
 		// Redirect to topic Show
-		http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+		http.Redirect(res, req, "/topics", http.StatusFound)
 	}
 }
 
