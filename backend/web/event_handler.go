@@ -265,7 +265,7 @@ func (h *EventHandler) Edit() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err = eventsEditTemplate.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			SessionData: sessionData,
 			CSRF:        csrf.TemplateField(req),
 			Event:       event,
 		}); err != nil {

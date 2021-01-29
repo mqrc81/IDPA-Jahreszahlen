@@ -54,9 +54,6 @@ func GetSessionData(session *scs.SessionManager, ctx context.Context) SessionDat
 
 	// Retrieve form from session
 	data.Form = session.Pop(ctx, "form")
-	if data.Form == nil {
-		data.Form = map[string]string{}
-	}
 
 	// Retrieve user from session
 	userInf := ctx.Value("user")
