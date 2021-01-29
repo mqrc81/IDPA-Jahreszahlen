@@ -25,12 +25,33 @@ const (
 	TokenLength = 43
 )
 
+var (
+	usersRegisterTemplate, usersLoginTemplate, usersProfileTemplate, usersListTemplate, usersForgotPasswordTemplate,
+	usersResetPasswordTemplate *template.Template
+)
+
 // init gets initialized with the package.
 //
 // It registers certain types to the session, because by default the session
 // can only contain basic data types (int, bool, string, etc.).
+//
+// All HTML-templates get parsed once to be executed when needed. This is way
+// more efficient than parsing the HTML-templates with every request.
 func init() {
 	gob.Register(x.Token{})
+
+	if _testing { // skip initialization of templates when running tests
+		return
+	}
+
+	usersRegisterTemplate = template.Must(template.ParseFiles(layout, css, path+"users_register.html"))
+	usersLoginTemplate = template.Must(template.ParseFiles(layout, css, path+"users_login.html"))
+	usersProfileTemplate = template.Must(template.ParseFiles(layout, css, path+"users_profile.html"))
+	usersListTemplate = template.Must(template.ParseFiles(layout, css, path+"users_list.html"))
+	usersForgotPasswordTemplate = template.Must(template.ParseFiles(layout, css,
+		path+"users_forgot_password.html"))
+	usersResetPasswordTemplate = template.Must(template.ParseFiles(layout, css,
+		path+"users_reset_password.html"))
 }
 
 // UserHandler is the object for handlers to access sessions and database.
@@ -64,7 +85,7 @@ func (h *UserHandler) Register() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := Templates["users_register"].Execute(res, data{
+		if err := usersRegisterTemplate.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 		}); err != nil {
@@ -179,7 +200,7 @@ func (h *UserHandler) Login() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := Templates["users_login"].Execute(res, data{
+		if err := usersLoginTemplate.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 		}); err != nil {
@@ -300,7 +321,7 @@ func (h *UserHandler) Profile() http.HandlerFunc {
 		user := userInf.(x.User)
 
 		// Execute HTML-templates with data
-		if err := Templates["users_profile"].Execute(res, data{
+		if err := usersProfileTemplate.Execute(res, data{
 			User:        user,
 			SessionData: GetSessionData(h.sessions, req.Context()),
 		}); err != nil {
@@ -345,7 +366,7 @@ func (h *UserHandler) List() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := Templates["users_list"].Execute(res, data{
+		if err = usersListTemplate.Execute(res, data{
 			Users:       users,
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
@@ -520,7 +541,7 @@ func (h *UserHandler) ForgotPassword() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := Templates["users_forgot_password"].Execute(res, data{
+		if err := usersForgotPasswordTemplate.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 		}); err != nil {
@@ -638,7 +659,7 @@ func (h *UserHandler) ResetPassword() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "token", token)
 
 		// Execute HTML-templates with data
-		if err = Templates["users_reset_password"].Execute(res, data{
+		if err = usersResetPasswordTemplate.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 		}); err != nil {

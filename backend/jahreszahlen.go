@@ -27,7 +27,7 @@ type Event struct {
 	TopicID int       `db:"topic_id"`
 	Name    string    `db:"name"`
 	Year    int       `db:"year"`
-	Date    time.Time `db:"date"` // only relevant for sorting the events by date, if 2 events are in the same year
+	Date    time.Time `db:"date"` // for sorting the events in chronological order, if 2 events have the same year
 }
 
 // User represents a person's account.

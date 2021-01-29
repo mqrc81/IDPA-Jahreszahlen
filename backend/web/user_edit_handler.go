@@ -14,6 +14,24 @@ import (
 	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
+var (
+	usersEditUsernameTemplate, usersEditEmailTemplate, usersEditPasswordTemplate *template.Template
+)
+
+// init gets initialized with the package.
+//
+// All HTML-templates get parsed once to be executed when needed. This is way
+// more efficient than parsing the HTML-templates with every request.
+func init() {
+	if _testing { // skip initialization of templates when running tests
+		return
+	}
+
+	usersEditUsernameTemplate = template.Must(template.ParseFiles(layout, css, path+"users_edit_username.html"))
+	usersEditEmailTemplate = template.Must(template.ParseFiles(layout, css, path+"users_edit_email.html"))
+	usersEditPasswordTemplate = template.Must(template.ParseFiles(layout, css, path+"users_edit_password.html"))
+}
+
 // EditUsername is a GET-method that is accessible to any user.
 //
 // It displays a form in which values for modifying the current username can be
@@ -39,7 +57,7 @@ func (h *UserHandler) EditUsername() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := Templates["users_edit_username"].Execute(res, data{
+		if err := usersEditUsernameTemplate.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 		}); err != nil {
@@ -129,7 +147,7 @@ func (h *UserHandler) EditEmail() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := Templates["users_edit_email"].Execute(res, data{
+		if err := usersEditEmailTemplate.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 		}); err != nil {
@@ -219,7 +237,7 @@ func (h *UserHandler) EditPassword() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := Templates["users_edit_password"].Execute(res, data{
+		if err := usersEditPasswordTemplate.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 		}); err != nil {

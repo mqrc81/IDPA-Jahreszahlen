@@ -36,10 +36,18 @@ const (
 	p3Points = 5
 )
 
+var (
+	quizPhase1Template, quizPhase1ReviewTemplate, quizPhase2Template, quizPhase2ReviewTemplate, quizPhase3Template,
+	quizPhase3ReviewTemplate, quizSummaryTemplate *template.Template
+)
+
 // init gets initialized with the package.
 //
 // It registers certain types to the session, because by default the session
 // can only contain basic data types (int, bool, string, etc.).
+//
+// All HTML-templates get parsed once to be executed when needed. This is way
+// more efficient than parsing the HTML-templates with every request.
 func init() {
 	gob.Register(QuizData{})
 	gob.Register(x.Topic{})
@@ -52,6 +60,18 @@ func init() {
 	gob.Register(phase2Question{})
 	gob.Register([]phase3Question{})
 	gob.Register(phase3Question{})
+
+	if _testing { // skip initialization of templates when running tests
+		return
+	}
+
+	quizPhase1Template = template.Must(template.ParseFiles(layout, css, path+"quiz_phase1.html"))
+	quizPhase1ReviewTemplate = template.Must(template.ParseFiles(layout, css, path+"quiz_phase1_review.html"))
+	quizPhase2Template = template.Must(template.ParseFiles(layout, css, path+"quiz_phase2.html"))
+	quizPhase2ReviewTemplate = template.Must(template.ParseFiles(layout, css, path+"quiz_phase2_review.html"))
+	quizPhase3Template = template.Must(template.ParseFiles(layout, css, path+"quiz_phase3.html"))
+	quizPhase3ReviewTemplate = template.Must(template.ParseFiles(layout, css, path+"quiz_phase3_review.html"))
+	quizSummaryTemplate = template.Must(template.ParseFiles(layout, css, path+"quiz_summary.html"))
 }
 
 // QuizHandler is the object for handlers to access sessions and database.
@@ -136,7 +156,7 @@ func (h *QuizHandler) Phase1() http.HandlerFunc {
 		})
 
 		// Execute HTML-templates with data
-		if err := Templates["quiz_phase1"].Execute(res, data{
+		if err = quizPhase1Template.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			TopicID:     topicID,
@@ -248,7 +268,7 @@ func (h *QuizHandler) Phase1Review() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Execute HTML-templates with data
-		if err := Templates["quiz_phase1_review"].Execute(res, data{
+		if err = quizPhase1ReviewTemplate.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			TopicID:     topicID,
@@ -350,7 +370,7 @@ func (h *QuizHandler) Phase2() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Execute HTML-templates with data
-		if err := Templates["quiz_phase2"].Execute(res, data{
+		if err = quizPhase2Template.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			TopicID:     topicID,
@@ -473,7 +493,7 @@ func (h *QuizHandler) Phase2Review() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Execute HTML-templates with data
-		if err := Templates["quiz_phase2_review"].Execute(res, data{
+		if err = quizPhase2ReviewTemplate.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			TopicID:     topicID,
@@ -576,7 +596,7 @@ func (h *QuizHandler) Phase3() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Execute HTML-templates with data
-		if err := Templates["quiz_phase3"].Execute(res, data{
+		if err = quizPhase3Template.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			TopicID:     topicID,
@@ -713,7 +733,7 @@ func (h *QuizHandler) Phase3Review() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Execute HTML-templates with data
-		if err := Templates["quiz_phase3_review"].Execute(res, data{
+		if err = quizPhase3ReviewTemplate.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Questions:   quiz.Questions.([]phase3Question),
@@ -779,11 +799,12 @@ func (h *QuizHandler) Summary() http.HandlerFunc {
 		// better than 40% of players (-> 20*100/50 = 40%)
 		under := 0
 		for under < len(scores) && quiz.Points > scores[under].Points {
+			// FIXME
 		}
 		averageComparison := (under + 1) * 100 / (len(scores) + 1)
 
 		// Execute HTML-templates with data
-		if err := Templates["quiz_summary"].Execute(res, data{
+		if err = quizSummaryTemplate.Execute(res, data{
 			SessionData:       GetSessionData(h.sessions, req.Context()),
 			Quiz:              quiz,
 			QuestionsCount:    p1Questions + p2Questions + len(quiz.Topic.Events),

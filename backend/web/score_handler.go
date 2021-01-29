@@ -16,6 +16,25 @@ import (
 	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
+var (
+	scoresListTemplate *template.Template
+)
+
+// init gets initialized with the package.
+//
+// All HTML-templates get parsed once to be executed when needed. This is way
+// more efficient than parsing the HTML-templates with every request.
+func init() {
+	if _testing { // skip initialization of templates when running tests
+		return
+	}
+
+	scoresListTemplate = template.Must(template.
+		New("layout.html").Funcs(funcMap). // add custom functions to use in HTML-templates
+		ParseFiles(layout, css, path+"scores_list.html"))
+
+}
+
 // ScoreHandler is the object for handlers to access sessions and database.
 type ScoreHandler struct {
 	store    x.Store
@@ -131,7 +150,7 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := Templates["scores_list"].Execute(res, data{
+		if err = scoresListTemplate.Execute(res, data{
 			SessionData:  GetSessionData(h.sessions, req.Context()),
 			CSRF:         csrf.TemplateField(req),
 			Leaderboard:  leaderboard,

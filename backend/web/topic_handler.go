@@ -16,6 +16,25 @@ import (
 	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
+var (
+	topicsListTemplate, topicsCreateTemplate, topicsEditTemplate, topicsShowTemplate *template.Template
+)
+
+// init gets initialized with the package.
+//
+// All HTML-templates get parsed once to be executed when needed. This is way
+// more efficient than parsing the HTML-templates with every request.
+func init() {
+	if _testing { // skip initialization of templates when running tests
+		return
+	}
+
+	topicsListTemplate = template.Must(template.ParseFiles(layout, css, path+"topics_list.html"))
+	topicsCreateTemplate = template.Must(template.ParseFiles(layout, css, path+"topics_create.html"))
+	topicsEditTemplate = template.Must(template.ParseFiles(layout, css, path+"topics_edit.html"))
+	topicsShowTemplate = template.Must(template.ParseFiles(layout, css, path+"topics_show.html"))
+}
+
 // TopicHandler is the object for handlers to access sessions and database.
 type TopicHandler struct {
 	store    x.Store
@@ -47,7 +66,7 @@ func (h *TopicHandler) List() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err = Templates["topics_list"].Execute(res, data{
+		if err = topicsListTemplate.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Topics:      topics,
@@ -83,7 +102,7 @@ func (h *TopicHandler) Create() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := Templates["topics_create"].Execute(res, data{
+		if err := topicsCreateTemplate.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 		}); err != nil {
@@ -241,7 +260,7 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err = Templates["topics_edit"].Execute(res, data{
+		if err = topicsEditTemplate.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Topic:       topic,
@@ -334,7 +353,7 @@ func (h *TopicHandler) Show() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err = Templates["topics_show"].Execute(res, data{
+		if err = topicsShowTemplate.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Topic:       topic,

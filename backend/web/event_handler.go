@@ -16,6 +16,20 @@ import (
 	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
+var (
+	eventsListTemplate, eventsCreateTemplate, eventsEditTemplate *template.Template
+)
+
+func init() {
+	if _testing { // skip initialization of templates when running tests
+		return
+	}
+
+	eventsListTemplate = template.Must(template.ParseFiles(layout, css, path+"events_list.html"))
+	eventsCreateTemplate = template.Must(template.ParseFiles(layout, css, path+"events_create.html"))
+	eventsEditTemplate = template.Must(template.ParseFiles(layout, css, path+"events_edit.html"))
+}
+
 // EventHandler is the object for handlers to access sessions and database.
 type EventHandler struct {
 	store    x.Store
@@ -65,7 +79,7 @@ func (h *EventHandler) List() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err = Templates["events_list"].Execute(res, data{
+		if err = eventsListTemplate.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Topic:       topic,
@@ -117,7 +131,7 @@ func (h *EventHandler) Create() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err = Templates["events_create"].Execute(res, data{
+		if err = eventsCreateTemplate.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Topic:       topic,
@@ -275,7 +289,7 @@ func (h *EventHandler) Edit() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err = Templates["events_edit"].Execute(res, data{
+		if err = eventsEditTemplate.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Event:       event,
