@@ -309,10 +309,6 @@ func (h *EventHandler) EditStore() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 
-		// Retrieve topic ID from URL parameters
-		topicIDstr := chi.URLParam(req, "topicID")
-		topicID, _ := strconv.Atoi(topicIDstr)
-
 		// Retrieve values from form
 		form := EventForm{
 			Name:       req.FormValue("name"),
@@ -326,11 +322,16 @@ func (h *EventHandler) EditStore() http.HandlerFunc {
 			return
 		}
 
+		// Retrieve topic ID from URL parameters
+		topicID := chi.URLParam(req, "topicID")
+		eventID, _ := strconv.Atoi(chi.URLParam(req, "eventID"))
+
 		// Execute SQL statement to update event
 		if err := h.store.UpdateEvent(&x.Event{
-			TopicID: topicID,
+			EventID: eventID,
 			Name:    form.Name,
 			Year:    form.Year,
+			Date:    form.Date,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -340,6 +341,6 @@ func (h *EventHandler) EditStore() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "flash_success", "Ereignis wurde erfolgreich bearbeitet.")
 
 		// Redirect to list of events
-		http.Redirect(res, req, "/topics/"+topicIDstr+"/events", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicID+"/events", http.StatusFound)
 	}
 }
