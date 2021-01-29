@@ -304,7 +304,7 @@ func (h *EventHandler) Edit() http.HandlerFunc {
 //
 // It validates the form from Edit and redirects to Edit in case of an invalid
 // input with the corresponding error message. In case of valid form, it stores
-// the topic in the database and redirects to List.
+// the event in the database and redirects to List.
 func (h *EventHandler) EditStore() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {

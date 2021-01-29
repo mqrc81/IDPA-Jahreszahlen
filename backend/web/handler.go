@@ -86,7 +86,6 @@ func NewHandler(store x.Store, sessions *scs.SessionManager, csrfKey []byte) *Ha
 		r.Post("/{topicID}/delete", topics.Delete())
 		r.Get("/{topicID}/edit", topics.Edit())
 		r.Post("/{topicID}/edit", topics.EditStore())
-		r.Post("/{topicID}/edit/prepare", topics.EditPrepare())
 	})
 
 	// Events

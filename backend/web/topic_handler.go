@@ -180,43 +180,6 @@ func (h *TopicHandler) Delete() http.HandlerFunc {
 	}
 }
 
-// EditPrepare is a POST-method that is accessible to any admin.
-//
-// It creates a form from the topic's values, so that values are already filled out
-// when editing the topic.
-func (h *TopicHandler) EditPrepare() http.HandlerFunc {
-
-	return func(res http.ResponseWriter, req *http.Request) {
-
-		// Retrieve topic ID from URL parameters
-		topicIDstr := chi.URLParam(req, "topicID")
-		topicID, _ := strconv.Atoi(topicIDstr)
-
-		// Execute SQL statement to get topic
-		topic, err := h.store.GetTopic(topicID)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Create form to add to session, so that values are already filled out
-		// when editing a topic
-		form := TopicForm{
-			Name:        topic.Name,
-			StartYear:   topic.StartYear,
-			EndYear:     topic.EndYear,
-			Description: topic.Description,
-			Errors:      FormErrors{},
-		}
-
-		// Add form to session
-		h.sessions.Put(req.Context(), "form", form)
-
-		// Redirect to edit-page of topic
-		http.Redirect(res, req, "/topics/"+topicIDstr+"/edit", http.StatusFound)
-	}
-}
-
 // Edit is a GET-method that is accessible to any admin.
 //
 // It displays a form in which values for modifying the current topic can be
@@ -259,9 +222,21 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 			return
 		}
 
+		// If this is not redirected back after already submitting once, fill
+		// the form with values of the topic
+		sessionData := GetSessionData(h.sessions, req.Context())
+		if sessionData.Form == nil {
+			sessionData.Form = TopicForm{
+				Name:        topic.Name,
+				StartYear:   topic.StartYear,
+				EndYear:     topic.EndYear,
+				Description: topic.Description,
+			}
+		}
+
 		// Execute HTML-templates with data
 		if err = topicsEditTemplate.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			SessionData: sessionData,
 			CSRF:        csrf.TemplateField(req),
 			Topic:       topic,
 		}); err != nil {
