@@ -96,7 +96,6 @@ func NewHandler(store x.Store, sessions *scs.SessionManager, csrfKey []byte) *Ha
 		router.Post("/{eventID}/delete", events.Delete())
 		router.Get("/{eventID}/edit", events.Edit())
 		router.Post("/{eventID}/edit", events.EditStore())
-		router.Post("/{eventID}/edit/prepare", events.EditPrepare())
 	})
 
 	// Quiz
