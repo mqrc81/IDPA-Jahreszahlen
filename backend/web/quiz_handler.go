@@ -6,6 +6,7 @@ package web
 
 import (
 	"encoding/gob"
+	"fmt"
 	"html/template"
 	"math/rand"
 	"net/http"
@@ -249,18 +250,16 @@ func (h *QuizHandler) Phase1Review() http.HandlerFunc {
 		}
 
 		// Retrieve quiz data from session
-		quizInf := h.sessions.Get(req.Context(), "quiz")
+		// 'ok' is false if quiz from session isn't convertible to quizData
+		// struct (so if quiz doesn't exist in session)
+		quiz, ok := h.sessions.Get(req.Context(), "quiz").(QuizData)
 
-		// Validate the token of the quiz data
-		// Pass in quiz data as interface instead of struct, because before
-		// converting to struct, we have to check whether interface is nil
-		quiz, msg := validateQuizToken(quizInf, 1, false, topicID)
-		// If msg isn't empty, an error occurred
-		// Usually an error only occurs when user manually typed in a URL
-		// without starting at phase 1 or after the time stamp expired
+		// Validate the token of the quiz-data
+		msg := quiz.validate(ok, 1, false, topicID)
+
+		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
-			h.sessions.Put(req.Context(), "flash_error",
-				"Ein Fehler ist aufgetreten in Phase 1 des Quizzes. "+msg)
+			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 1))
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
@@ -351,18 +350,16 @@ func (h *QuizHandler) Phase2() http.HandlerFunc {
 		}
 
 		// Retrieve quiz data from session
-		quizInf := h.sessions.Get(req.Context(), "quiz")
+		// 'ok' is false if quiz from session isn't convertible to quizData
+		// struct (so if quiz doesn't exist in session)
+		quiz, ok := h.sessions.Get(req.Context(), "quiz").(QuizData)
 
-		// Validate the token of the quiz data
-		// Pass in quiz data as interface instead of struct, because before
-		// converting to struct, we have to check whether interface is nil
-		quiz, msg := validateQuizToken(quizInf, 1, true, topicID)
-		// If msg isn't empty, an error occurred
-		// Usually an error only occurs when user manually typed in a URL
-		// without starting at phase 1 or after the time stamp expired
+		// Validate the token of the quiz-data
+		msg := quiz.validate(ok, 1, true, topicID)
+
+		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
-			h.sessions.Put(req.Context(), "flash_error",
-				"Ein Fehler ist aufgetreten in Phase 2 des Quizzes. "+msg)
+			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 2))
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
@@ -474,18 +471,16 @@ func (h *QuizHandler) Phase2Review() http.HandlerFunc {
 		}
 
 		// Retrieve quiz data from session
-		quizInf := h.sessions.Get(req.Context(), "quiz")
+		// 'ok' is false if quiz from session isn't convertible to quizData
+		// struct (so if quiz doesn't exist in session)
+		quiz, ok := h.sessions.Get(req.Context(), "quiz").(QuizData)
 
-		// Validate the token of the quiz data
-		// Pass in quiz data as interface instead of struct, because before
-		// converting to struct, we have to check whether interface is nil
-		quiz, msg := validateQuizToken(quizInf, 2, false, topicID)
-		// If msg isn't empty, an error occurred
-		// Usually an error only occurs when user manually typed in a URL
-		// without starting at phase 1 or after the time stamp expired
+		// Validate the token of the quiz-data
+		msg := quiz.validate(ok, 2, false, topicID)
+
+		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
-			h.sessions.Put(req.Context(), "flash_error",
-				"Ein Fehler ist aufgetreten in Phase 2 des Quizzes. "+msg)
+			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 2))
 			http.Redirect(res, req, "/topics", http.StatusFound)
 			return
 		}
@@ -577,18 +572,16 @@ func (h *QuizHandler) Phase3() http.HandlerFunc {
 		}
 
 		// Retrieve quiz data from session
-		quizInf := h.sessions.Get(req.Context(), "quiz")
+		// 'ok' is false if quiz from session isn't convertible to quizData
+		// struct (so if quiz doesn't exist in session)
+		quiz, ok := h.sessions.Get(req.Context(), "quiz").(QuizData)
 
-		// Validate the token of the quiz data
-		// Pass in quiz data as interface instead of struct, because before
-		// converting to struct, we have to check whether interface is nil
-		quiz, msg := validateQuizToken(quizInf, 2, true, topicID)
-		// If msg isn't empty, an error occurred
-		// Usually an error only occurs when user manually typed in a URL
-		// without starting at phase 1 or after the time stamp expired
+		// Validate the token of the quiz-data
+		msg := quiz.validate(ok, 2, true, topicID)
+
+		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
-			h.sessions.Put(req.Context(), "flash_error",
-				"Ein Fehler ist aufgetreten in Phase 3 des Quizzes. "+msg)
+			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 3))
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
@@ -714,18 +707,16 @@ func (h *QuizHandler) Phase3Review() http.HandlerFunc {
 		}
 
 		// Retrieve quiz data from session
-		quizInf := h.sessions.Get(req.Context(), "quiz")
+		// 'ok' is false if quiz from session isn't convertible to quizData
+		// struct (so if quiz doesn't exist in session)
+		quiz, ok := h.sessions.Get(req.Context(), "quiz").(QuizData)
 
-		// Validate the token of the quiz data
-		// Pass in quiz data as interface instead of struct, because before
-		// converting to struct, we have to check whether interface is nil
-		quiz, msg := validateQuizToken(quizInf, 3, false, topicID)
-		// If msg isn't empty, an error occurred
-		// Usually an error only occurs when user manually typed in a URL
-		// without starting at phase 1 or after the time stamp expired
+		// Validate the token of the quiz-data
+		msg := quiz.validate(ok, 3, false, topicID)
+
+		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
-			h.sessions.Put(req.Context(), "flash_error",
-				"Ein Fehler ist aufgetreten in Phase 3 des Quizzes. "+msg)
+			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 3))
 			http.Redirect(res, req, "/topics", http.StatusFound)
 			return
 		}
@@ -771,18 +762,16 @@ func (h *QuizHandler) Summary() http.HandlerFunc {
 		}
 
 		// Retrieve quiz data from session
-		quizInf := h.sessions.Get(req.Context(), "quiz")
+		// 'ok' is false if quiz from session isn't convertible to quizData
+		// struct (so if quiz doesn't exist in session)
+		quiz, ok := h.sessions.Get(req.Context(), "quiz").(QuizData)
 
-		// Validate the token of the quiz data
-		// Pass in quiz data as interface instead of struct, because before
-		// converting to struct, we have to check whether interface is nil
-		quiz, msg := validateQuizToken(quizInf, 1, false, topicID)
-		// If msg isn't empty, an error occurred
-		// Usually an error only occurs when user manually typed in a URL
-		// without starting at phase 1 or after the time stamp expired
+		// Validate the token of the quiz-data
+		msg := quiz.validate(ok, 1, false, topicID)
+
+		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
-			h.sessions.Put(req.Context(), "flash_error",
-				"Ein Fehler ist aufgetreten in Phase 1 des Quizzes. "+msg)
+			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 3))
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
@@ -818,37 +807,35 @@ func (h *QuizHandler) Summary() http.HandlerFunc {
 	}
 }
 
-// validateQuizToken
-// Validates the correct playing order of a quiz by comparing the phase, topic
-// and time stamp of the quiz data in the session with the URL and current time
-// respectively. It returns the quiz data as a structure and an empty string,
-// if everything checks out, or an empty quiz data structure and an error
-// string to be used in the error flash message after redirecting back.
-func validateQuizToken(quizInf interface{}, phase int, reviewed bool, topicID int) (QuizData, string) {
+// validate validates the correct playing order of a quiz by first checking for
+// a valid quiz-data structure and then comparing the phase, topic and time-
+// stamp of the quiz-data in the session with the URL and current time
+// respectively. It an empty string if everything checks out or an error
+// message to be used in the error flash message after redirecting back.
+func (quiz QuizData) validate(ok bool, phase int, reviewed bool, topicID int) string {
 
-	// Check for empty quiz interface
-	if quizInf == nil {
+	msg := "Ein Fehler ist aufgetreten in Phase %v des Quizzes. "
+
+	// Check for invalid conversion from interface to quiz-data struct
+	if !ok {
 		// Occurs when a user manually enters a URL of a later phase without
-		// properly starting a quiz
-		return QuizData{}, "Womöglich haben Sie versucht, unter unerlaubten Umständen ein Quiz zu starten, " +
-			"ohne bei Phase 1 zu beginnen."
+		// properly starting a quiz at phase 1
+		return msg + "Bitte starten Sie ein Quiz nur über die Themenübersicht."
 	}
-
-	quiz := quizInf.(QuizData)
 
 	// Check for invalid topic ID
 	if topicID != quiz.Topic.TopicID {
 		// Occurs when a user manually changes the topic ID in the URL whilst
 		// in a later phase of a quiz
-		// Example: "/topics/1/quiz/2/review" -> "/topics/21/quiz/2/review"
-		return QuizData{}, "Womöglich haben Sie versucht, während des Quizzes das Thema zu ändern."
+		// Example: "/topics/1/quiz/2/review" -> "/topics/11/quiz/2/review"
+		return msg + "Womöglich haben Sie versucht, während des Quizzes das Thema zu ändern."
 	}
 
 	// Check for invalid phase
 	if phase != quiz.Phase || reviewed != quiz.Reviewed {
 		// Occurs when a user manually changes the phase in the URL
 		// Example: "/topics/1/quiz/1" -> "/topics/1/quiz/3"
-		return QuizData{}, "Womöglich haben Sie versucht, eine Phase des Quizzes zu überspringen."
+		return msg + "Womöglich haben Sie versucht, eine Phase des Quizzes zu überspringen."
 	}
 
 	// Check for invalid time stamp. Unix() displays the time passed in seconds
@@ -858,11 +845,11 @@ func validateQuizToken(quizInf interface{}, phase int, reviewed bool, topicID in
 		// Occurs when a user refreshes URL or comes back to URL of a active
 		// quiz after 20 minutes have passed
 		// A user can still take more than the 20 minutes in a phase however
-		return QuizData{}, "Womöglich haben Sie das Quiz verlassen und dann versucht, nach über " +
-			strconv.Itoa(timeExpiry) + " Minuten zurückzukehren."
+		return msg + fmt.Sprintf("Womöglich haben Sie das Quiz verlassen und dann versucht, "+
+			"nach über %v Minuten zurückzukehren.", timeExpiry)
 	}
 
-	return quiz, ""
+	return ""
 }
 
 // phase1Question represents 1 of the 3 multiple-choice questions of phase 1.
