@@ -142,6 +142,16 @@ func (h *QuizHandler) Phase1() http.HandlerFunc {
 			return
 		}
 
+		// Check if the topic has enough events to meet the requirements of no
+		// event showing up twice in phase 1 and 2
+		minEvents := p1Questions + p2Questions
+		if topic.EventsCount < minEvents {
+			h.sessions.Put(req.Context(), "flash_error", "Das Thema '"+topic.Name+"' hat nicht genügend Ereignisse, "+
+				"um ein Quiz zur Verfügung zu stellen. Das Minimum ist "+strconv.Itoa(minEvents))
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			return
+		}
+
 		// Shuffle array of events
 		rand.Seed(time.Now().UnixNano()) // generate new seed to base RNG off of
 		rand.Shuffle(len(topic.Events), func(n1, n2 int) {
