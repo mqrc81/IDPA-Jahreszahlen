@@ -11,14 +11,18 @@
         {{.CSRF}}
         {{range .Questions}}
             <div class="x-card">
-                <h5>{{.EventName}} beginnt</h5>
-
-                <div class="card-body">
-                    <div class="form-group">
-                        <input type="text" name="year" id="year"
-                               placeholder="Geben Sie die Jahreszahl ein">
+                    <h5>{{.EventName}}</h5>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <input type="text" name="eventyear" id="eventyear"
+                                   class="form-control"
+                                   placeholder="Bitte Jahreszahl eingeben">
+                            <input class="form-check-input" type="checkbox">
+                            <label class="form-check-label">
+                                Ich weiss es nicht
+                            </label>
+                        </div>
                     </div>
-                </div>
             </div>
         {{end}}
 
