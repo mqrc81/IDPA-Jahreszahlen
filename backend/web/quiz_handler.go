@@ -311,7 +311,7 @@ func (h *QuizHandler) Phase2Prepare() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Redirect to phase 2 of quiz
-		http.Redirect(res, req, "topics/"+topicID+"/quiz/2", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicID+"/quiz/2", http.StatusFound)
 	}
 }
 
@@ -347,7 +347,7 @@ func (h *QuizHandler) Phase2() http.HandlerFunc {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen.")
-			http.Redirect(res, req, "topics/"+topicIDstr, http.StatusFound)
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
 
@@ -534,7 +534,7 @@ func (h *QuizHandler) Phase3Prepare() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Redirect to phase 2 of quiz
-		http.Redirect(res, req, "topics/"+topicID+"/quiz/3", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicID+"/quiz/3", http.StatusFound)
 	}
 }
 
