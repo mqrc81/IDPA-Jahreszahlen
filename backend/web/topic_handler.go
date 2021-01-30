@@ -18,6 +18,8 @@ import (
 )
 
 var (
+	// Parsed HTML-templates to be executed in their respective HTTP-handler
+	// functions when needed
 	topicsListTemplate, topicsCreateTemplate, topicsEditTemplate, topicsShowTemplate *template.Template
 )
 

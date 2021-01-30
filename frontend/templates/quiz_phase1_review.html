@@ -14,24 +14,30 @@
             <div class="card-body">
                 {{$id := .ID}}
                 {{$user := .UserGuess}}
-                {{$correct := .CorrectGuess}}
                 {{$year := .EventYear}}
 
                 {{range .Choices}}
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="{{$id}}" id="{{$id}}" value="{{.}}">
-                        <label class="form-check-label" for="{{$id}}">
+                        <label for="{{$id}}" class="form-check-label
+                        {{if eq . $year}}
+                            grüene-text
+                        {{else}}
+                            {{if eq . $user}}
+                                rote-text
+                            {{end}}
+                        {{end}}">
                             {{.}}
-                            {{if eq . $year}} <!--(uswahl isch richtig)-->
-                                {{if $correct}}
-                                    <i class="fas fa-check"></i><!--(user het richtigi antwort gha)-->
-                                {{else}}
-                                    <i class="correct-year"></i><!--(uswahl isch richtig aber user het nöd das gwählt)-->
-                                {{end}}
+                            {{if eq . $year}} <!-- correct year -->
+                            {{if eq . $user}}
+                            <i class="fas fa-check"></i><!-- user guessed the correct year -->
                             {{else}}
-                                {{if eq . $user}}
-                                    <i class="fas fa-times"></i><!--(uswahl vom user, er het falschi uswahl gnoh)-->
-                                {{end}}
+                            <i class="correct-year"></i><!-- user didn't guess the correct year -->
+                            {{end}}
+                            {{else}}
+                            {{if eq . $user}}
+                            <i class="fas fa-times"></i><!-- user guessed this year, which wasn't correct -->
+                            {{end}}
                             {{end}}
                         </label>
                     </div>

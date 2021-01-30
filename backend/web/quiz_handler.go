@@ -38,6 +38,8 @@ const (
 )
 
 var (
+	// Parsed HTML-templates to be executed in their respective HTTP-handler
+	// functions when needed
 	quizPhase1Template, quizPhase1ReviewTemplate, quizPhase2Template, quizPhase2ReviewTemplate, quizPhase3Template,
 	quizPhase3ReviewTemplate, quizSummaryTemplate *template.Template
 )
