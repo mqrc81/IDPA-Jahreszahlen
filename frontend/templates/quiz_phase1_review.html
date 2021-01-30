@@ -19,26 +19,24 @@
                 {{range .Choices}}
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="{{$id}}" id="{{$id}}" value="{{.}}">
-                        <label for="{{$id}}" class="form-check-label"
+                        <label for="{{$id}}" class="form-check-label
                             {{if eq . $year}}
-                                style="color:limegreen"
+                                correct-year
                             {{else}}
                             {{if eq . $user}}
-                                style="color: red"
+                                incorrect-year
                             {{end}}
-                            {{end}}>
-                                {{.}}
-                        {{if eq . $year}} <!-- correct year -->
+                            {{end}}">
+                            {{.}}
+                            {{if eq . $year}} <!-- correct year -->
                             {{if eq . $user}}
-                                <i class="fas fa-check"></i><!-- user guessed the correct year -->
+                            <i class="fas fa-check"></i> <!-- user guessed the correct year -->
+                            {{end}}
                             {{else}}
-                                <!-- user didn't guess the correct year -->
-                            {{end}}
-                        {{else}}
                             {{if eq . $user}}
-                                <i class="fas fa-times"></i><!-- user guessed this year, which wasn't correct -->
+                            <i class="fas fa-times"></i> <!-- user guessed this year, which wasn't correct -->
                             {{end}}
-                        {{end}}
+                            {{end}}
                         </label>
                     </div>
                 {{end}}

@@ -190,7 +190,7 @@ func (h *QuizHandler) Phase1Submit() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Retrieve topic ID from URL parameters
-		topicIDstr := chi.URLParam(req, "topicID")
+		topicID := chi.URLParam(req, "topicID")
 
 		// Retrieve quiz data from session
 		quiz := h.sessions.Get(req.Context(), "quiz").(QuizData)
@@ -213,7 +213,6 @@ func (h *QuizHandler) Phase1Submit() http.HandlerFunc {
 			if guess == quiz.Topic.Events[num].Year { // if guess is correct...
 				quiz.CorrectGuesses++
 				quiz.Points += p1Points // ...user gets 3 points
-				questions[num].CorrectGuess = true
 			}
 		}
 		quiz.Questions = questions
@@ -222,7 +221,7 @@ func (h *QuizHandler) Phase1Submit() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Redirect to review of phase 1
-		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/1/review", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicID+"/quiz/1/review", http.StatusFound)
 	}
 }
 
@@ -872,9 +871,8 @@ type phase1Question struct {
 	EventYear int    // year of event
 	Choices   []int  // choices in random order (including correct year)
 
-	UserGuess    int    // only relevant for review of phase 1
-	CorrectGuess bool   // only relevant of review of phase 1
-	ID           string // only relevant for HTML input form name
+	UserGuess int    // only relevant for review of phase 1
+	ID        string // only relevant for HTML input form name
 }
 
 // createPhase1Questions generates 3 phase1Question structures by generating
