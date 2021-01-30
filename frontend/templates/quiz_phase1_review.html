@@ -1,13 +1,47 @@
 {{define "title"}}
-<title>Title</title>
+<title>Phase 1 Überprüfung</title>
 {{end}}
 
 {{define "header"}}
-<h1 class="mb-0">Header</h1>
+<h1 class="mb-0">Lösungen {{.TopicName}}</h1>
 {{end}}
 
 {{define "content"}}
+    {{range .Questions}}
+        <div class="x-card">
+            <h5>{{.EventName}}</h5>
 
+            <div class="card-body">
+                {{$id := .ID}}
+                {{$user := .UserGuess}}
+                {{$correct := .CorrectGuess}}
+                {{$year := .EventYear}}
+
+                {{range .Choices}}
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="{{$id}}" id="{{$id}}" value="{{.}}">
+                        <label class="form-check-label" for="{{$id}}">
+                            {{.}}
+                            {{if eq . $year}} <!--(uswahl isch richtig)-->
+                                {{if $correct}}
+                                    <i class="fas fa-check"></i><!--(user het richtigi antwort gha)-->
+                                {{else}}
+                                    <i class="correct-year"></i><!--(uswahl isch richtig aber user het nöd das gwählt)-->
+                                {{end}}
+                            {{else}}
+                                {{if eq . $user}}
+                                    <i class="fas fa-times"></i><!--(uswahl vom user, er het falschi uswahl gnoh)-->
+                                {{end}}
+                            {{end}}
+                        </label>
+                    </div>
+                {{end}}
+                <button class="x-button">
+                    <a href="/topics/{{.TopicID}}/quiz/2">weiter</a>
+                </button>
+            </div>
+        </div>
+    {{end}}
 {{end}}
 
 {{define "sidebar"}}
