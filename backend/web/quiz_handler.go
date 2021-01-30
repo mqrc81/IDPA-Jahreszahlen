@@ -415,19 +415,18 @@ func (h *QuizHandler) Phase2Submit() http.HandlerFunc {
 		for num := 0; num < p2Questions; num++ {
 
 			// Retrieve user's guess from form
-			guess, _ := strconv.Atoi(req.FormValue("q" + strconv.Itoa(num)))
+			questions[num].UserGuess, _ = strconv.Atoi(req.FormValue("q" + strconv.Itoa(num)))
 
 			// Check if the user's guess is correct, by comparing it to the
 			// corresponding event in the array of events of the topic
 			correctYear := quiz.Topic.Events[num+p1Questions].Year
-			if guess == correctYear { // if guess is correct...
+			if questions[num].UserGuess == correctYear { // if guess is correct...
 				quiz.CorrectGuesses++
-				quiz.Points += p2Points            // ...user gets 8 points
-				questions[num].CorrectGuess = true // ...change value for that question
+				quiz.Points += p2Points // ...user gets 8 points
 			} else {
 				// Get absolute value of difference between user's guess and
 				// correct year
-				difference := util.Abs(correctYear - guess)
+				difference := util.Abs(correctYear - questions[num].UserGuess)
 
 				// Check if the user's guess is close and potentially add
 				// partial points (the closer the guess, the more points)
@@ -794,22 +793,19 @@ func (h *QuizHandler) Summary() http.HandlerFunc {
 			return
 		}
 
-		// Compare user's points to all previous points by calculating how many
-		// users were worse than the current user
+		// Compare user's points to all previous to find out how many users
+		// were worse than the current user
 		// Example: 50 scores, 20 scores have lower points than user => user is
 		// better than 40% of players (-> 20*100/50 = 40%)
-		under := 0
-		for under < len(scores) && quiz.Points > scores[under].Points {
-			// FIXME
-		}
-		averageComparison := (under + 1) * 100 / (len(scores) + 1)
+		betterThan := indexWherePointsFitBetween(quiz.Points, scores, 0, len(scores))
+		averageComparison := betterThan * 100 / (len(scores) + 1)
 
 		// Execute HTML-templates with data
 		if err = quizSummaryTemplate.Execute(res, data{
 			SessionData:       GetSessionData(h.sessions, req.Context()),
 			Quiz:              quiz,
-			QuestionsCount:    p1Questions + p2Questions + len(quiz.Topic.Events),
-			PotentialPoints:   p1Questions*p1Points + p2Questions*p2Points + len(quiz.Topic.Events)*p3Points,
+			QuestionsCount:    p1Questions + p2Questions + quiz.Topic.EventsCount,
+			PotentialPoints:   p1Questions*p1Points + p2Questions*p2Points + quiz.Topic.EventsCount*p3Points,
 			AverageComparison: averageComparison, // Example: "Du warst besser als 22% der Spieler bei diesem Thema."
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -931,8 +927,8 @@ type phase2Question struct {
 	EventName string // name of event
 	EventYear int    // year of event
 
-	CorrectGuess bool   // only relevant for review of phase 2
-	ID           string // only relevant for HTML input form name
+	UserGuess int
+	ID        string // only relevant for HTML input form name
 }
 
 // createPhase2Questions generates 4 phase2Question structures for events 3-7
@@ -988,4 +984,26 @@ func createPhase3Questions(events []x.Event) []phase3Question {
 	})
 
 	return questions
+}
+
+// indexWherePointsFitBetween searches for the index, where the user's score
+// would be if all scores of this topic were sorted by points in descending
+// order.
+// It looks for this recursively by checking whether it's higher or lower than
+// the points of the score in the middle of the array, since this is the most
+// efficient way.
+func indexWherePointsFitBetween(points int, scores []x.Score, floor int, ceil int) int {
+	middle := scores[(floor+ceil)/2].Points
+
+	if ceil-floor <= 1 || points == middle {
+		return (floor + ceil) / 2
+	}
+
+	if points < middle {
+		ceil -= (ceil - floor) / 2
+		return indexWherePointsFitBetween(points, scores, floor, ceil)
+	} else {
+		floor += (ceil - floor) / 2
+		return indexWherePointsFitBetween(points, scores, floor, ceil)
+	}
 }

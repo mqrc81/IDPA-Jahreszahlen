@@ -384,8 +384,3 @@ func (errors *FormErrors) validatePassword(password string, errorName string) {
 		(*errors)[errorName] = "Passwort muss mindestens eine Zahl enthalten."
 	}
 }
-
-// TODO form validation for:
-//  - phase 1 of quiz
-//  - phase 2 of quiz
-//  - phase 3 of quiz
