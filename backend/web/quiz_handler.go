@@ -193,13 +193,14 @@ func (h *QuizHandler) Phase1Submit() http.HandlerFunc {
 
 			// Retrieve user's guess from form
 			guess, _ := strconv.Atoi(req.FormValue("q" + strconv.Itoa(num)))
+			questions[num].UserGuess = guess
 
 			// Check if the user's guess is correct, by comparing it to the
 			// corresponding event in the array of events of the topic
 			if guess == quiz.Topic.Events[num].Year { // if guess is correct...
 				quiz.CorrectGuesses++
-				quiz.Points += p1Points            // ...user gets 3 points
-				questions[num].CorrectGuess = true // ...change value for that question
+				quiz.Points += p1Points // ...user gets 3 points
+				questions[num].CorrectGuess = true
 			}
 		}
 		quiz.Questions = questions
@@ -872,7 +873,8 @@ type phase1Question struct {
 	EventYear int    // year of event
 	Choices   []int  // choices in random order (including correct year)
 
-	CorrectGuess bool   // only relevant for review of phase 1
+	UserGuess    int    // only relevant for review of phase 1
+	CorrectGuess bool   // only relevant of review of phase 1
 	ID           string // only relevant for HTML input form name
 }
 
