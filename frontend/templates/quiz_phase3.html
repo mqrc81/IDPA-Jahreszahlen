@@ -1,13 +1,58 @@
 {{define "title"}}
-    <title>Title</title>
+    <title>Phase 3</title>
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Header</h1>
+    <h1 class="mb-0">{{.TopicName}}</h1>
 {{end}}
 
 {{define "content"}}
+<form action="/topics/{{.TopicID}}/quiz/3"method="POST" class="form">
+    {{.CSRF}}
+    <div class="x-card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-2">
+                    <i class="fas fa-long-arrow-alt-down"></i>
+                </div>
+                <div id="x-table" class="col-6">
+                    <table class="table table-bordered">
+                        <tr>
+                            <td> </td>
+                        </tr>
+                        <tr>
+                            <td> </td>
+                        </tr>
+                        <tr>
+                            <td> </td>
+                        </tr>
+                        <tr>
+                            <td> </td>
+                        </tr>
+                        <tr>
+                            <td> </td>
+                        </tr>
+                    </table>
 
+
+                </div>
+                <div class="col-4">
+                    <div class="list-group">
+                            <a href="#" class="x-button" name="id" id="id" value="xy">
+                                Test
+                            </a>
+                            <a href="#" class="x-button" name="id" id="id" value="xy">
+                                Test2
+                            </a>
+                            <a href="#" class="x-button" name="id" id="id" value="xy">
+                                Test3
+                            </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
 {{end}}
 
 {{define "sidebar"}}
