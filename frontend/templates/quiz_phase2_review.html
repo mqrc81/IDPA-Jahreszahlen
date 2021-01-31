@@ -1,13 +1,36 @@
 {{define "title"}}
-    <title>Title</title>
+    <title>Phase 2 Überprüfung</title>
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Header</h1>
+    <h1 class="mb-0">Lösungen {{.TopicName}}</h1>
 {{end}}
 
 {{define "content"}}
+    {{range .Questions}}
+        <div class="x-card">
+            <div class="card-body">
+                <h5>{{.EventName}}</h5>
 
+                <div class="form-group">
+                    <input type="number" name="{{.ID}}" id="{{.ID}}"
+                           value="{{.UserGuess}}" class="form-control
+                            {{if eq .UserGuess .EventYear}}
+                                correct-year
+                            {{else}}
+                                incorrect-year
+                            {{end}}">
+                    {{if ne .UserGuess .EventYear}}
+                        <p class="answer">Richtige Antwort: {{.EventYear}}</p>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    {{end}}
+    <form action="/topics/{{.TopicID}}/quiz/2/review" method="POST" class="form">
+        {{.CSRF}}
+        <button type="submit" class="x-button">Weiter zu Phase 3</button>
+    </form>
 {{end}}
 
 {{define "sidebar"}}
