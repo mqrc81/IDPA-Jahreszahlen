@@ -35,6 +35,10 @@ func init() {
 // contains the error message.
 type FormErrors map[string]string
 
+// ============================================================================
+// ==== TOPICS & EVENTS
+// ============================================================================
+
 // TopicForm holds values of the form input when creating or editing a topic.
 type TopicForm struct {
 	Name        string
@@ -136,6 +140,10 @@ func (form *EventForm) Validate() bool {
 
 	return len(form.Errors) == 0
 }
+
+// ============================================================================
+// ==== AUTHENTICATION
+// ============================================================================
 
 // RegisterForm holds values of the form input when registering.
 type RegisterForm struct {

@@ -794,11 +794,12 @@ func (h *QuizHandler) Summary() http.HandlerFunc {
 		}
 
 		// Compare user's points to all previous to find out how many users
-		// were worse than the current user
-		// Example: 50 scores, 20 scores have lower points than user => user is
-		// better than 40% of players (-> 20*100/50 = 40%)
-		betterThan := indexWherePointsFitBetween(quiz.Points, scores, 0, len(scores))
-		averageComparison := betterThan * 100 / (len(scores) + 1)
+		// were worse than the current user (recursively)
+		// Example: 50 scores, 20 scores have lower points than user => 'user
+		// is better than 40% of players' (20 / 50 * 100 = 40%)
+		amountOfHigherScores := binarySearchForPoints(quiz.Points, scores, 0, len(scores))
+		amountOfLowerScores := len(scores) - amountOfHigherScores
+		averageComparison := amountOfLowerScores / len(scores) * 100
 
 		// Execute HTML-templates with data
 		if err = quizSummaryTemplate.Execute(res, data{
@@ -986,24 +987,29 @@ func createPhase3Questions(events []x.Event) []phase3Question {
 	return questions
 }
 
-// indexWherePointsFitBetween searches for the index, where the user's score
+// binarySearchForPoints searches for the index, where the user's score
 // would be if all scores of this topic were sorted by points in descending
 // order.
-// It looks for this recursively by checking whether it's higher or lower than
-// the points of the score in the middle of the array, since this is the most
-// efficient way.
-func indexWherePointsFitBetween(points int, scores []x.Score, floor int, ceil int) int {
-	middle := scores[(floor+ceil)/2].Points
+// It looks for this recursively, in a binary-search way, since this is the
+// most efficient way of looking for this index.
+func binarySearchForPoints(points int, scores []x.Score, floor int, ceil int) int {
 
-	if ceil-floor <= 1 || points == middle {
+	// Get the points of the score in the middle of the 'floor'- and 'ceiling'-
+	// pointers
+	// Example: len(scores) = 40, floor = 10, ceil = 25 => middle = 17,
+	middle := (floor + ceil) / 2
+	middlePoints := scores[middle].Points
+
+	// Base case for recursive function
+	if ceil-floor <= 1 || points == middlePoints {
 		return (floor + ceil) / 2
 	}
 
-	if points < middle {
-		ceil -= (ceil - floor) / 2
-		return indexWherePointsFitBetween(points, scores, floor, ceil)
+	if points < middlePoints {
+		// Binary-search with upper half (lower points)
+		return binarySearchForPoints(points, scores, middle+1, ceil) // example: scores 18 - 25
 	} else {
-		floor += (ceil - floor) / 2
-		return indexWherePointsFitBetween(points, scores, floor, ceil)
+		// Binary-search with lower half (higher points)
+		return binarySearchForPoints(points, scores, floor, middle-1) // example: scores 10 - 16
 	}
 }
