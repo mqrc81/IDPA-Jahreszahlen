@@ -146,8 +146,8 @@ func (h *QuizHandler) Phase1() http.HandlerFunc {
 		// event showing up twice in phase 1 and 2
 		minEvents := p1Questions + p2Questions
 		if topic.EventsCount < minEvents {
-			h.sessions.Put(req.Context(), "flash_error", "Das Thema '"+topic.Name+"' hat nicht genügend Ereignisse, "+
-				"um ein Quiz zur Verfügung zu stellen. Das Minimum ist "+strconv.Itoa(minEvents))
+			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf("Das Thema '%v' hat nicht genügend Ereignisse "+
+				"(min. %v), um ein Quiz zur Verfügung zu stellen.", topic.Name, minEvents))
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
@@ -203,9 +203,8 @@ func (h *QuizHandler) Phase1Submit() http.HandlerFunc {
 
 		// Loop through the 3 input forms of radio-buttons of phase 1
 		for num := 0; num < p1Questions; num++ {
-
 			// Retrieve user's guess from form
-			guess, _ := strconv.Atoi(req.FormValue("q" + strconv.Itoa(num)))
+			guess, _ := strconv.Atoi(req.FormValue(strconv.Itoa(num)))
 			questions[num].UserGuess = guess
 
 			// Check if the user's guess is correct, by comparing it to the
@@ -758,7 +757,6 @@ func (h *QuizHandler) Summary() http.HandlerFunc {
 		QuestionsCount    int
 		PotentialPoints   int
 		AverageComparison int
-		OverAverage       bool
 	}
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -868,8 +866,7 @@ type phase1Question struct {
 	EventYear int    // year of event
 	Choices   []int  // choices in random order (including correct year)
 
-	UserGuess int    // only relevant for review of phase 1
-	ID        string // only relevant for HTML input form name
+	UserGuess int // only relevant for review of phase 1
 }
 
 // createPhase1Questions generates 3 phase1Question structures by generating
@@ -881,7 +878,7 @@ func createPhase1Questions(events []x.Event) []phase1Question {
 	rand.Seed(time.Now().UnixNano())
 
 	// Loop through events 0-2 and turn them into questions
-	for index, event := range events[:p1Questions] { // events[:3] -> 0-2
+	for _, event := range events[:p1Questions] { // events[:3] -> 0-2
 
 		correctYear := event.Year // the event's year
 
@@ -891,11 +888,14 @@ func createPhase1Questions(events []x.Event) []phase1Question {
 		years := []int{correctYear}                 // array of years
 		yearsMap := map[int]bool{correctYear: true} // map of years to ascertain uniqueness of each year
 
-		// Generate unique, random numbers between max and min, to mix with the correct year
+		// Generate unique, random numbers between min and max, to mix with the
+		// correct year
 		rand.Seed(time.Now().Unix()) // set a seed to base RNG off of
 		for c := 1; c < p1Choices; c++ {
 			year := rand.Intn(max-min+1) + min // generate a random number between min and max
 
+			// Only add generated year, if it isn't equal to the correct year
+			// or a previously generated year
 			if !yearsMap[year] {
 				years = append(years, year) // add newly generated year to array of years
 				yearsMap[year] = true
@@ -910,12 +910,11 @@ func createPhase1Questions(events []x.Event) []phase1Question {
 			years[n1], years[n2] = years[n2], years[n1]
 		})
 
-		// Add values to structure
+		// Add values to struct and add struct to array
 		questions = append(questions, phase1Question{
 			EventName: event.Name,
 			EventYear: event.Year,
 			Choices:   years,
-			ID:        "q" + strconv.Itoa(index), // sample ID of first question: q0
 		})
 	}
 
@@ -929,7 +928,6 @@ type phase2Question struct {
 	EventYear int    // year of event
 
 	UserGuess int
-	ID        string // only relevant for HTML input form name
 }
 
 // createPhase2Questions generates 4 phase2Question structures for events 3-7
@@ -938,11 +936,10 @@ func createPhase2Questions(events []x.Event) []phase2Question {
 	var questions []phase2Question
 
 	// Loop through events 3-7 and turn them into questions
-	for index, event := range events[p1Questions:(p2Questions + p1Questions + 1)] { // events[3:8] -> 3-7
+	for _, event := range events[p1Questions:(p2Questions + p1Questions + 1)] { // events[3:8] -> 3-7
 		questions = append(questions, phase2Question{
 			EventName: event.Name,
 			EventYear: event.Year,
-			ID:        "q" + strconv.Itoa(index), // sample ID of first question: q0
 		})
 	}
 

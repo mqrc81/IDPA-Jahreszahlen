@@ -7,19 +7,19 @@
 {{end}}
 
 {{define "content"}}
-    {{range .Questions}}
-        <div class="x-card">
-            <h5>{{.EventName}}</h5>
+{{range $i, $q := .Questions}} <!-- $i = index, $q = question -->
+<div class="x-card">
+    <h5>{{.EventName}}</h5>
 
-            <div class="card-body">
-                {{$id := .ID}}
-                {{$user := .UserGuess}}
-                {{$year := .EventYear}}
+    <div class="card-body">
+        {{$user := $q.UserGuess}}
+        {{$year := $q.EventYear}}
 
-                {{range .Choices}}
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="{{$id}}" id="{{$id}}" value="{{.}}">
-                        <label for="{{$id}}" class="form-check-label
+        {{range $q.Choices}}
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="{{$i}}" id="{{$i}}" value="{{.}}"
+                   checked="{{if eq . $user}}checked{{end}}">
+            <label for="{{$i}}" class="form-check-label
                             {{if eq . $year}}
                                 correct-year
                             {{else}}
@@ -27,9 +27,9 @@
                                 incorrect-year
                             {{end}}
                             {{end}}">
-                            {{.}}
-                            {{if eq . $year}} <!-- correct year -->
-                            {{if eq . $user}}
+                {{.}}
+                {{if eq . $year}} <!-- correct year -->
+                {{if eq . $user}}
                             <i class="fas fa-check"></i> <!-- user guessed the correct year -->
                             {{end}}
                             {{else}}

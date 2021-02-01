@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"log"
 	"regexp"
+	"strconv"
 	"time"
 )
 
@@ -56,4 +57,19 @@ func GenerateString(len int) string {
 	key := GenerateBytes(len)
 
 	return base64.URLEncoding.EncodeToString(key)[:len]
+}
+
+// StringArrayToIntArray turns array of strings into array of ints.
+func StringArrayToIntArray(strings []string) ([]int, error) {
+	ints := []int{}
+
+	for _, s := range strings {
+		i, err := strconv.Atoi(s)
+		if err != nil {
+			return ints, err
+		}
+		ints = append(ints, i)
+	}
+
+	return ints, nil
 }
