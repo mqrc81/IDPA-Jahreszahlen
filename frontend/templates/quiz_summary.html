@@ -1,13 +1,25 @@
 {{define "title"}}
-    <title>Title</title>
+    <title>Auswertung</title>
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Header</h1>
+    <h1 class="mb-0">Auswertung</h1>
 {{end}}
 
 {{define "content"}}
+<div class="x-card">
+    <div class="card-body">
+        <p> Du hast beim Quiz über {{.TopicName}} {{.Questionscount}} von {{.PotentialPoints}} Punkten erreicht.
+            Du warst besser als {{.AverageComparison}}% der Spieler bei diesem Thema </p>
 
+        <button class="x-button">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+        </button>
+        <button class="x-button">
+            <a href="/scores"><i class="fas fa-award"></i> Leaderboard</a>
+        </button>
+    </div>
+</div>
 {{end}}
 
 {{define "sidebar"}}
