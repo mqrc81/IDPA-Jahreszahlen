@@ -449,7 +449,7 @@ func (h *UserHandler) VerifyEmail() http.HandlerFunc {
 		if err != nil {
 			// If token doesn't exist, then redirect to home-page with flash
 			// message.
-			h.sessions.Put(req.Context(), "flash_error", "Ihr Token zum Bestätigen des Emails ist ungültig.")
+			h.sessions.Put(req.Context(), "flash_error", "Ihr Token zum Bestätigen der Email ist ungültig.")
 			http.Redirect(res, req, "/", http.StatusFound)
 			return
 		}
@@ -508,7 +508,7 @@ func (h *UserHandler) ResendVerifyEmail() http.HandlerFunc {
 		}
 
 		// Add flash message to session
-		h.sessions.Put(req.Context(), "flash_success", "Eine Bestätigungs-Email wurde an "+user.Email+"versandt.")
+		h.sessions.Put(req.Context(), "flash_success", "Eine Bestätigungs-Email wurde an "+user.Email+" versandt.")
 
 		// Send email to verify a user's email
 		EmailVerificationEmail(user, token.TokenID).Send()
@@ -601,7 +601,7 @@ func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 		PasswordResetEmail(user, token.TokenID).Send()
 
 		// Add flash message to session
-		h.sessions.Put(req.Context(), "form",
+		h.sessions.Put(req.Context(), "flash_success",
 			"Eine Email zum Zurücksetzen Ihres Passworts wurde an "+form.Email+" versandt.")
 
 		// Redirect to home-page
@@ -642,7 +642,7 @@ func (h *UserHandler) ResetPassword() http.HandlerFunc {
 		if err != nil {
 			// If token doesn't exist, then redirect to home-page with flash
 			// message.
-			h.sessions.Put(req.Context(), "flash_error", "Ihr Token zum Zurücksetzen des Passworts ist ungültig.")
+			h.sessions.Put(req.Context(), "flash_error", "Der Token zum Zurücksetzen Ihres Passworts ist ungültig.")
 			http.Redirect(res, req, "/", http.StatusFound)
 			return
 		}

@@ -18,6 +18,12 @@ import (
 	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
 )
 
+const (
+	path   = "frontend/templates/"
+	layout = "frontend/layout.html"
+	css    = "frontend/css/css.html"
+)
+
 var (
 	// _testing is a flag to skip init function when testing
 	_testing = false
@@ -35,10 +41,6 @@ var (
 			return num - 1
 		},
 	}
-
-	path   = "frontend/templates/"
-	layout = "frontend/layout.html"
-	css    = "frontend/css/css.html"
 )
 
 // init gets initialized with the package.

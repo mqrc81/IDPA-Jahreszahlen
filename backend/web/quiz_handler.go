@@ -34,7 +34,9 @@ const (
 	p2Points        = 8 // amount of points per correct guess of phase 2
 	p2PartialPoints = 3 // amount of partial points possible in phase 2, when guess was incorrect, but close
 
-	p3Points = 5
+	p3Points = 5 // amount of points per correct guess of phase 3 (partial points: -1 per deviation from correct order)
+
+	noPermissionError = "Unzureichende Berechtigung. Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen."
 )
 
 var (
@@ -129,8 +131,7 @@ func (h *QuizHandler) Phase1() http.HandlerFunc {
 		user := req.Context().Value("user")
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
-			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
-				"Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen.")
+			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
@@ -253,8 +254,7 @@ func (h *QuizHandler) Phase1Review() http.HandlerFunc {
 		user := req.Context().Value("user")
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
-			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
-				"Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen.")
+			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
@@ -354,8 +354,7 @@ func (h *QuizHandler) Phase2() http.HandlerFunc {
 		user := req.Context().Value("user")
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
-			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
-				"Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen.")
+			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
@@ -474,8 +473,7 @@ func (h *QuizHandler) Phase2Review() http.HandlerFunc {
 		user := req.Context().Value("user")
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
-			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
-				"Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen.")
+			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
@@ -575,8 +573,7 @@ func (h *QuizHandler) Phase3() http.HandlerFunc {
 		user := req.Context().Value("user")
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
-			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
-				"Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen.")
+			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}
@@ -710,8 +707,7 @@ func (h *QuizHandler) Phase3Review() http.HandlerFunc {
 		user := req.Context().Value("user")
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
-			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
-				"Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen.")
+			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
 			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
 			return
 		}

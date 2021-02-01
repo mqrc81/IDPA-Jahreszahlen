@@ -104,8 +104,8 @@ func (form *EventForm) Validate() bool {
 	}
 
 	// Validate date or year
-	year, err := strconv.Atoi(form.YearOrDate) // convert to int; if error occurs, admin entered a date, not a year
-	if err == nil {                            // admin entered a year
+	year, err := strconv.Atoi(form.YearOrDate) // convert to int
+	if err == nil {                            // if no error occurs, admin entered a year (not a date)
 		form.Year = year
 		form.Date, _ = time.Parse("2006", form.YearOrDate) // date = year + default values (e.g. 1969-01-01 00:00:00)
 

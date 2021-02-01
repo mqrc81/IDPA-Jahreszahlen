@@ -143,7 +143,7 @@ func (h *UserHandler) EditEmail() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error",
-				"Unzureichende Berechtigung. Loggen Sie sich zuerst ein, um Ihr Benutzernamen zu ändern.")
+				"Unzureichende Berechtigung. Loggen Sie sich zuerst ein, um Ihre Email zu ändern.")
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
@@ -295,6 +295,9 @@ func (h *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		// Add flash message to session
+		h.sessions.Put(req.Context(), "flash_success", "Ihr Passwort wurde erfolgreich geändert.")
 
 		// Redirect to user's profile
 		http.Redirect(res, req, "/users/profile", http.StatusFound)
