@@ -9,8 +9,17 @@
 {{define "content"}}
 <div class="x-card">
     <div class="card-body">
-        <p> Du hast beim Quiz über {{.TopicName}} {{.Questionscount}} von {{.PotentialPoints}} Punkten erreicht.
-            Du warst besser als {{.AverageComparison}}% der Spieler bei diesem Thema </p>
+
+        <h3>Du warst besser als <strong>{{.AverageComparison}}%</strong> aller Spieler beim Quiz über '<strong>{{.Quiz.Topic.TopicName}}</strong>'!
+        </h3>
+        <br>
+        <hr>
+        <br>
+        <h4>Du hast <strong>{{.Quiz.CorrectGuesses}}</strong> von <strong>{{.QuestionsCount}}</strong> Fragen richtig
+            beantwortet.</h4>
+        <br>
+        <h4>Du hast <strong>{{.Quiz.Points}}</strong> von möglichen <strong>{{.PotentialPoints}}</strong> Punkte
+            erhalten.</h4>
 
         <button class="x-button">
             <a href="/"><i class="fas fa-home"></i> Home</a>

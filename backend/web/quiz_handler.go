@@ -311,6 +311,7 @@ func (h *QuizHandler) Phase2Prepare() http.HandlerFunc {
 		quiz.Phase = 1
 		quiz.Reviewed = true
 		quiz.TimeStamp = time.Now()
+
 		// For each of the 4 events in the array, create a question to use in
 		// HTML-templates
 		quiz.Questions = createPhase2Questions(quiz.Topic.Events)
@@ -814,7 +815,7 @@ func (h *QuizHandler) Summary() http.HandlerFunc {
 }
 
 // validate validates the correct playing order of a quiz by first checking for
-// a valid quiz-data structure and then comparing the phase, topic and time-
+// a valid quiz-data struct and then comparing the phase, topic and time-
 // stamp of the quiz-data in the session with the URL and current time
 // respectively. It an empty string if everything checks out or an error
 // message to be used in the error flash message after redirecting back.
@@ -869,7 +870,7 @@ type phase1Question struct {
 	UserGuess int // only relevant for review of phase 1
 }
 
-// createPhase1Questions generates 3 phase1Question structures by generating
+// createPhase1Questions generates 3 phase1Question structs by generating
 // 2 random years for each of the first 3 events in the array.
 func createPhase1Questions(events []x.Event) []phase1Question {
 	var questions []phase1Question
@@ -930,13 +931,13 @@ type phase2Question struct {
 	UserGuess int
 }
 
-// createPhase2Questions generates 4 phase2Question structures for events 3-7
-// respectively of the array of events of the topic.
+// createPhase2Questions generates 4 phase2Question structs for events
+// indexed 3-6 respectively of the array of events of the topic.
 func createPhase2Questions(events []x.Event) []phase2Question {
 	var questions []phase2Question
 
 	// Loop through events 3-7 and turn them into questions
-	for _, event := range events[p1Questions:(p2Questions + p1Questions + 1)] { // events[3:8] -> 3-7
+	for _, event := range events[p1Questions:(p2Questions + p1Questions)] { // events[3:7] -> 3-6
 		questions = append(questions, phase2Question{
 			EventName: event.Name,
 			EventYear: event.Year,
@@ -956,7 +957,7 @@ type phase3Question struct {
 	CorrectGuess bool // only relevant for review of phase 2
 }
 
-// createPhase3Questions generates a phase3Question structure for all events of
+// createPhase3Questions generates a phase3Question struct for all events of
 // the topic.
 func createPhase3Questions(events []x.Event) []phase3Question {
 	var questions []phase3Question
