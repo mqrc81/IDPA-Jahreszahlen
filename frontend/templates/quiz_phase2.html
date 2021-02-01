@@ -9,12 +9,12 @@
 {{define "content"}}
     <form action="/topics/{{.TopicID}}/quiz/2" method="POST" class="form">
         {{.CSRF}}
-        {{range .Questions}}
-            <div class="x-card">
+        {{range $i, $q := .Questions}}
+        <div class="x-card">
                 <div class="card-body">
-                    <h5>{{.EventName}}</h5>
+                    <h5><label for="{{$i}}">{{$q.EventName}}</label></h5>
                     <div class="form-group">
-                        <input type="number" name="{{.ID}}" id="{{.ID}}"
+                        <input type="number" name="{{$i}}" id="{{$i}}" required
                                class="form-control">
                     </div>
                 </div>

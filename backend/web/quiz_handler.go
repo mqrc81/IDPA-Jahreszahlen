@@ -414,7 +414,7 @@ func (h *QuizHandler) Phase2Submit() http.HandlerFunc {
 		for num := 0; num < p2Questions; num++ {
 
 			// Retrieve user's guess from form
-			questions[num].UserGuess, _ = strconv.Atoi(req.FormValue("q" + strconv.Itoa(num)))
+			questions[num].UserGuess, _ = strconv.Atoi(req.FormValue(strconv.Itoa(num)))
 
 			// Check if the user's guess is correct, by comparing it to the
 			// corresponding event in the array of events of the topic

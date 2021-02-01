@@ -1,29 +1,29 @@
 {{define "title"}}
-    <title>Phase 2 Überprüfung</title>
+<title>Phase 2 Überprüfung</title>
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Lösungen {{.TopicName}}</h1>
+<h1 class="mb-0">Lösungen {{.TopicName}}</h1>
 {{end}}
 
 {{define "content"}}
-    {{range .Questions}}
-        <div class="x-card">
-            <div class="card-body">
-                <h5>{{.EventName}}</h5>
+{{range $i, $q := .Questions}}
+<div class="x-card">
+    <div class="card-body">
 
-                <div class="form-group">
-                    <input type="number" name="{{.ID}}" id="{{.ID}}"
-                           value="{{.UserGuess}}" class="form-control
-                            {{if eq .UserGuess .EventYear}}
+        <div class="form-group">
+            <h5><label for="{{$i}}">{{$q.EventName}}</label></h5>
+            <input type="number" name="{{$i}}" id="{{$i}}"
+                   value="{{$q.UserGuess}}" class="form-control
+                            {{if eq $q.UserGuess $q.EventYear}}
                                 correct-year
                             {{else}}
                                 incorrect-year
                             {{end}}">
-                    {{if ne .UserGuess .EventYear}}
-                        <p class="answer">Richtige Antwort: {{.EventYear}}</p>
-                    {{end}}
-                </div>
+            {{if ne $q.UserGuess $q.EventYear}}
+            <p class="answer">Richtige Antwort: {{$q.EventYear}}</p>
+            {{end}}
+        </div>
             </div>
         </div>
     {{end}}
