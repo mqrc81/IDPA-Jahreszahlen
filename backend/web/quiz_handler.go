@@ -39,6 +39,17 @@ const (
 	noPermissionError = "Unzureichende Berechtigung. Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen."
 )
 
+type Step int
+
+const (
+	preparedPhase1 Step = iota // = 0
+	submittedPhase1
+	preparedPhase2
+	submittedPhase2
+	preparedPhase3
+	submittedPhase3 // = 5
+)
+
 var (
 	// Parsed HTML-templates to be executed in their respective HTTP-handler
 	// functions when needed
@@ -96,8 +107,7 @@ type QuizData struct {
 
 	Questions interface{} // questions for each of the 3 phases
 
-	Phase     int       // ensures the correct playing order, so that a user can't skip any phase
-	Reviewed  bool      // ensures a user can't skip a reviewing phase
+	Step      Step      // increments with every handler; ensures correct playing order
 	TimeStamp time.Time // ensures a user can't return to a quiz after n minutes
 }
 
@@ -167,6 +177,7 @@ func (h *QuizHandler) Phase1() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "quiz", QuizData{
 			Topic:     topic,
 			Questions: questions,
+			TimeStamp: time.Now(),
 		})
 
 		// Execute HTML-templates with data
@@ -191,15 +202,26 @@ func (h *QuizHandler) Phase1Submit() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Retrieve topic ID from URL parameters
-		topicID := chi.URLParam(req, "topicID")
+		topicIDstr := chi.URLParam(req, "topicID")
+		topicID, _ := strconv.Atoi(topicIDstr)
 
 		// Retrieve quiz data from session
-		quiz := h.sessions.Get(req.Context(), "quiz").(QuizData)
+		quiz, ok := h.sessions.Get(req.Context(), "quiz").(QuizData)
 		questions := quiz.Questions.([]phase1Question)
 
+		// Validate the token of the quiz-data, so that the user can't go back
+		// in order to change his answers after having seen the review
+		msg := quiz.validate(ok, preparedPhase1, topicID)
+
+		// If 'msg' isn't empty, an error occurred
+		if msg != "" {
+			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 1))
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			return
+		}
+
 		// Update quiz data
-		quiz.Phase = 1
-		quiz.Reviewed = false
+		quiz.Step++ // step = 1 (submittedPhase1)
 		quiz.TimeStamp = time.Now()
 
 		// Loop through the 3 input forms of radio-buttons of phase 1
@@ -221,7 +243,7 @@ func (h *QuizHandler) Phase1Submit() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Redirect to review of phase 1
-		http.Redirect(res, req, "/topics/"+topicID+"/quiz/1/review", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/1/review", http.StatusFound)
 	}
 }
 
@@ -264,8 +286,9 @@ func (h *QuizHandler) Phase1Review() http.HandlerFunc {
 		// struct (so if quiz doesn't exist in session)
 		quiz, ok := h.sessions.Get(req.Context(), "quiz").(QuizData)
 
-		// Validate the token of the quiz-data
-		msg := quiz.validate(ok, 1, false, topicID)
+		// Validate the token of the quiz-data, so that the user can't finesse
+		// playing order to his advantage
+		msg := quiz.validate(ok, submittedPhase1, topicID)
 
 		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
@@ -302,14 +325,25 @@ func (h *QuizHandler) Phase2Prepare() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Retrieve topic ID from session
-		topicID := chi.URLParam(req, "topicID")
+		topicIDstr := chi.URLParam(req, "topicID")
+		topicID, _ := strconv.Atoi(topicIDstr)
 
 		// Retrieve quiz data from session
-		quiz := h.sessions.Get(req.Context(), "quiz").(QuizData)
+		quiz, ok := h.sessions.Get(req.Context(), "quiz").(QuizData)
 
-		// Update quiz data and add questions for phase 2
-		quiz.Phase = 1
-		quiz.Reviewed = true
+		// Validate the token of the quiz-data, so that the user can't go back
+		// in order to generate a new set of potentially easier questions
+		msg := quiz.validate(ok, submittedPhase1, topicID)
+
+		// If 'msg' isn't empty, an error occurred
+		if msg != "" {
+			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 1))
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			return
+		}
+
+		// Update quiz data
+		quiz.Step++ // step = 2 (preparedPhase2)
 		quiz.TimeStamp = time.Now()
 
 		// For each of the 4 events in the array, create a question to use in
@@ -320,7 +354,7 @@ func (h *QuizHandler) Phase2Prepare() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Redirect to phase 2 of quiz
-		http.Redirect(res, req, "/topics/"+topicID+"/quiz/2", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/2", http.StatusFound)
 	}
 }
 
@@ -364,8 +398,9 @@ func (h *QuizHandler) Phase2() http.HandlerFunc {
 		// struct (so if quiz doesn't exist in session)
 		quiz, ok := h.sessions.Get(req.Context(), "quiz").(QuizData)
 
-		// Validate the token of the quiz-data
-		msg := quiz.validate(ok, 1, true, topicID)
+		// Validate the token of the quiz-data, so that the user can't finesse
+		// playing order to his advantage
+		msg := quiz.validate(ok, preparedPhase2, topicID)
 
 		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
@@ -400,14 +435,25 @@ func (h *QuizHandler) Phase2Submit() http.HandlerFunc {
 
 		// Retrieve topic ID from URL parameters
 		topicIDstr := chi.URLParam(req, "topicID")
+		topicID, _ := strconv.Atoi(topicIDstr)
 
 		// Retrieve quiz data from session
 		quiz := h.sessions.Get(req.Context(), "quiz").(QuizData)
-		questions := quiz.Questions.([]phase2Question)
+		questions, ok := quiz.Questions.([]phase2Question)
+
+		// Validate the token of the quiz-data, so that the user can't go back
+		// in order to change his answers after having seen the review
+		msg := quiz.validate(ok, preparedPhase2, topicID)
+
+		// If 'msg' isn't empty, an error occurred
+		if msg != "" {
+			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 2))
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			return
+		}
 
 		// Update quiz data
-		quiz.Phase = 2
-		quiz.Reviewed = false
+		quiz.Step++ // step = 3 (submittedPhase2)
 		quiz.TimeStamp = time.Now()
 
 		// Loop through the 4 input fields of phase 2
@@ -483,8 +529,9 @@ func (h *QuizHandler) Phase2Review() http.HandlerFunc {
 		// struct (so if quiz doesn't exist in session)
 		quiz, ok := h.sessions.Get(req.Context(), "quiz").(QuizData)
 
-		// Validate the token of the quiz-data
-		msg := quiz.validate(ok, 2, false, topicID)
+		// Validate the token of the quiz-data, so that the user can't finesse
+		// playing order to his advantage
+		msg := quiz.validate(ok, submittedPhase2, topicID)
 
 		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
@@ -521,15 +568,27 @@ func (h *QuizHandler) Phase3Prepare() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Retrieve topic ID from session
-		topicID := chi.URLParam(req, "topicID")
+		topicIDstr := chi.URLParam(req, "topicID")
+		topicID, _ := strconv.Atoi(topicIDstr)
 
 		// Retrieve quiz data from session
-		quiz := h.sessions.Get(req.Context(), "quiz").(QuizData)
+		quiz, ok := h.sessions.Get(req.Context(), "quiz").(QuizData)
 
-		// Update quiz data and add questions for phase 3
-		quiz.Phase = 2
-		quiz.Reviewed = true
+		// Validate the token of the quiz-data, so that the user can't go back
+		// in order to generate a new set of potentially easier questions
+		msg := quiz.validate(ok, submittedPhase2, topicID)
+
+		// If 'msg' isn't empty, an error occurred
+		if msg != "" {
+			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 2))
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			return
+		}
+
+		// Update quiz data
+		quiz.Step++ // step = 4 (preparedPhase3)
 		quiz.TimeStamp = time.Now()
+
 		// For each of the events in the array, create a question to use in
 		// HTML-templates
 		// This includes marking the order of the events for future calculation
@@ -540,7 +599,7 @@ func (h *QuizHandler) Phase3Prepare() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Redirect to phase 2 of quiz
-		http.Redirect(res, req, "/topics/"+topicID+"/quiz/3", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/3", http.StatusFound)
 	}
 }
 
@@ -583,8 +642,9 @@ func (h *QuizHandler) Phase3() http.HandlerFunc {
 		// struct (so if quiz doesn't exist in session)
 		quiz, ok := h.sessions.Get(req.Context(), "quiz").(QuizData)
 
-		// Validate the token of the quiz-data
-		msg := quiz.validate(ok, 2, true, topicID)
+		// Validate the token of the quiz-data, so that the user can't finesse
+		// playing order to his advantage
+		msg := quiz.validate(ok, preparedPhase3, topicID)
 
 		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
@@ -619,16 +679,34 @@ func (h *QuizHandler) Phase3Submit() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 
 		// Retrieve topic ID from URL parameters
-		topicID := chi.URLParam(req, "topicID")
+		topicIDstr := chi.URLParam(req, "topicID")
+		topicID, _ := strconv.Atoi(topicIDstr)
 
 		// Retrieve quiz data from session
-		quiz := h.sessions.Get(req.Context(), "quiz").(QuizData)
+		quiz, ok := h.sessions.Get(req.Context(), "quiz").(QuizData)
 		questions := quiz.Questions.([]phase3Question)
 
+		// Validate the token of the quiz-data, so that the user can't go back
+		// in order to change his answers after having seen the review
+		msg := quiz.validate(ok, preparedPhase3, topicID)
+
+		// If 'msg' isn't empty, an error occurred
+		if msg != "" {
+			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 3))
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			return
+		}
+
 		// Update quiz data
-		quiz.Phase = 3
-		quiz.Reviewed = false
+		quiz.Step++ // step = 5 (submittedPhase3)
 		quiz.TimeStamp = time.Now()
+
+		// Retrieve form from table of inputs
+		if err := req.ParseForm(); err != nil {
+			fmt.Println("err:", err)
+		}
+		guesses := req.Form["questions"]
+		fmt.Println("Form[questions]:", guesses) // TEMP
 
 		// Create map of questions to check a question's order given its name
 		questionsMap := make(map[string]int)
@@ -638,10 +716,10 @@ func (h *QuizHandler) Phase3Submit() http.HandlerFunc {
 
 		// Loop through user's order of events of phase 3
 		for num := 0; num < len(questions); num++ {
-			// Retrieve user's guess from form
-			guess := req.FormValue("q" + strconv.Itoa(num))
 
-			order := questionsMap[guess] // correct order of the event
+			// TODO
+
+			order := questionsMap[guesses[num]] // correct order of the event
 
 			// Get absolute value of difference between user's guess and
 			// correct order
@@ -656,7 +734,7 @@ func (h *QuizHandler) Phase3Submit() http.HandlerFunc {
 			// User gets a max of 5 potential points, -1 per differ of order
 			// Example: order of event: 7, user's guess of order of event: 10
 			// => user gets 2 points (5-[10-7])
-			quiz.Points += p3Points - difference
+			// TEMP quiz.Points += p3Points - difference
 		}
 
 		// Retrieve user from session
@@ -673,8 +751,11 @@ func (h *QuizHandler) Phase3Submit() http.HandlerFunc {
 			return
 		}
 
+		// Pass quiz data to session
+		h.sessions.Put(req.Context(), "quiz", quiz)
+
 		// Redirect to review of phase 3
-		http.Redirect(res, req, "/topics/"+topicID+"/quiz/3/review", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/3/review", http.StatusFound)
 	}
 }
 
@@ -717,8 +798,9 @@ func (h *QuizHandler) Phase3Review() http.HandlerFunc {
 		// struct (so if quiz doesn't exist in session)
 		quiz, ok := h.sessions.Get(req.Context(), "quiz").(QuizData)
 
-		// Validate the token of the quiz-data
-		msg := quiz.validate(ok, 3, false, topicID)
+		// Validate the token of the quiz-data, so that the user can't finesse
+		// playing order to his advantage
+		msg := quiz.validate(ok, submittedPhase3, topicID)
 
 		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
@@ -771,8 +853,9 @@ func (h *QuizHandler) Summary() http.HandlerFunc {
 		// struct (so if quiz doesn't exist in session)
 		quiz, ok := h.sessions.Get(req.Context(), "quiz").(QuizData)
 
-		// Validate the token of the quiz-data
-		msg := quiz.validate(ok, 1, false, topicID)
+		// Validate the token of the quiz-data, so that the user can't finesse
+		// playing order to his advantage
+		msg := quiz.validate(ok, submittedPhase3, topicID)
 
 		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
@@ -790,11 +873,11 @@ func (h *QuizHandler) Summary() http.HandlerFunc {
 
 		// Compare user's points to all previous to find out how many users
 		// were worse than the current user (recursively)
-		// Example: 50 scores, 20 scores have lower points than user => 'user
-		// is better than 40% of players' (20 / 50 * 100 = 40%)
-		amountOfHigherScores := binarySearchForPoints(quiz.Points, scores, 0, len(scores))
-		amountOfLowerScores := len(scores) - amountOfHigherScores
-		averageComparison := amountOfLowerScores / len(scores) * 100
+		// Example: 50 scores, of which 20 scores have lower points than user
+		// => 'user is better than 40% of players' (20/50 * 100% = 40%)
+		potentialIndexOfScore := binarySearchForPoints(quiz.Points, scores, 0, len(scores))
+		amountOfLowerScores := len(scores) - potentialIndexOfScore
+		averageComparison := amountOfLowerScores * 100 / len(scores)
 
 		// Execute HTML-templates with data
 		if err = quizSummaryTemplate.Execute(res, data{
@@ -815,7 +898,7 @@ func (h *QuizHandler) Summary() http.HandlerFunc {
 // stamp of the quiz-data in the session with the URL and current time
 // respectively. It an empty string if everything checks out or an error
 // message to be used in the error flash message after redirecting back.
-func (quiz QuizData) validate(ok bool, phase int, reviewed bool, topicID int) string {
+func (quiz QuizData) validate(ok bool, step Step, topicID int) string {
 
 	msg := "Ein Fehler ist aufgetreten in Phase %v des Quizzes. "
 
@@ -835,10 +918,10 @@ func (quiz QuizData) validate(ok bool, phase int, reviewed bool, topicID int) st
 	}
 
 	// Check for invalid phase
-	if phase != quiz.Phase || reviewed != quiz.Reviewed {
+	if step != quiz.Step {
 		// Occurs when a user manually changes the phase in the URL
 		// Example: "/topics/1/quiz/1" -> "/topics/1/quiz/3"
-		return msg + "Womöglich haben Sie versucht, eine Phase des Quizzes zu überspringen."
+		return msg + "Womöglich haben Sie versucht, eine Phase des Quizzes zu überspringen oder zu wiederholen."
 	}
 
 	// Check for invalid time stamp. Unix() displays the time passed in seconds
@@ -871,9 +954,6 @@ type phase1Question struct {
 func createPhase1Questions(events []x.Event) []phase1Question {
 	var questions []phase1Question
 
-	// Set seed to generate random numbers from
-	rand.Seed(time.Now().UnixNano())
-
 	// Loop through events 0-2 and turn them into questions
 	for _, event := range events[:p1Questions] { // events[:3] -> 0-2
 
@@ -887,8 +967,8 @@ func createPhase1Questions(events []x.Event) []phase1Question {
 
 		// Generate unique, random numbers between min and max, to mix with the
 		// correct year
-		rand.Seed(time.Now().Unix()) // set a seed to base RNG off of
 		for c := 1; c < p1Choices; c++ {
+			rand.Seed(time.Now().Unix())       // set a seed to base RNG off of
 			year := rand.Intn(max-min+1) + min // generate a random number between min and max
 
 			// Only add generated year, if it isn't equal to the correct year
@@ -903,6 +983,7 @@ func createPhase1Questions(events []x.Event) []phase1Question {
 
 		// Shuffle the years, so that the correct year isn't always in the
 		// first spot
+		rand.Seed(time.Now().UnixNano())
 		rand.Shuffle(len(years), func(n1, n2 int) {
 			years[n1], years[n2] = years[n2], years[n1]
 		})
@@ -964,11 +1045,11 @@ func createPhase3Questions(events []x.Event) []phase3Question {
 	})
 
 	// Loop through all events and turn them into questions
-	for index, event := range events {
+	for i, event := range events {
 		questions = append(questions, phase3Question{
 			EventName: event.Name,
 			EventYear: event.Year,
-			Order:     index, // event with earliest year will have order '0'
+			Order:     i, // event with earliest year will have order '0'
 		})
 	}
 
@@ -986,16 +1067,23 @@ func createPhase3Questions(events []x.Event) []phase3Question {
 // order.
 // It looks for this recursively, in a binary-search way, since this is the
 // most efficient way of looking for this index.
+// Time complexity: O(√(n)) with binary-search instead of O(n) with iteration.
 func binarySearchForPoints(points int, scores []x.Score, floor int, ceil int) int {
+	if len(scores) == 0 {
+		return 0
+	}
 
 	// Get the points of the score in the middle of the 'floor'- and 'ceiling'-
 	// pointers
-	// Example: len(scores) = 40, floor = 10, ceil = 25 => middle = 17,
+	// Example: len(scores) = 40, floor = 10, ceil = 25 => middle = 17
 	middle := (floor + ceil) / 2
 	middlePoints := scores[middle].Points
 
 	// Base case for recursive function
 	if ceil-floor <= 1 || points == middlePoints {
+		if points < middlePoints {
+			return (floor+ceil)/2 + 1
+		}
 		return (floor + ceil) / 2
 	}
 

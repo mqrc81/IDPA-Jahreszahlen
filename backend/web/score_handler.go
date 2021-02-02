@@ -135,7 +135,7 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 
 		// Adjust page, if the leaderboard rows would be out of bounds of
 		// scores array
-		// Example: show=10, page=5, len(scores)=13 => page=2 => scores[10:20]
+		// Example: show=10, page=5, len(scores)=13 => page=2 => tScores[10:20]
 		// => scores[10:13] (ranks 11-13) gets shown (in bounds of array)
 		page -= (page*show - (len(scores) + 1)) / show
 

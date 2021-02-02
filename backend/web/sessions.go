@@ -60,9 +60,9 @@ func GetSessionData(session *scs.SessionManager, ctx context.Context) SessionDat
 
 	// Retrieve user from session
 	userInf := ctx.Value("user")
-	if userInf != nil { // if there is a user in the session
-		data.User = userInf.(x.User)
-		data.LoggedIn = true
+	if userInf != nil { // if there is a user in the session...
+		data.User = userInf.(x.User) // ...convert interface to struct
+		data.LoggedIn = true         // ...log user in via session
 	} else {
 		data.User = x.User{}
 		data.LoggedIn = false
