@@ -1,7 +1,6 @@
 package web
 
 import (
-	"fmt"
 	"testing"
 
 	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
@@ -34,11 +33,6 @@ func init() {
 		}
 		tScores = append(tScores, score)
 	}
-	fmt.Print("[ ")
-	for i, s := range tScores {
-		fmt.Printf("[%v]Score{%v} ", i, s.Points)
-	}
-	fmt.Print("]")
 }
 
 // TestBinarySearchForPoints tests searching for the index at which the user's

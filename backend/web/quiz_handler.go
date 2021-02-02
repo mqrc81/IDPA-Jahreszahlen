@@ -1,6 +1,16 @@
 // The web handler evolving around playing a quiz, with HTTP-handler functions
 // consisting of "GET"- and "POST"-methods. It utilizes session management and
 // database access.
+//
+// The quiz consists of 3 phases with different question types, where each
+// phase has a review page for correcting the incorrect guesses after having
+// submitted, as well as a summary of statistics at the end.
+//
+// Thanks to the timestamp, topic and current step in the quiz data which is
+// being passed along in the session, it is ensured that a user can't skip a
+// phase, start at a later phase or go back and change the guesses after the
+// review. It is however possible to refresh any page, which will have no
+// effect.
 
 package web
 
@@ -39,15 +49,15 @@ const (
 	noPermissionError = "Unzureichende Berechtigung. Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen."
 )
 
-type Step int
-
 const (
-	preparedPhase1 Step = iota // = 0
+	// These constants represent the current stage of a quiz, for validation of
+	// correct playing order (0-5).
+	preparedPhase1 = iota
 	submittedPhase1
 	preparedPhase2
 	submittedPhase2
 	preparedPhase3
-	submittedPhase3 // = 5
+	submittedPhase3
 )
 
 var (
@@ -107,7 +117,7 @@ type QuizData struct {
 
 	Questions interface{} // questions for each of the 3 phases
 
-	Step      Step      // increments with every handler; ensures correct playing order
+	Step      int       // increments with every handler; ensures correct playing order
 	TimeStamp time.Time // ensures a user can't return to a quiz after n minutes
 }
 
@@ -853,8 +863,7 @@ func (h *QuizHandler) Summary() http.HandlerFunc {
 		// struct (so if quiz doesn't exist in session)
 		quiz, ok := h.sessions.Get(req.Context(), "quiz").(QuizData)
 
-		// Validate the token of the quiz-data, so that the user can't finesse
-		// playing order to his advantage
+		// Validate the token of the quiz-data
 		msg := quiz.validate(ok, submittedPhase3, topicID)
 
 		// If 'msg' isn't empty, an error occurred
@@ -898,7 +907,7 @@ func (h *QuizHandler) Summary() http.HandlerFunc {
 // stamp of the quiz-data in the session with the URL and current time
 // respectively. It an empty string if everything checks out or an error
 // message to be used in the error flash message after redirecting back.
-func (quiz QuizData) validate(ok bool, step Step, topicID int) string {
+func (quiz QuizData) validate(ok bool, step int, topicID int) string {
 
 	msg := "Ein Fehler ist aufgetreten in Phase %v des Quizzes. "
 
@@ -1067,7 +1076,8 @@ func createPhase3Questions(events []x.Event) []phase3Question {
 // order.
 // It looks for this recursively, in a binary-search way, since this is the
 // most efficient way of looking for this index.
-// Time complexity: O(√(n)) with binary-search instead of O(n) with iteration.
+// Time complexity: O(√n) using binary-search instead of O(n) using iteration;
+// 50000 scores take 224 iterations max instead of 50000 max (=> scalable).
 func binarySearchForPoints(points int, scores []x.Score, floor int, ceil int) int {
 	if len(scores) == 0 {
 		return 0
