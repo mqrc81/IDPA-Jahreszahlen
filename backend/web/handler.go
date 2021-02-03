@@ -1,14 +1,17 @@
 // The pivot of all HTTP-handlers functions, which is responsible for
 // initializing a web handler, consisting of a multiplexer, a database store
-// and a session manager. It also contains middleware and singled out HTTP-
-// handler functions.
+// and a session manager, as well as serving static files. It also contains
+// middleware and some general HTTP-handler functions.
 
 package web
 
 import (
 	"context"
+	"fmt"
 	"html/template"
+	"log"
 	"net/http"
+	"strings"
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi"
@@ -19,8 +22,10 @@ import (
 )
 
 const (
-	path   = "frontend/templates/"
-	layout = "frontend/layout.html"
+	path    = "frontend/templates/" // path of HTML-templates
+	layout  = "frontend/layout.html"
+	cssPath = "frontend/static/cssPath" // path of static CSS files
+	jsPath  = "frontend/static/jsPath"  // path of static JavaScript files
 )
 
 var (
@@ -74,6 +79,10 @@ func NewHandler(store x.Store, sessions *scs.SessionManager, csrfKey []byte) *Ha
 	handler.Use(csrf.Protect(csrfKey, csrf.Secure(false)))
 	handler.Use(sessions.LoadAndSave)
 	handler.Use(handler.withUser)
+
+	// Serve static files
+	handler.fileServer("/"+cssPath, http.Dir(cssPath))
+	// TODO handler.fileServer(staticPath+"jsPath", http.Dir("frontend/static/jsPath"))
 
 	// Home
 	handler.Get("/", handler.Home())
@@ -193,6 +202,24 @@ func (h *Handler) Home() http.HandlerFunc {
 	}
 }
 
+// NotFound404 gets called when a non-existing URL has been entered.
+func (h *Handler) NotFound404() http.HandlerFunc {
+
+	// Data to pass to HTML-templates
+	type data struct {
+		SessionData
+	}
+
+	return func(res http.ResponseWriter, req *http.Request) {
+		if err := notFound404Template.Execute(res, data{
+			SessionData: GetSessionData(h.sessions, req.Context()),
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 // withUser is a middleware that replaces the potential user ID with a user object.
 func (h *Handler) withUser(next http.Handler) http.Handler {
 
@@ -220,20 +247,25 @@ func (h *Handler) withUser(next http.Handler) http.Handler {
 	})
 }
 
-// NotFound404 gets called when a non-existing URL has been entered.
-func (h *Handler) NotFound404() http.HandlerFunc {
+// fileServer conveniently sets up a http.FileServer handler to serve static
+// files, such as CSS, images and JavaScript.
+func (h *Handler) fileServer(path string, dir http.FileSystem) {
 
-	// Data to pass to HTML-templates
-	type data struct {
-		SessionData
+	if strings.ContainsAny(path, "{}*") { // URL parameters are defined as such ('/topics/{topicID}/*')
+		log.Fatal("FileServer does not permit any URL parameters.")
 	}
+	fmt.Printf("Serving static %v files...\n", strings.TrimPrefix(path, "/frontend/static/"))
 
-	return func(res http.ResponseWriter, req *http.Request) {
-		if err := notFound404Template.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
-		}); err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	if path != "/" && path[len(path)-1] != '/' {
+		h.Get(path, http.RedirectHandler(path+"/", http.StatusMovedPermanently).ServeHTTP)
+		path += "/"
 	}
+	path += "*"
+
+	h.Get(path, func(res http.ResponseWriter, req *http.Request) {
+		ctx := chi.RouteContext(req.Context())
+		pathPrefix := strings.TrimSuffix(ctx.RoutePattern(), "/*")
+		fs := http.StripPrefix(pathPrefix, http.FileServer(dir))
+		fs.ServeHTTP(res, req)
+	})
 }
