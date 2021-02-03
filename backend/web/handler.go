@@ -21,7 +21,6 @@ import (
 const (
 	path   = "frontend/templates/"
 	layout = "frontend/layout.html"
-	css    = "frontend/css/css.html"
 )
 
 var (
@@ -52,8 +51,8 @@ func init() {
 		return
 	}
 
-	homeTemplate = template.Must(template.ParseFiles(layout, css, path+"home.html"))
-	notFound404Template = template.Must(template.ParseFiles(layout, css, path+"http_not_found.html"))
+	homeTemplate = template.Must(template.ParseFiles(layout, path+"home.html"))
+	notFound404Template = template.Must(template.ParseFiles(layout, path+"http_not_found.html"))
 }
 
 // NewHandler initializes HTTP-handlers, including router and middleware.

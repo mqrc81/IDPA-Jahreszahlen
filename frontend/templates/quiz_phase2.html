@@ -1,28 +1,28 @@
 {{define "title"}}
-    <title>Phase 2</title>
+Phase 2
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">{{.TopicName}}</h1>
+<h1 class="mb-0">{{.TopicName}}</h1>
 {{end}}
 
 {{define "content"}}
-    <form action="/topics/{{.TopicID}}/quiz/2" method="POST" class="form">
-        {{.CSRF}}
-        {{range $i, $q := .Questions}}
-        <div class="x-card">
-                <div class="card-body">
-                    <h5><label for="{{$i}}">{{$q.EventName}}</label></h5>
-                    <div class="form-group">
-                        <input type="number" name="{{$i}}" id="{{$i}}" required
-                               class="form-control">
-                    </div>
-                </div>
+<form action="/topics/{{.TopicID}}/quiz/2" method="POST" class="form">
+    {{.CSRF}}
+    {{range $i, $q := .Questions}}
+    <div class="x-card">
+        <div class="card-body">
+            <h5><label for="{{$i}}">{{$q.EventName}}</label></h5>
+            <div class="form-group">
+                <input type="number" name="{{$i}}" id="{{$i}}" required
+                       class="form-control">
             </div>
-        {{end}}
-        <br>
-        <button type="submit" class="x-button">Überprüfen</button>
-    </form>
+        </div>
+    </div>
+    {{end}}
+    <br>
+    <button type="submit" class="x-button">Überprüfen</button>
+</form>
 {{end}}
 
 {{define "sidebar"}}

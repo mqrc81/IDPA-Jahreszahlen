@@ -33,7 +33,7 @@ func init() {
 
 	scoresListTemplate = template.Must(template.
 		New("layout.html").Funcs(funcMap). // add custom functions to use in HTML-templates
-		ParseFiles(layout, css, path+"scores_list.html"))
+		ParseFiles(layout, path+"scores_list.html"))
 
 }
 

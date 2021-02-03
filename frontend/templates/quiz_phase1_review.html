@@ -1,5 +1,5 @@
 {{define "title"}}
-<title>Phase 1 Überprüfung</title>
+Phase 1 Überprüfung
 {{end}}
 
 {{define "header"}}
@@ -30,19 +30,19 @@
                 {{.}}
                 {{if eq . $year}} <!-- correct year -->
                 {{if eq . $user}}
-                            <i class="fas fa-check"></i> <!-- user guessed the correct year -->
-                            {{end}}
-                            {{else}}
-                            {{if eq . $user}}
-                            <i class="fas fa-times"></i> <!-- user guessed this year, which wasn't correct -->
-                            {{end}}
-                            {{end}}
-                        </label>
-                    </div>
+                <i class="fas fa-check"></i> <!-- user guessed the correct year -->
                 {{end}}
-            </div>
+                {{else}}
+                {{if eq . $user}}
+                <i class="fas fa-times"></i> <!-- user guessed this year, which wasn't correct -->
+                {{end}}
+                {{end}}
+            </label>
         </div>
-    {{end}}
+        {{end}}
+    </div>
+</div>
+{{end}}
 <form action="/topics/{{.TopicID}}/quiz/1/review" method="POST" class="form">
     {{.CSRF}}
     <button type="submit" class="x-button">Weiter zu Phase 2</button>

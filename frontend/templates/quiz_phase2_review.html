@@ -1,5 +1,5 @@
 {{define "title"}}
-<title>Phase 2 Überprüfung</title>
+Phase 2 Überprüfung
 {{end}}
 
 {{define "header"}}
@@ -21,16 +21,16 @@
                                 incorrect-year
                             {{end}}">
             {{if ne $q.UserGuess $q.EventYear}}
-            <p class="answer">Richtige Antwort: {{$q.EventYear}}</p>
+            <p class="incorrect-year">Richtige Antwort: {{$q.EventYear}}</p>
             {{end}}
         </div>
-            </div>
-        </div>
-    {{end}}
-    <form action="/topics/{{.TopicID}}/quiz/2/review" method="POST" class="form">
-        {{.CSRF}}
-        <button type="submit" class="x-button">Weiter zu Phase 3</button>
-    </form>
+    </div>
+</div>
+{{end}}
+<form action="/topics/{{.TopicID}}/quiz/2/review" method="POST" class="form">
+    {{.CSRF}}
+    <button type="submit" class="x-button">Weiter zu Phase 3</button>
+</form>
 {{end}}
 
 {{define "sidebar"}}

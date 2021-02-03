@@ -46,14 +46,12 @@ func init() {
 		return
 	}
 
-	usersRegisterTemplate = template.Must(template.ParseFiles(layout, css, path+"users_register.html"))
-	usersLoginTemplate = template.Must(template.ParseFiles(layout, css, path+"users_login.html"))
-	usersProfileTemplate = template.Must(template.ParseFiles(layout, css, path+"users_profile.html"))
-	usersListTemplate = template.Must(template.ParseFiles(layout, css, path+"users_list.html"))
-	usersForgotPasswordTemplate = template.Must(template.ParseFiles(layout, css,
-		path+"users_forgot_password.html"))
-	usersResetPasswordTemplate = template.Must(template.ParseFiles(layout, css,
-		path+"users_reset_password.html"))
+	usersRegisterTemplate = template.Must(template.ParseFiles(layout, path+"users_register.html"))
+	usersLoginTemplate = template.Must(template.ParseFiles(layout, path+"users_login.html"))
+	usersProfileTemplate = template.Must(template.ParseFiles(layout, path+"users_profile.html"))
+	usersListTemplate = template.Must(template.ParseFiles(layout, path+"users_list.html"))
+	usersForgotPasswordTemplate = template.Must(template.ParseFiles(layout, path+"users_forgot_password.html"))
+	usersResetPasswordTemplate = template.Must(template.ParseFiles(layout, path+"users_reset_password.html"))
 }
 
 // UserHandler is the object for handlers to access sessions and database.

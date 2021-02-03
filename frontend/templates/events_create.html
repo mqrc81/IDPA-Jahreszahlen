@@ -1,43 +1,43 @@
 {{define "title"}}
-    <title>Ereignis erstellen - Jahreszahlen</title>
+Ereignis erstellen - Jahreszahlen
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Ereignis erstellen</h1>
+<h1 class="mb-0">Ereignis erstellen</h1>
 {{end}}
 
 {{define "content"}}
 
-    <h5>Ereignis zum Thema '{{.Topic.Name}}'</h5>
+<h5>Ereignis zum Thema '{{.Topic.Name}}'</h5>
 
-    <form action="/topics/{{.Topic.TopicID}}/events" method="POST" class="form">
-        {{.CSRF}}
-        <label for="name">Ereignis:</label>
-        <div class="form-group">
-            <input type="text" name="name" id="name"
-                   class="form-control {{with .Form.Errors.Name}}is-invalid{{end}}"
-                   placeholder="Titel des Ereignisses"
-                   value="{{with .Form.Name}}{{.}}{{end}}">
-        </div>
+<form action="/topics/{{.Topic.TopicID}}/events" method="POST" class="form">
+    {{.CSRF}}
+    <label for="name">Ereignis:</label>
+    <div class="form-group">
+        <input type="text" name="name" id="name"
+               class="form-control {{with .Form.Errors.Name}}is-invalid{{end}}"
+               placeholder="Titel des Ereignisses"
+               value="{{with .Form.Name}}{{.}}{{end}}">
+    </div>
 
-        {{with .Form.Errors.Name}}
-            <div class="x-invalid-form">{{.}}</div>
-        {{end}}
+    {{with .Form.Errors.Name}}
+    <div class="x-invalid-form">{{.}}</div>
+    {{end}}
 
-        <br>
-        <label for="year">Jahr:</label>
-        <div class="form-group">
-            <input type="text" name="year" id="year"
-                   class="form-control {{with .Form.Errors.Year}}is-invalid{{end}}"
-                   placeholder="Jahr/Datum des Geschehens"
-                   value="{{with .Form.Year}}{{.}}{{end}}">
-        </div>
+    <br>
+    <label for="year">Jahr:</label>
+    <div class="form-group">
+        <input type="text" name="year" id="year"
+               class="form-control {{with .Form.Errors.Year}}is-invalid{{end}}"
+               placeholder="Jahr/Datum des Geschehens"
+               value="{{with .Form.Year}}{{.}}{{end}}">
+    </div>
 
-        {{with .Form.Errors.Year}}
-            <div class="x-invalid-form">{{.}}</div>
-        {{end}}
+    {{with .Form.Errors.Year}}
+    <div class="x-invalid-form">{{.}}</div>
+    {{end}}
 
-        <br>
-        <button type="submit" class="x-button">Ereignis erstellen</button>
-    </form>
+    <br>
+    <button type="submit" class="x-button">Ereignis erstellen</button>
+</form>
 {{end}}

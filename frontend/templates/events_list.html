@@ -1,53 +1,53 @@
 {{define "title"}}
-    <title>Ereignisse - Jahreszahlen</title>
+Ereignisse - Jahreszahlen
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Ereignisse '{{.Topic.Name}}'</h1>
+<h1 class="mb-0">Ereignisse '{{.Topic.Name}}'</h1>
 {{end}}
 
 {{define "content"}}
-    {{range .Topic.Events}}
-        <div class="x-card">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-8">
-                        <p>
-                            <a href="/topics/{{.TopicID}}/events/{{.EventID}}" class="d-block card-title text-body mt-1
+{{range .Topic.Events}}
+<div class="x-card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-8">
+                <p>
+                    <a href="/topics/{{.TopicID}}/events/{{.EventID}}" class="d-block card-title text-body mt-1
                             h5">
-                                {{.Name}} ({{.Year}})
-                            </a>
-                        </p>
-                    </div>
-                    <div id="editDelete" class="col-4">
-                        <form class="formbutton1" action="/topics/{{.TopicID}}/events/{{.EventID}}/edit" method="GET">
-                            <button type="submit"class="edit-icon">
-                                <i class="far fa-edit"></i>
-                            </button>
-                        </form>
-                        <form class="formbutton1" action="/topics/{{.TopicID}}/events/{{.EventID}}/delete" method="POST">
-                            {{$.CSRF}}
-                            <button type="submit" class="delete-icon">
-                                <i class="far fa-trash-alt"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
+                        {{.Name}} ({{.Year}})
+                    </a>
+                </p>
+            </div>
+            <div id="editDelete" class="col-4">
+                <form class="formbutton1" action="/topics/{{.TopicID}}/events/{{.EventID}}/edit" method="GET">
+                    <button type="submit" class="edit-icon">
+                        <i class="far fa-edit"></i>
+                    </button>
+                </form>
+                <form class="formbutton1" action="/topics/{{.TopicID}}/events/{{.EventID}}/delete" method="POST">
+                    {{$.CSRF}}
+                    <button type="submit" class="delete-icon">
+                        <i class="far fa-trash-alt"></i>
+                    </button>
+                </form>
             </div>
         </div>
-    {{end}}
+    </div>
+</div>
+{{end}}
 {{end}}
 
 {{define "sidebar"}}
-    {{if .User.Admin}}
-        <div class="x-card">
-            <div class="card-body">
-                <h5 class="card-title">Neues Ereignis erstellen</h5>
-                <p class="card-text">
-                    Erstellen Sie ein neues Ereignis.
-                </p>
-                <a href="/topics/{{.Topic.TopicID}}/events/new" class="x-button">Neues Ereignis</a>
-            </div>
-        </div>
-    {{end}}
+{{if .User.Admin}}
+<div class="x-card">
+    <div class="card-body">
+        <h5 class="card-title">Neues Ereignis erstellen</h5>
+        <p class="card-text">
+            Erstellen Sie ein neues Ereignis.
+        </p>
+        <a href="/topics/{{.Topic.TopicID}}/events/new" class="x-button">Neues Ereignis</a>
+    </div>
+</div>
+{{end}}
 {{end}}

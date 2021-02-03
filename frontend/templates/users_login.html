@@ -1,55 +1,55 @@
 {{define "title"}}
-    <title>Login - Jahreszahlen</title>
+Login - Jahreszahlen
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Login</h1>
+<h1 class="mb-0">Login</h1>
 {{end}}
 
 {{define "content"}}
-    <form action="/users/login" method="POST" class="form">
-        {{.CSRF}}
-        <label for="username">Benutzername/Email</label>
-        <div class="form-group">
-            <input type="text" name="username" id="username"
-                   class="form-control {{with .Form.Errors.UsernameOrEmail}}is-invalid{{end}}"
-                   placeholder="Benutzername"
-                   value="{{with .Form.UsernameOrEmail}}{{.}}{{end}}">
-        </div>
+<form action="/users/login" method="POST" class="form">
+    {{.CSRF}}
+    <label for="username">Benutzername/Email</label>
+    <div class="form-group">
+        <input type="text" name="username" id="username"
+               class="form-control {{with .Form.Errors.UsernameOrEmail}}is-invalid{{end}}"
+               placeholder="Benutzername"
+               value="{{with .Form.UsernameOrEmail}}{{.}}{{end}}">
+    </div>
 
-        {{with .Form.Errors.UsernameOrEmail}}
-            <div class="x-invalid-form">{{.}}</div>
-        {{end}}
+    {{with .Form.Errors.UsernameOrEmail}}
+    <div class="x-invalid-form">{{.}}</div>
+    {{end}}
 
-        <br>
+    <br>
 
-        <label for="password">Passwort</label>
-        <div class="form-group">
-            <input type="password" name="password" id="password"
-                   class="form-control {{with .Form.Errors.Password}}is-invalid{{end}}"
-                   placeholder="Passwort"
-                   value="{{with .Form.Password}}{{.}}{{end}}">
-        </div>
+    <label for="password">Passwort</label>
+    <div class="form-group">
+        <input type="password" name="password" id="password"
+               class="form-control {{with .Form.Errors.Password}}is-invalid{{end}}"
+               placeholder="Passwort"
+               value="{{with .Form.Password}}{{.}}{{end}}">
+    </div>
 
-        {{with .Form.Errors.Password}}
-            <div class="x-invalid-form">{{.}}</div>
-        {{end}}
+    {{with .Form.Errors.Password}}
+    <div class="x-invalid-form">{{.}}</div>
+    {{end}}
 
-        <br>
-        <button type="submit" class="x-button">Einloggen</button>
-        <a class="x-link" href="/users/forgot/password">Passwort vergessen?</a>
+    <br>
+    <button type="submit" class="x-button">Einloggen</button>
+    <a class="x-link" href="/users/forgot/password">Passwort vergessen?</a>
 
-    </form>
+</form>
 {{end}}
 
 {{define "sidebar"}}
-    <div class="x-card">
-        <div class="card-body">
-            <h5 class="card-title">Ich habe noch kein Account!</h5>
-            <p class="card-text">
-                Falls Sie noch kein Account haben, registrieren Sie sich hier.
-            </p>
-            <a href="/users/register" class="x-button">Registrieren</a>
-        </div>
+<div class="x-card">
+    <div class="card-body">
+        <h5 class="card-title">Ich habe noch kein Account!</h5>
+        <p class="card-text">
+            Falls Sie noch kein Account haben, registrieren Sie sich hier.
+        </p>
+        <a href="/users/register" class="x-button">Registrieren</a>
     </div>
+</div>
 {{end}}

@@ -1,60 +1,60 @@
 {{define "title"}}
-    <title>Home - Jahreszahlen</title>
+Home - Jahreszahlen
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Willkommen bei Jahreszahlen!</h1>
+<h1 class="mb-0">Willkommen bei Jahreszahlen!</h1>
 {{end}}
 
 {{define "content"}}
-    <h5>Wollen Sie sich auf die nächste Geschichtsprüfung vorbereiten oder sich einen besseren
-        Überblick von allen
-        Ereignissen einer Zeitepoche beschaffen und sich dabei mit Ihren Klassenkameraden messen? – Dann sind Sie hier
-        genau richtig!</h5>
-    <hr><br>
-    {{range .Topics}}
-        <div class="x-card">
-            <div class="card-body">
-                <p>
-                    <a href="#" class="d-block card-title text-body mt-1 h5">
-                        {{.Name}} ({{.StartYear}} - {{.EndYear}})
-                    </a>
-                </p>
-                <p class="card-text">{{.ScoresCount}}x gespielt</p>
-                <a href="/topics/{{.TopicID}}" class="x-button"><i class="fas fa-search"></i> Thema anschauen</a>
-            </div>
-        </div>
-    {{end}}
+<h5>Wollen Sie sich auf die nächste Geschichtsprüfung vorbereiten oder sich einen besseren
+    Überblick von allen
+    Ereignissen einer Zeitepoche beschaffen und sich dabei mit Ihren Klassenkameraden messen? – Dann sind Sie hier
+    genau richtig!</h5>
+<hr><br>
+{{range .Topics}}
+<div class="x-card">
+    <div class="card-body">
+        <p>
+            <a href="#" class="d-block card-title text-body mt-1 h5">
+                {{.Name}} ({{.StartYear}} - {{.EndYear}})
+            </a>
+        </p>
+        <p class="card-text">{{.ScoresCount}}x gespielt</p>
+        <a href="/topics/{{.TopicID}}" class="x-button"><i class="fas fa-search"></i> Thema anschauen</a>
+    </div>
+</div>
+{{end}}
 {{end}}
 
 {{define "sidebar"}}
-    <div class="x-card">
-        <div class="card-body">
-            <h5 class="card-title">Themen <i class="far fa-list-alt"></i></h5>
-            <p class="card-text">
-                Schauen Sie alle Themen an, zum Lernen ihrer Jahreszahlen.
-            </p>
-            <a href="/topics" class="x-button">Zu den Themen</a>
-        </div>
+<div class="x-card">
+    <div class="card-body">
+        <h5 class="card-title">Themen <i class="far fa-list-alt"></i></h5>
+        <p class="card-text">
+            Schauen Sie alle Themen an, zum Lernen ihrer Jahreszahlen.
+        </p>
+        <a href="/topics" class="x-button">Zu den Themen</a>
     </div>
-    <div class="x-card">
-        <div class="card-body">
-            <h5 class="card-title">Leaderboard <i class="fas fa-award"></i></h5>
-            <p class="card-text">
-                Schauen Sie das Leaderboard mit allen Spielresultaten an und filtern Sie nach Benutzer und Thema.
-            </p>
-            <a href="/scores" class="x-button">Zum Leaderboard</a>
-        </div>
+</div>
+<div class="x-card">
+    <div class="card-body">
+        <h5 class="card-title">Leaderboard <i class="fas fa-award"></i></h5>
+        <p class="card-text">
+            Schauen Sie das Leaderboard mit allen Spielresultaten an und filtern Sie nach Benutzer und Thema.
+        </p>
+        <a href="/scores" class="x-button">Zum Leaderboard</a>
     </div>
-    {{if .User.Admin}}
-        <div class="x-card">
-            <div class="card-body">
-                <h5 class="card-title">Alle Benutzer <i class="fas fa-users"></i></h5>
-                <p class="card-text">
-                    Sehen Sie alle Benutzer, welche sich bisher registriert haben.
-                </p>
-                <a href="/users/" class="x-button">Zu den Benutzern</a>
-            </div>
-        </div>
-    {{end}}
+</div>
+{{if .User.Admin}}
+<div class="x-card">
+    <div class="card-body">
+        <h5 class="card-title">Alle Benutzer <i class="fas fa-users"></i></h5>
+        <p class="card-text">
+            Sehen Sie alle Benutzer, welche sich bisher registriert haben.
+        </p>
+        <a href="/users/" class="x-button">Zu den Benutzern</a>
+    </div>
+</div>
+{{end}}
 {{end}}

@@ -1,9 +1,9 @@
 {{define "title"}}
-    <title>Profil</title>
+Profil
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Profil von '{{.User.Username}}'</h1>
+<h1 class="mb-0">Profil von '{{.User.Username}}'</h1>
 {{end}}
 
 {{define "content"}}
@@ -11,21 +11,21 @@
     <div class="card-body">
         <table class="table">
             <tbody>
-                <tr>
-                    <th scope="row">Benutzername:</th>
-                    <td>{{.User.Username}}</td>
-                    <td><a href="/users/edit/username"><i class="fas fa-pencil-alt"></i></a></td>
-                </tr>
-                <tr>
-                    <th scope="row">Email:</th>
-                    <td>{{.User.Email}}</td>
-                    <td><a href="/users/edit/email"><i class="fas fa-pencil-alt"></i></a></td>
-                </tr>
-                <tr>
-                    <th scope="row">Passwort:</th>
-                    <td>********</td>
-                    <td><a href="/users/edit/password"><i class="fas fa-pencil-alt"></i></a></td>
-                </tr>
+            <tr>
+                <th scope="row">Benutzername:</th>
+                <td>{{.User.Username}}</td>
+                <td><a href="/users/edit/username"><i class="fas fa-pencil-alt"></i></a></td>
+            </tr>
+            <tr>
+                <th scope="row">Email:</th>
+                <td>{{.User.Email}}</td>
+                <td><a href="/users/edit/email"><i class="fas fa-pencil-alt"></i></a></td>
+            </tr>
+            <tr>
+                <th scope="row">Passwort:</th>
+                <td>********</td>
+                <td><a href="/users/edit/password"><i class="fas fa-pencil-alt"></i></a></td>
+            </tr>
             </tbody>
         </table>
     </div>

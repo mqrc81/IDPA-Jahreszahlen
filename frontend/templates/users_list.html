@@ -1,43 +1,43 @@
 {{define "title"}}
-    <title>Benutzer</title>
+Benutzer
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Benutzer</h1>
+<h1 class="mb-0">Benutzer</h1>
 {{end}}
 
 {{define "content"}}
-    {{range .Users}}
-        <div class="x-card">
-            <div class="card-body">
+{{range .Users}}
+<div class="x-card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-7" id="userlist">
+                <p class="card-text">
+                    {{.Username}}
+                </p>
+            </div>
+            {{if not .Admin}}
+            <div class="col-3">
                 <div class="row">
-                    <div class="col-7" id="userlist">
-                        <p class="card-text">
-                            {{.Username}}
-                        </p>
-                    </div>
-                    {{if not .Admin}}
-                        <div class="col-3">
-                            <div class="row">
-                                <form class="formbutton" action="/users/{{.UserID}}/promote" method="POST">
-                                    {{$.CSRF}}
-                                    <button type="submit" class="x-button">Zum Admin machen</button>
-                                </form>
-                            </div>
-                        </div>
-                        <div class="col-2">
-                            <form class="formbutton" action="/users/{{.UserID}}/delete" method="POST">
-                                {{$.CSRF}}
-                                <button type="submit" class="delete-icon">
-                                    <i class="far fa-trash-alt"></i>
-                                </button>
-                            </form>
-                        </div>
-                    {{end}}
+                    <form class="formbutton" action="/users/{{.UserID}}/promote" method="POST">
+                        {{$.CSRF}}
+                        <button type="submit" class="x-button">Zum Admin machen</button>
+                    </form>
                 </div>
             </div>
+            <div class="col-2">
+                <form class="formbutton" action="/users/{{.UserID}}/delete" method="POST">
+                    {{$.CSRF}}
+                    <button type="submit" class="delete-icon">
+                        <i class="far fa-trash-alt"></i>
+                    </button>
+                </form>
+            </div>
+            {{end}}
         </div>
-    {{end}}
+    </div>
+</div>
+{{end}}
 {{end}}
 
 {{define "sidebar"}}

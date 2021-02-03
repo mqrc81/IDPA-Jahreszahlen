@@ -1,9 +1,9 @@
 {{define "title"}}
-    <title>Leaderboard</title>
+Leaderboard
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Leaderboard</h1>
+<h1 class="mb-0">Leaderboard</h1>
 {{end}}
 
 {{define "content"}}
@@ -30,23 +30,23 @@
 
 <table class="table" id="tablescores">
     <thead>
-        <tr>
-            <th scope="col">Rang</th>
-            <th scope="col">Benutzer</th>
-            <th scope="col">Thema</th>
-            <th scope="col">Datum</th>
-            <th scope="col">Punkte</th>
-        </tr>
+    <tr>
+        <th scope="col">Rang</th>
+        <th scope="col">Benutzer</th>
+        <th scope="col">Thema</th>
+        <th scope="col">Datum</th>
+        <th scope="col">Punkte</th>
+    </tr>
     </thead>
     <tbody>
     {{range .Leaderboard}}
-        <tr>
-            <th scope="row">{{.Rank}}</th>
-            <td>{{.UserName}}</td>
-            <td>{{.TopicName}}</td>
-            <td>{{.Date}}</td>
-            <td>{{.Points}}</td>
-        </tr>
+    <tr>
+        <th scope="row">{{.Rank}}</th>
+        <td>{{.UserName}}</td>
+        <td>{{.TopicName}}</td>
+        <td>{{.Date}}</td>
+        <td>{{.Points}}</td>
+    </tr>
     {{end}}
     </tbody>
 </table>

@@ -1,52 +1,52 @@
 {{define "title"}}
-    <title>{{.Topic.Name}}</title>
+{{.Topic.Name}}
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Thema '{{.Topic.Name}}'</h1>
+<h1 class="mb-0">Thema '{{.Topic.Name}}'</h1>
 {{end}}
 
 {{define "content"}}
 
-    <div class="x-card">
-        <div class="card-body">
-            <p>
-                <a href="#" class="d-block card-title text-body mt-1 h5">
-                    {{.Topic.Name}} ({{.Topic.StartYear}} - {{.Topic.EndYear}})
-                </a>
-            </p>
-            <textfield>
-                {{.Topic.Description}}
-            </textfield>
-        </div>
+<div class="x-card">
+    <div class="card-body">
+        <p>
+            <a href="#" class="d-block card-title text-body mt-1 h5">
+                {{.Topic.Name}} ({{.Topic.StartYear}} - {{.Topic.EndYear}})
+            </a>
+        </p>
+        <textfield>
+            {{.Topic.Description}}
+        </textfield>
     </div>
-    <div class="x-card">
-        <p> Es gibt <b>{{.Topic.EventsCount}}</b> Ereignisse zu diesem Thema
-            und es wurde schon <b>{{.Topic.ScoresCount}}</b> Mal gespielt.</p>
-    </div>
+</div>
+<div class="x-card">
+    <p> Es gibt <b>{{.Topic.EventsCount}}</b> Ereignisse zu diesem Thema
+        und es wurde schon <b>{{.Topic.ScoresCount}}</b> Mal gespielt.</p>
+</div>
 
-    <button class="x-button">
-        <a href="/topics/{{.Topic.TopicID}}/quiz/1"><i class="fas fa-hourglass-start"></i> Quiz beginnen</a>
+<button class="x-button">
+    <a href="/topics/{{.Topic.TopicID}}/quiz/1"><i class="fas fa-hourglass-start"></i> Quiz beginnen</a>
+</button>
+
+<button class="x-button">
+    <a href="/topics/{{.Topic.TopicID}}/events/"><i class="fas fa-list"></i> Ereignisse anzeigen</a>
+</button>
+
+{{if .User.Admin}}
+
+<form class="formbutton1" action="/topics/{{.Topic.TopicID}}/edit" method="GET">
+    <button type="submit" class="edit-icon">
+        <i class="far fa-edit"></i>
     </button>
-
-    <button class="x-button">
-        <a href="/topics/{{.Topic.TopicID}}/events/"><i class="fas fa-list"></i> Ereignisse anzeigen</a>
+</form>
+<form class="formbutton1" action="/topics/{{.Topic.TopicID}}/delete" method="POST">
+    {{$.CSRF}}
+    <button type="submit" class="delete-icon">
+        <i class="far fa-trash-alt"></i>
     </button>
-
-    {{if .User.Admin}}
-
-    <form class="formbutton1" action="/topics/{{.Topic.TopicID}}/edit" method="GET">
-        <button type="submit"class="edit-icon">
-            <i class="far fa-edit"></i>
-        </button>
-    </form>
-    <form class="formbutton1" action="/topics/{{.Topic.TopicID}}/delete" method="POST">
-        {{$.CSRF}}
-        <button type="submit" class="delete-icon">
-            <i class="far fa-trash-alt"></i>
-        </button>
-    </form>
-    {{end}}
+</form>
+{{end}}
 {{end}}
 
 {{define "sidebar"}}

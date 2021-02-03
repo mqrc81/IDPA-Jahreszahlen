@@ -1,39 +1,39 @@
 {{define "title"}}
-    <title>Themen - Jahreszahlen</title>
+Themen - Jahreszahlen
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Themen</h1>
+<h1 class="mb-0">Themen</h1>
 {{end}}
 
 {{define "content"}}
-    {{range .Topics}}
-        <div class="x-card">
-            <div class="card-body">
-                <p>
-                    <a href="#" class="d-block card-title text-body mt-1 h5">
-                        {{.Name}} ({{.StartYear}} - {{.EndYear}})
-                    </a>
-                </p>
-                <p class="card-text">{{.Description}}</p>
-                <p class="card-text">{{.EventsCount}} Ereignisse<br>
-                    {{.ScoresCount}}x gespielt</p>
-                <a href="/topics/{{.TopicID}}" class="x-button"><i class="fas fa-search"></i> Thema anschauen</a>
-            </div>
-        </div>
-    {{end}}
+{{range .Topics}}
+<div class="x-card">
+    <div class="card-body">
+        <p>
+            <a href="#" class="d-block card-title text-body mt-1 h5">
+                {{.Name}} ({{.StartYear}} - {{.EndYear}})
+            </a>
+        </p>
+        <p class="card-text">{{.Description}}</p>
+        <p class="card-text">{{.EventsCount}} Ereignisse<br>
+            {{.ScoresCount}}x gespielt</p>
+        <a href="/topics/{{.TopicID}}" class="x-button"><i class="fas fa-search"></i> Thema anschauen</a>
+    </div>
+</div>
+{{end}}
 {{end}}
 
 {{define "sidebar"}}
-    {{if .User.Admin}}
-        <div class="x-card">
-            <div class="card-body">
-                <h5 class="card-title">Neues Thema erstellen</h5>
-                <p class="card-text">
-                    Erstellen Sie ein neues Thema mitsamt ihren Ereignissen.
-                </p>
-                <a href="/topics/new" class="x-button">Neues Thema</a>
-            </div>
-        </div>
-    {{end}}
+{{if .User.Admin}}
+<div class="x-card">
+    <div class="card-body">
+        <h5 class="card-title">Neues Thema erstellen</h5>
+        <p class="card-text">
+            Erstellen Sie ein neues Thema mitsamt ihren Ereignissen.
+        </p>
+        <a href="/topics/new" class="x-button">Neues Thema</a>
+    </div>
+</div>
+{{end}}
 {{end}}

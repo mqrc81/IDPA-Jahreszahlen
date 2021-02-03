@@ -1,46 +1,46 @@
 {{define "title"}}
-    <title>Email ändern</title>
+Email ändern
 {{end}}
 
 {{define "header"}}
-    <h1 class="mb-0">Email ändern</h1>
+<h1 class="mb-0">Email ändern</h1>
 {{end}}
 
 {{define "content"}}
-    <div class="x-card">
-        <div class="card-body">
-            <form action="/users/edit/email" method="POST" class="form">
-                {{.CSRF}}
-                <label for="email">Neue Email-Adresse</label>
-                <div class="form-group">
-                    <input type="text" name="email" id="email"
-                           class="form-control {{with .Form.Errors.NewEmail}}is-invalid{{end}}"
-                           placeholder="Email"
-                           value="{{with .Form.NewEmail}}{{.}}{{end}}">
-                </div>
+<div class="x-card">
+    <div class="card-body">
+        <form action="/users/edit/email" method="POST" class="form">
+            {{.CSRF}}
+            <label for="email">Neue Email-Adresse</label>
+            <div class="form-group">
+                <input type="text" name="email" id="email"
+                       class="form-control {{with .Form.Errors.NewEmail}}is-invalid{{end}}"
+                       placeholder="Email"
+                       value="{{with .Form.NewEmail}}{{.}}{{end}}">
+            </div>
 
-                {{with .Form.Errors.NewEmail}}
-                <div class="x-invalid-form">{{.}}</div>
-                {{end}}
-                <br>
+            {{with .Form.Errors.NewEmail}}
+            <div class="x-invalid-form">{{.}}</div>
+            {{end}}
+            <br>
 
-                <label for="password">Passwort</label>
-                <div class="form-group">
-                    <input type="password" name="password" id="password"
-                           class="form-control {{with .Form.Errors.Password}}is-invalid{{end}}"
-                           placeholder="Password"
-                           value="{{with .Form.Password}}{{.}}{{end}}">
-                </div>
+            <label for="password">Passwort</label>
+            <div class="form-group">
+                <input type="password" name="password" id="password"
+                       class="form-control {{with .Form.Errors.Password}}is-invalid{{end}}"
+                       placeholder="Password"
+                       value="{{with .Form.Password}}{{.}}{{end}}">
+            </div>
 
-                {{with .Form.Errors.Password}}
-                <div class="x-invalid-form">{{.}}</div>
-                {{end}}
-                <br>
+            {{with .Form.Errors.Password}}
+            <div class="x-invalid-form">{{.}}</div>
+            {{end}}
+            <br>
 
-                <button type="submit" class="x-button">Ändern</button>
-            </form>
-        </div>
+            <button type="submit" class="x-button">Ändern</button>
+        </form>
     </div>
+</div>
 
 {{end}}
 
