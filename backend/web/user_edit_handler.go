@@ -29,9 +29,9 @@ func init() {
 		return
 	}
 
-	usersEditUsernameTemplate = template.Must(template.ParseFiles(layout, path+"users_edit_username.html"))
-	usersEditEmailTemplate = template.Must(template.ParseFiles(layout, path+"users_edit_email.html"))
-	usersEditPasswordTemplate = template.Must(template.ParseFiles(layout, path+"users_edit_password.html"))
+	usersEditUsernameTemplate = template.Must(template.ParseFiles(layout, templatePath+"users_edit_username.html"))
+	usersEditEmailTemplate = template.Must(template.ParseFiles(layout, templatePath+"users_edit_email.html"))
+	usersEditPasswordTemplate = template.Must(template.ParseFiles(layout, templatePath+"users_edit_password.html"))
 }
 
 // EditUsername is a GET-method that is accessible to any user.

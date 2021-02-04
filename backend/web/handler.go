@@ -22,10 +22,15 @@ import (
 )
 
 const (
-	path    = "frontend/templates/" // path of HTML-templates
-	layout  = "frontend/layout.html"
-	cssPath = "frontend/static/cssPath" // path of static CSS files
-	jsPath  = "frontend/static/jsPath"  // path of static JavaScript files
+	// staticPath is the path to directory of static assets, which includes
+	// CSS- and JavaScript-files, as well as images and fonts
+	staticPath = "frontend/static"
+
+	// templatePath is the path to directory of HTML-templates
+	templatePath = "frontend/templates/"
+
+	// layout defines the basic construction of all HTML-templates
+	layout = "frontend/layout.html"
 )
 
 var (
@@ -34,17 +39,7 @@ var (
 
 	// Parsed HTML-templates to be executed in their respective HTTP-handler
 	// functions when needed
-	homeTemplate, notFound404Template *template.Template
-
-	// funcMap is a map of custom functions to be used in an HTML-template
-	funcMap = template.FuncMap{
-		"increment": func(num int) int {
-			return num + 1
-		},
-		"decrement": func(num int) int {
-			return num - 1
-		},
-	}
+	homeTemplate, http404Template *template.Template
 )
 
 // init gets initialized with the package.
@@ -56,8 +51,8 @@ func init() {
 		return
 	}
 
-	homeTemplate = template.Must(template.ParseFiles(layout, path+"home.html"))
-	notFound404Template = template.Must(template.ParseFiles(layout, path+"http_not_found.html"))
+	homeTemplate = template.Must(template.ParseFiles(layout, templatePath+"home.html"))
+	http404Template = template.Must(template.ParseFiles(layout, templatePath+"http_not_found.html"))
 }
 
 // NewHandler initializes HTTP-handlers, including router and middleware.
@@ -81,8 +76,8 @@ func NewHandler(store x.Store, sessions *scs.SessionManager, csrfKey []byte) *Ha
 	handler.Use(handler.withUser)
 
 	// Serve static files
-	handler.fileServer("/"+cssPath, http.Dir(cssPath))
-	// TODO handler.fileServer(staticPath+"jsPath", http.Dir("frontend/static/jsPath"))
+	fmt.Println("Serving staticPath files...")
+	handler.fileServer("/"+staticPath+"/", http.Dir(staticPath))
 
 	// Home
 	handler.Get("/", handler.Home())
@@ -158,7 +153,7 @@ func NewHandler(store x.Store, sessions *scs.SessionManager, csrfKey []byte) *Ha
 	})
 
 	// Handler for when a non-existing URL is called
-	handler.NotFound(handler.NotFound404())
+	handler.NotFound(handler.HTTP404())
 
 	return handler
 }
@@ -202,8 +197,8 @@ func (h *Handler) Home() http.HandlerFunc {
 	}
 }
 
-// NotFound404 gets called when a non-existing URL has been entered.
-func (h *Handler) NotFound404() http.HandlerFunc {
+// HTTP404 gets called when a non-existing URL has been entered.
+func (h *Handler) HTTP404() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
 	type data struct {
@@ -211,7 +206,7 @@ func (h *Handler) NotFound404() http.HandlerFunc {
 	}
 
 	return func(res http.ResponseWriter, req *http.Request) {
-		if err := notFound404Template.Execute(res, data{
+		if err := http404Template.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -251,17 +246,19 @@ func (h *Handler) withUser(next http.Handler) http.Handler {
 // files, such as CSS, images and JavaScript.
 func (h *Handler) fileServer(path string, dir http.FileSystem) {
 
-	if strings.ContainsAny(path, "{}*") { // URL parameters are defined as such ('/topics/{topicID}/*')
-		log.Fatal("FileServer does not permit any URL parameters.")
+	// URL mustn't contain variables '{}' or wildcards '*'
+	if strings.ContainsAny(path, "{}*") { // URL parameters can be defined as such ('/foo/{bar}/*/foobar')
+		log.Fatal("URL parameters not permitted")
 	}
-	fmt.Printf("Serving static %v files...\n", strings.TrimPrefix(path, "/frontend/static/"))
 
+	// Modify URL to not end on '/'
 	if path != "/" && path[len(path)-1] != '/' {
 		h.Get(path, http.RedirectHandler(path+"/", http.StatusMovedPermanently).ServeHTTP)
 		path += "/"
 	}
 	path += "*"
 
+	// HTTP-handler that serves static files with every request
 	h.Get(path, func(res http.ResponseWriter, req *http.Request) {
 		ctx := chi.RouteContext(req.Context())
 		pathPrefix := strings.TrimSuffix(ctx.RoutePattern(), "/*")

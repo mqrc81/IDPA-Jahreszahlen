@@ -28,9 +28,9 @@ func init() {
 		return
 	}
 
-	eventsListTemplate = template.Must(template.ParseFiles(layout, path+"events_list.html"))
-	eventsCreateTemplate = template.Must(template.ParseFiles(layout, path+"events_create.html"))
-	eventsEditTemplate = template.Must(template.ParseFiles(layout, path+"events_edit.html"))
+	eventsListTemplate = template.Must(template.ParseFiles(layout, templatePath+"events_list.html"))
+	eventsCreateTemplate = template.Must(template.ParseFiles(layout, templatePath+"events_create.html"))
+	eventsEditTemplate = template.Must(template.ParseFiles(layout, templatePath+"events_edit.html"))
 }
 
 // EventHandler is the object for handlers to access sessions and database.

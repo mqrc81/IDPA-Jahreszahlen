@@ -32,10 +32,10 @@ func init() {
 		return
 	}
 
-	topicsListTemplate = template.Must(template.ParseFiles(layout, path+"topics_list.html"))
-	topicsCreateTemplate = template.Must(template.ParseFiles(layout, path+"topics_create.html"))
-	topicsEditTemplate = template.Must(template.ParseFiles(layout, path+"topics_edit.html"))
-	topicsShowTemplate = template.Must(template.ParseFiles(layout, path+"topics_show.html"))
+	topicsListTemplate = template.Must(template.ParseFiles(layout, templatePath+"topics_list.html"))
+	topicsCreateTemplate = template.Must(template.ParseFiles(layout, templatePath+"topics_create.html"))
+	topicsEditTemplate = template.Must(template.ParseFiles(layout, templatePath+"topics_edit.html"))
+	topicsShowTemplate = template.Must(template.ParseFiles(layout, templatePath+"topics_show.html"))
 }
 
 // TopicHandler is the object for handlers to access sessions and database.

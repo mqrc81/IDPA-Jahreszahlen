@@ -51,7 +51,7 @@ const (
 
 const (
 	// These constants represent the current stage of a quiz, for validation of
-	// correct playing order (0-5).
+	// correct playing order (0-5)
 	preparedPhase1 = iota
 	submittedPhase1
 	preparedPhase2
@@ -91,13 +91,13 @@ func init() {
 		return
 	}
 
-	quizPhase1Template = template.Must(template.ParseFiles(layout, path+"quiz_phase1.html"))
-	quizPhase1ReviewTemplate = template.Must(template.ParseFiles(layout, path+"quiz_phase1_review.html"))
-	quizPhase2Template = template.Must(template.ParseFiles(layout, path+"quiz_phase2.html"))
-	quizPhase2ReviewTemplate = template.Must(template.ParseFiles(layout, path+"quiz_phase2_review.html"))
-	quizPhase3Template = template.Must(template.ParseFiles(layout, path+"quiz_phase3.html"))
-	quizPhase3ReviewTemplate = template.Must(template.ParseFiles(layout, path+"quiz_phase3_review.html"))
-	quizSummaryTemplate = template.Must(template.ParseFiles(layout, path+"quiz_summary.html"))
+	quizPhase1Template = template.Must(template.ParseFiles(layout, templatePath+"quiz_phase1.html"))
+	quizPhase1ReviewTemplate = template.Must(template.ParseFiles(layout, templatePath+"quiz_phase1_review.html"))
+	quizPhase2Template = template.Must(template.ParseFiles(layout, templatePath+"quiz_phase2.html"))
+	quizPhase2ReviewTemplate = template.Must(template.ParseFiles(layout, templatePath+"quiz_phase2_review.html"))
+	quizPhase3Template = template.Must(template.ParseFiles(layout, templatePath+"quiz_phase3.html"))
+	quizPhase3ReviewTemplate = template.Must(template.ParseFiles(layout, templatePath+"quiz_phase3_review.html"))
+	quizSummaryTemplate = template.Must(template.ParseFiles(layout, templatePath+"quiz_summary.html"))
 }
 
 // QuizHandler is the object for handlers to access sessions and database.
