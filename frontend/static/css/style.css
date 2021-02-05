@@ -1,14 +1,10 @@
 body {
-    background: #e7f4f7;
+    scroll-behavior: smooth;
 }
 
 a {
     text-decoration: none !important;
-    color: black;
-}
-
-h5 {
-    padding-bottom: 2%;
+    color: #5a5c69;
 }
 
 label {
@@ -33,18 +29,6 @@ label {
     background-color: #F5F5F5 !important;
     box-shadow: 2px 1px 4px #788f96 !important;
     padding: 2% !important;
-}
-
-.nav-item {
-    text-decoration: none !important;
-    color: black;
-    border-right: solid gray 1px;
-    padding-right: 1%;
-    font-size: 110%;
-}
-
-.col-7 {
-    text-align: right !important;
 }
 
 .x-card {
@@ -132,4 +116,16 @@ label {
 
 #x-table {
     padding-top: 1%;
+}
+
+.black {
+    color: black;
+}
+
+.x-hover-dark:hover {
+    color: #5a5c69 !important;
+}
+
+.x-icon-right {
+    float: right;
 }

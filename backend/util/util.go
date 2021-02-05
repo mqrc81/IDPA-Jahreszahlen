@@ -21,6 +21,38 @@ func Abs(num int) int {
 	return num
 }
 
+// Max returns the biggest value.
+func Max(nums ...int) int {
+	if len(nums) == 0 {
+		return 0
+	}
+
+	max := nums[0]
+	for _, num := range nums {
+		if num > max {
+			max = num
+		}
+	}
+
+	return max
+}
+
+// Min returns the smallest value.
+func Min(nums ...int) int {
+	if len(nums) == 0 {
+		return 0
+	}
+
+	min := nums[0]
+	for _, num := range nums {
+		if num < min {
+			min = num
+		}
+	}
+
+	return min
+}
+
 // Regex checks if a certain regular expression matches a certain string.
 func Regex(str string, regex string) bool {
 

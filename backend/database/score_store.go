@@ -5,6 +5,7 @@ package database
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 
@@ -129,4 +130,39 @@ func (store *ScoreStore) CreateScore(score *x.Score) error {
 	}
 
 	return nil
+}
+
+// CountScores gets amount of scores.
+func (store *ScoreStore) CountScores() (int, error) {
+	var scoresCount int
+
+	query := `
+		SELECT COUNT(score_id) 
+		FROM scores
+		`
+
+	// Execute prepared statement
+	if err := store.Get(&scoresCount, query); err != nil {
+		return 0, fmt.Errorf("error getting number of scores: %w", err)
+	}
+
+	return scoresCount, nil
+}
+
+// CountScoresByDate gets amount of scores in a certain date range.
+func (store *ScoreStore) CountScoresByDate(start time.Time, end time.Time) (int, error) {
+	var scoresCount int
+
+	query := `
+		SELECT COUNT(score_id) 
+		FROM scores
+		WHERE date BETWEEN ? AND ?
+		`
+
+	// Execute prepared statement
+	if err := store.Get(&scoresCount, query, start, end); err != nil {
+		return 0, fmt.Errorf("error getting number of scores by date: %w", err)
+	}
+
+	return scoresCount, nil
 }

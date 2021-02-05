@@ -1,60 +1,180 @@
 {{define "title"}}
-Home - Jahreszahlen
+Home
 {{end}}
 
 {{define "header"}}
-<h1 class="mb-0">Willkommen bei Jahreszahlen!</h1>
+<h1 class="mb-0">Willkommen bei 'Jahreszahlen'!</h1>
 {{end}}
 
 {{define "content"}}
-<h5>Wollen Sie sich auf die nächste Geschichtsprüfung vorbereiten oder sich einen besseren
-    Überblick von allen
-    Ereignissen einer Zeitepoche beschaffen und sich dabei mit Ihren Klassenkameraden messen? – Dann sind Sie hier
-    genau richtig!</h5>
-<hr><br>
-{{range .Topics}}
-<div class="x-card">
-    <div class="card-body">
-        <p>
-            <a href="#" class="d-block card-title text-body mt-1 h5">
-                {{.Name}} ({{.StartYear}} - {{.EndYear}})
-            </a>
-        </p>
-        <p class="card-text">{{.ScoresCount}}x gespielt</p>
-        <a href="/topics/{{.TopicID}}" class="x-button"><i class="fas fa-search"></i> Thema anschauen</a>
+<!-- STATISTICS -->
+<div class="row">
+    <div class="col-md-6 col-xl-3 mb-4">
+        <div class="card shadow border-left-primary py-2">
+            <div class="card-body">
+                <div class="row align-items-center no-gutters">
+                    <div class="col mr-2">
+                        <div class="text-uppercase text-primary font-weight-bold text-xs mb-1">
+                            <span>Benutzer</span>
+                        </div>
+                        <div class="text-dark font-weight-bold h5 mb-0">
+                            <span>{{.UsersCount}}</span>
+                        </div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-user fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3 mb-4">
+        <div class="card shadow border-left-success py-2">
+            <div class="card-body">
+                <div class="row align-items-center no-gutters">
+                    <div class="col mr-2">
+                        <div class="text-uppercase text-success font-weight-bold text-xs mb-1">
+                            <span>Ereignisse</span>
+                        </div>
+                        <div class="text-dark font-weight-bold h5 mb-0">
+                            <span>{{.EventsCount}}</span>
+                        </div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-exclamation-circle fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3 mb-4">
+        <div class="card shadow border-left-info py-2">
+            <div class="card-body">
+                <div class="row align-items-center no-gutters">
+                    <div class="col mr-2">
+                        <div class="text-uppercase text-info font-weight-bold text-xs mb-1">
+                            <span>Gespielte Quizzes (total)</span>
+                        </div>
+                        <div class="text-dark font-weight-bold h5 mb-0">
+                            <span>{{.ScoresCount}}</span>
+                        </div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-play fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3 mb-4">
+        <div class="card shadow border-left-warning py-2">
+            <div class="card-body">
+                <div class="row align-items-center no-gutters">
+                    <div class="col mr-2">
+                        <div class="text-uppercase text-warning font-weight-bold text-xs mb-1">
+                            <span>Gespielte Quizzes (letzten 30 Tage)</span>
+                        </div>
+                        <div class="text-dark font-weight-bold h5 mb-0">
+                            <span>{{.ScoresCountMonthly}}</span>
+                        </div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-play fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-{{end}}
-{{end}}
 
-{{define "sidebar"}}
-<div class="x-card">
-    <div class="card-body">
-        <h5 class="card-title">Themen <i class="far fa-list-alt"></i></h5>
-        <p class="card-text">
-            Schauen Sie alle Themen an, zum Lernen ihrer Jahreszahlen.
-        </p>
-        <a href="/topics" class="x-button">Zu den Themen</a>
+<div class="row">
+
+    <!-- TOPICS -->
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="text-primary font-weight-bold m-0">Top 5 meist-gespielte Themen</h6>
+            </div>
+            {{range $i, $t := .Topics}} <!-- $i = index, $t = topic -->
+            <div class="card shadow py-2">
+                <div class="card-body">
+                    <div class="row align-items-center no-gutters">
+                        <div class="col mr-2">
+                            <div class="text-info font-weight-bold text-xs mb-1">
+                                <span>#{{increment $i}}</span>
+                            </div>
+                            <div class="font-weight-bold">
+                                <span class="h5 font-weight-bold"><a
+                                        href="/topics/{{$t.TopicID}}">{{$t.Name}}</a></span>
+                                <span class="text-sm-left"> ({{$t.StartYear}} - {{$t.EndYear}})</span>
+                            </div>
+                            <div class="ml-3 mt-2 font-weight-bold text-sm-left">
+                                <span>{{$t.EventsCount}} Ereignisse</span>
+                            </div>
+                        </div>
+                        <a href="/topics/{{$t.TopicID}}/quiz/1" class="col-auto">{{$t.ScoresCount}}<i
+                                class="ml-2 fas fa-play text-black-50"></i></a>
+                    </div>
+                </div>
+            </div>
+            {{end}}
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="col-lg-4">
+        {{if not .LoggedIn}}
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 align-items-center no-gutters bg-gradient-dark">
+                <h6 class="text-white font-weight-bold m-0">
+                    Neu hier?
+                    <i class="fas fa-user text-success x-icon-right"></i></h6>
+            </div>
+            <div class="card-body">
+                <p>Sind Sie neu hier?</p>
+                <p>Dann erstellen Sie in wenigen Klicks einen neuen Account. So können Sie von allen Features
+                    dieser Applikation profitieren!</p>
+                <a href="/users/register" class="mt-4 btn btn-outline-light btn-success btn-block x-hover-dark
+                text-white font-weight-bold btn-user">Registrieren</a>
+            </div>
+        </div>
+        {{end}}
+        {{if .User.Admin}}
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 align-items-center no-gutters bg-gradient-dark">
+                <h6 class="text-white font-weight-bold m-0">
+                    Benutzer verwalten
+                    <i class="fas fa-user text-danger x-icon-right"></i></h6>
+            </div>
+            <div class="card-body">
+                <p>Als Admin können Sie hier zu einer Liste aller Benutzer gelangen. </p>
+                <p>Dort haben Sie die Möglichkeit, Benutzer mit unangebrachten Namen zu löschen,
+                    oder jemanden zum Admin zu befördern.</p>
+                <a href="/users" class="mt-4 btn btn-outline-light btn-danger btn-block x-hover-dark
+                text-white font-weight-bold btn-user">Zu den Benutzern</a>
+            </div>
+        </div>
+        {{end}}
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 align-items-center no-gutters bg-gradient-dark">
+                <h6 class="text-white font-weight-bold m-0">
+                    Themen & Quizzes
+                    <i class="fas fa-book text-info x-icon-right"></i></h6>
+            </div>
+            <div class="card-body">
+                Jedes Thema besteht aus mehreren Ereignissen. Diese werden dann in einem Quiz, welches aus 3 Phasen
+                besteht, abgefragt und getestet. Am Ende des Quizzes, werden Ihre Leistungen mit jenen anderer
+                verglichen.</p>
+                <a href="/topics" class="mt-4 btn btn-outline-light btn-info btn-block x-hover-dark
+                text-white font-weight-bold btn-user">Zu den Themen</a>
+            </div>
+        </div>
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 align-items-center no-gutters bg-gradient-dark">
+                <h6 class="text-white font-weight-bold m-0">
+                    Spielresultate im Vergleich
+                    <i class="fas fa-trophy text-info x-icon-right"></i></h6>
+            </div>
+            <div class="card-body">
+                Auf dem Leaderboard werden die Spielresultate aufgelistet, mitsamt Benutzer und Thema.
+                Suchen/filtern Sie dort nach ihrem Namen, um Ihre Resultate zu betrachten.</p>
+                <a href="/topics" class="mt-4 btn btn-outline-light btn-info btn-block x-hover-dark
+                text-white font-weight-bold btn-user">Zum Leaderboard</a>
+            </div>
+        </div>
     </div>
 </div>
-<div class="x-card">
-    <div class="card-body">
-        <h5 class="card-title">Leaderboard <i class="fas fa-award"></i></h5>
-        <p class="card-text">
-            Schauen Sie das Leaderboard mit allen Spielresultaten an und filtern Sie nach Benutzer und Thema.
-        </p>
-        <a href="/scores" class="x-button">Zum Leaderboard</a>
-    </div>
-</div>
-{{if .User.Admin}}
-<div class="x-card">
-    <div class="card-body">
-        <h5 class="card-title">Alle Benutzer <i class="fas fa-users"></i></h5>
-        <p class="card-text">
-            Sehen Sie alle Benutzer, welche sich bisher registriert haben.
-        </p>
-        <a href="/users/" class="x-button">Zu den Benutzern</a>
-    </div>
-</div>
-{{end}}
+
 {{end}}

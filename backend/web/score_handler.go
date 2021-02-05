@@ -35,7 +35,6 @@ func init() {
 	}
 
 	scoresListTemplate = template.Must(template.ParseFiles(layout, templatePath+"scores_list.html"))
-
 }
 
 // ScoreHandler is the object for handlers to access sessions and database.

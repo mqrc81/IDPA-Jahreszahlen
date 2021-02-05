@@ -152,7 +152,7 @@ func (h *QuizHandler) Phase1() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
-			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
@@ -287,7 +287,7 @@ func (h *QuizHandler) Phase1Review() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
-			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
@@ -399,7 +399,7 @@ func (h *QuizHandler) Phase2() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
-			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
@@ -530,7 +530,7 @@ func (h *QuizHandler) Phase2Review() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
-			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
@@ -643,7 +643,7 @@ func (h *QuizHandler) Phase3() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
-			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
@@ -799,7 +799,7 @@ func (h *QuizHandler) Phase3Review() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
-			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
 
@@ -1050,7 +1050,7 @@ func createPhase3Questions(events []x.Event) []phase3Question {
 
 	// Sort array of events by date, in order to add 'order' value to questions
 	sort.Slice(events, func(n1, n2 int) bool {
-		return events[n1].Date.Unix() < events[n2].Date.Unix()
+		return events[n1].Date.Before(events[n2].Date)
 	})
 
 	// Loop through all events and turn them into questions

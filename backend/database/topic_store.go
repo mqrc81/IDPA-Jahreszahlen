@@ -78,7 +78,7 @@ func (store *TopicStore) CountTopics() (int, error) {
 	var topicCount int
 
 	query := `
-		SELECT COUNT(*) 
+		SELECT COUNT(topic_id) 
 		FROM topics
 		`
 

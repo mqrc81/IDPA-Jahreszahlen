@@ -98,6 +98,8 @@ type ScoreStore interface {
 	GetScoresByTopic(topicID int) ([]Score, error)
 	GetScoresByUser(userID int) ([]Score, error)
 	GetScoresByTopicAndUser(topicID int, userID int) ([]Score, error)
+	CountScores() (int, error)
+	CountScoresByDate(start time.Time, end time.Time) (int, error)
 	CreateScore(score *Score) error
 }
 

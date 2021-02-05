@@ -11,7 +11,9 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"sort"
 	"strings"
+	"time"
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi"
@@ -19,6 +21,7 @@ import (
 	"github.com/gorilla/csrf"
 
 	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
+	"github.com/mqrc81/IDPA-Jahreszahlen/backend/util"
 )
 
 const (
@@ -51,7 +54,13 @@ func init() {
 		return
 	}
 
-	homeTemplate = template.Must(template.ParseFiles(layout, templatePath+"home.html"))
+	homeTemplate = template.Must(template.New("layout.html").
+		Funcs(template.FuncMap{ // Add custom HTML-template-function to increment a number
+			"increment": func(num int) int {
+				return num + 1
+			},
+		}).
+		ParseFiles(layout, templatePath+"home.html"))
 	http404Template = template.Must(template.ParseFiles(layout, templatePath+"http_not_found.html"))
 }
 
@@ -175,10 +184,15 @@ func (h *Handler) Home() http.HandlerFunc {
 	type data struct {
 		SessionData
 
-		Topics []x.Topic
+		Topics             []x.Topic
+		UsersCount         int
+		EventsCount        int
+		ScoresCount        int
+		ScoresCountMonthly int
 	}
 
 	return func(res http.ResponseWriter, req *http.Request) {
+
 		// Execute SQL statement to get topics
 		topics, err := h.store.GetTopics()
 		if err != nil {
@@ -186,10 +200,49 @@ func (h *Handler) Home() http.HandlerFunc {
 			return
 		}
 
+		// Sort topics by amount of scores in descending order
+		sort.Slice(topics, func(n1, n2 int) bool {
+			return topics[n1].ScoresCount > topics[n2].ScoresCount
+		})
+		// Only use the 5 topics with the highest amount of scores
+		topics = topics[:util.Min(len(topics), 5)]
+
+		// Execute SQL statement to get amount of users
+		usersCount, err := h.store.CountUsers()
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Execute SQL statement to get amount of events
+		eventsCount, err := h.store.CountEvents()
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Execute SQL statement to get amount of scores
+		scoresCount, err := h.store.CountScores()
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Execute SQL statement to get amount of scores
+		scoresCountMonthly, err := h.store.CountScoresByDate(time.Now().AddDate(0, -1, 0), time.Now())
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		// Execute HTML-templates with data
 		if err = homeTemplate.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
-			Topics:      topics,
+			SessionData:        GetSessionData(h.sessions, req.Context()),
+			Topics:             topics,
+			UsersCount:         usersCount,
+			EventsCount:        eventsCount,
+			ScoresCount:        scoresCount,
+			ScoresCountMonthly: scoresCountMonthly,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
