@@ -3,15 +3,15 @@
 {{end}}
 
 {{define "header"}}
-<h1 class="mb-0">Seite nicht gefunden</h1>
 {{end}}
 
 {{define "content"}}
-<button class="x-button">
-    <a href="/"><i class="fas fa-home"></i> Home</a>
-</button>
-{{end}}
-
-{{define "sidebar"}}
-
+<div class="text-center mt-5">
+    <div class="error mx-auto" data-text="404">
+        <p class="m-0">404</p>
+    </div>
+    <p class="text-dark mb-5 lead">Seite nicht gefunden</p>
+    <p class="text-black-50 mb-0">Es sieht so aus, als wäre ein Fehler aufgetreten...</p>
+    <a href="/"> ← Zurück zu Home</a>
+</div>
 {{end}}
