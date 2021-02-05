@@ -150,16 +150,25 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 			Email:    form.Email,
 			Password: string(password),
 		}
+
 		// Execute SQL statement to create a user
 		if err = h.store.CreateUser(&user); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// Add flash message
+		// Execute SQL statement to get user
+		if user, err = h.store.GetUserByUsername(form.Username); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Store user ID in session; this logs the user in
+		h.sessions.Put(req.Context(), "user_id", user.UserID)
+
+		// Add flash messages
 		h.sessions.Put(req.Context(), "flash_success",
-			"Willkommen "+form.Username+"! Ihre Registrierung war erfolgreich. Loggen Sie sich bitte ein.\n"+
-				"Dazu wurde eine Bestätigungs-Email an "+form.Email+" versandt, um Ihre Email zu verifizieren.")
+			"Willkommen "+form.Username+"! Ihre Registrierung war erfolgreich. Sie sind nun eingeloggt.")
 
 		// New token
 		token := x.Token{
@@ -167,8 +176,17 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 			UserID:  user.UserID,
 		}
 
+		// Execute SQL statement to create new token
+		if err = h.store.CreateToken(&token); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		// Send email to verify a user's email
 		EmailVerificationEmail(user, token.TokenID).Send()
+		h.sessions.Put(req.Context(), "flash_info",
+			"Eine Bestätigungs-Email wurde an "+form.Email+" versandt. Bitte tätigen Sie diesen Link, "+
+				"um Ihre Email zu verifizieren.")
 
 		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)
@@ -256,11 +274,16 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 			return
 		}
 
-		// Store user ID in session
+		// Store user ID in session; this logs the user in
 		h.sessions.Put(req.Context(), "user_id", user.UserID)
 
-		// Add flash message to session
+		// Add flash messages to session
 		h.sessions.Put(req.Context(), "flash_success", "Hallo "+user.Username+"! Sie sind nun eingeloggt.")
+		if !user.Verified {
+			h.sessions.Put(req.Context(), "flash_info", "Sie haben Ihre Email noch nicht verifiziert. "+
+				"Ohne verifizierte Email können Sie im schlimmsten Fall Ihr Passwort nicht via Email zurücksetzen. "+
+				"Auf Ihrem Profil können Sie eine erneute Bestätigungs-Email versenden.")
+		}
 
 		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)
@@ -287,7 +310,7 @@ func (h *UserHandler) Logout() http.HandlerFunc {
 		h.sessions.Remove(req.Context(), "user_id")
 
 		// Add flash message to session
-		h.sessions.Put(req.Context(), "flash_success", "Sie wurden erfolgreich ausgeloggt.")
+		h.sessions.Put(req.Context(), "flash_info", "Sie wurden erfolgreich ausgeloggt.")
 
 		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)
@@ -496,7 +519,6 @@ func (h *UserHandler) ResendVerifyEmail() http.HandlerFunc {
 		token := x.Token{
 			TokenID: util.GenerateString(TokenLength),
 			UserID:  user.UserID,
-			Expiry:  time.Now().Add(time.Hour),
 		}
 
 		// Execute SQL statement to create a token
@@ -506,7 +528,7 @@ func (h *UserHandler) ResendVerifyEmail() http.HandlerFunc {
 		}
 
 		// Add flash message to session
-		h.sessions.Put(req.Context(), "flash_success", "Eine Bestätigungs-Email wurde an "+user.Email+" versandt.")
+		h.sessions.Put(req.Context(), "flash_info", "Eine Bestätigungs-Email wurde an "+user.Email+" versandt.")
 
 		// Send email to verify a user's email
 		EmailVerificationEmail(user, token.TokenID).Send()
