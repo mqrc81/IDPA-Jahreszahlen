@@ -94,8 +94,8 @@ func (store *TopicStore) CountTopics() (int, error) {
 func (store *TopicStore) CreateTopic(topic *x.Topic) error {
 
 	query := `
-		INSERT INTO topics(name, start_year, end_year, description) 
-		VALUES (?, ?, ?, ?)
+		INSERT INTO topics(name, start_year, end_year, description, image) 
+		VALUES (?, ?, ?, ?, ?)
 		`
 
 	// Execute prepared statement
@@ -104,6 +104,7 @@ func (store *TopicStore) CreateTopic(topic *x.Topic) error {
 		topic.StartYear,
 		topic.EndYear,
 		topic.Description,
+		topic.Image,
 	); err != nil {
 		return fmt.Errorf("error creating topic: %w", err)
 	}
@@ -119,7 +120,8 @@ func (store *TopicStore) UpdateTopic(topic *x.Topic) error {
 		SET name = ?, 
 		    start_year = ?, 
 		    end_year = ?, 
-		    description = ? 
+		    description = ?,
+		    image = ?
 		WHERE topic_id = ?
 		`
 
@@ -130,6 +132,7 @@ func (store *TopicStore) UpdateTopic(topic *x.Topic) error {
 		topic.EndYear,
 		topic.Description,
 		topic.TopicID,
+		topic.Image,
 	); err != nil {
 		return fmt.Errorf("error updating topic: %w", err)
 	}

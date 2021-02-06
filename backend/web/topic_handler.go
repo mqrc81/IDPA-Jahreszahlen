@@ -145,6 +145,7 @@ func (h *TopicHandler) CreateStore() http.HandlerFunc {
 			StartYear:   form.StartYear,
 			EndYear:     form.EndYear,
 			Description: form.Description,
+			Image:       form.Image,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -236,6 +237,7 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 				StartYear:   topic.StartYear,
 				EndYear:     topic.EndYear,
 				Description: topic.Description,
+				Image:       topic.Image,
 			}
 		}
 
@@ -268,6 +270,7 @@ func (h *TopicHandler) EditStore() http.HandlerFunc {
 			StartYear:   startYear,
 			EndYear:     endYear,
 			Description: req.FormValue("description"),
+			Image:       req.FormValue("image"),
 		}
 
 		// Validate form
@@ -288,6 +291,7 @@ func (h *TopicHandler) EditStore() http.HandlerFunc {
 			StartYear:   form.StartYear,
 			EndYear:     form.EndYear,
 			Description: form.Description,
+			Image:       form.Image,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return

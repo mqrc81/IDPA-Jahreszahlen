@@ -16,6 +16,7 @@ type Topic struct {
 	StartYear   int     `db:"start_year"`
 	EndYear     int     `db:"end_year"`
 	Description string  `db:"description"`
+	Image       string  `db:"image"`
 	Events      []Event `db:"events"`
 	ScoresCount int     `db:"scores_count"`
 	EventsCount int     `db:"events_count"`

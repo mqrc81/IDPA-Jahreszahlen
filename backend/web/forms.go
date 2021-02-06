@@ -9,6 +9,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/util"
@@ -45,6 +46,7 @@ type TopicForm struct {
 	StartYear   int
 	EndYear     int
 	Description string
+	Image       string
 
 	Errors FormErrors
 }
@@ -75,8 +77,21 @@ func (form *TopicForm) Validate() bool {
 	}
 
 	// Validate description
-	if len(form.Description) > 500 {
-		form.Errors["Description"] = "Beschreibung darf 500 Buchstaben nicht überschreiten."
+	if len(form.Description) > 1000 {
+		form.Errors["Description"] = "Beschreibung darf 1000 Buchstaben nicht überschreiten."
+	}
+
+	// Validate image
+	if form.Image == "" {
+		form.Errors["Image"] = "URL des Fotos darf nicht leer sein."
+	} else if len(form.Image) > 5000 {
+		form.Errors["Image"] = "URL des Fotos darf 5000 Buchstaben nicht überschreiten."
+	} else if !util.Regex(form.Image, "(?i)^(https?://|www\\.).*$") {
+		form.Errors["Image"] = "URL des Fotos ist kein gültiger Link."
+	} else if !util.Regex(form.Image, "(?i)^.*\\.(png|jpe?g|gif)$") {
+		form.Errors["Image"] = "URL des Fotos muss auf '.PNG', '.JPG', '.JPEG' oder '.GIF' enden."
+	} else if strings.Contains(form.Image, " ") {
+		form.Errors["Image"] = "URL des Fotos ist ungültig."
 	}
 
 	return len(form.Errors) == 0

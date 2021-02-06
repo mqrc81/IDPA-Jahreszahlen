@@ -51,8 +51,7 @@ func (h *EventHandler) List() http.HandlerFunc {
 		SessionData
 		CSRF template.HTML
 
-		Topic  x.Topic
-		Events []x.Event
+		Topic x.Topic
 	}
 
 	return func(res http.ResponseWriter, req *http.Request) {

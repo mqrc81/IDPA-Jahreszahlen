@@ -35,7 +35,7 @@ const (
 	profileURL  = "/users/profile"
 	loginURL    = "/users/login"
 	registerURL = "/users/login"
-	usersURL    = "/users/list"
+	usersURL    = "/users"
 )
 
 var (
@@ -78,6 +78,7 @@ var (
 		"registrieren": registerURL,
 
 		"user":     usersURL,
+		"users":    usersURL,
 		"benutzer": usersURL,
 	}
 )
@@ -298,7 +299,6 @@ func (h *Handler) Search() http.HandlerFunc {
 		// Retrieve search result from form
 		searchQuery := req.URL.Query().Get("search")
 		searchQueries := strings.Split(strings.ToLower(searchQuery), " ")
-		fmt.Println("search", searchQuery, searchQueries)
 
 		// Loop through possible search results to get redirected
 		topics, err := h.store.GetTopics()
@@ -310,14 +310,17 @@ func (h *Handler) Search() http.HandlerFunc {
 		// Add topics to search results
 		searchResults := searchResultsHandlers
 		for _, topic := range topics {
-			searchResults[strings.ToLower(topic.Name)] = "/topics/" + strconv.Itoa(topic.TopicID)
+			topicSplit := strings.Split(strings.ToLower(topic.Name), " ")
+			for _, t := range topicSplit {
+				if t != "der" && t != "die" && t != "das" {
+					searchResults[t] = "/topics/" + strconv.Itoa(topic.TopicID)
+				}
+			}
 		}
-		fmt.Println(searchResults)
 
 		// Loop through possible search results
 		for _, search := range searchQueries {
 			if searchResults[search] != "" { // redirect in case of match
-				fmt.Println("found", searchResults[search])
 				http.Redirect(res, req, searchResults[search], http.StatusFound)
 				return
 			}

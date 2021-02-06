@@ -113,6 +113,10 @@ label {
     color: #e74a3b !important;
 }
 
+.x-hover-yellow:hover {
+    color: #f6c23e !important;
+}
+
 .x-icon-right {
     float: right;
 }

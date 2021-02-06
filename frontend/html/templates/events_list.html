@@ -1,53 +1,67 @@
 {{define "title"}}
-Ereignisse
+{{.Topic.Name}}
 {{end}}
 
 {{define "header"}}
-<h1 class="mb-0">Ereignisse '{{.TopicName}}'</h1>
+<h1 class="mb-0">Ereignisse '{{.Topic.Name}}'</h1>
 {{end}}
 
 {{define "content"}}
-{{range .Topic.Events}}
-<div class="x-card">
-    <div class="card-body">
-        <div class="row">
-            <div class="col-8">
-                <p>
-                    <a href="/topics/{{.TopicID}}/events/{{.EventID}}" class="d-block card-title text-body mt-1
-                            h5">
-                        {{.Name}} ({{.Year}})
-                    </a>
-                </p>
+{{$admin := .User.Admin}}
+{{$csrf := .CSRF}}
+<div class="row">
+    <div class="{{if .User.Admin}}col-8{{else}}col-12{{end}}">
+        {{range .Topic.Events}}
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <div class="text-primary h5 mb-0 mt-1 font-weight-bold ">
+                    <span class="mr-2">{{.Name}}</span>
+                </div>
             </div>
-            <div id="editDelete" class="col-4">
-                <form class="formbutton1" action="/topics/{{.TopicID}}/events/{{.EventID}}/edit" method="GET">
-                    <button type="submit" class="edit-icon">
-                        <i class="far fa-edit"></i>
-                    </button>
-                </form>
-                <form class="formbutton1" action="/topics/{{.TopicID}}/events/{{.EventID}}/delete" method="POST">
-                    {{$.CSRF}}
-                    <button type="submit" class="delete-icon">
-                        <i class="far fa-trash-alt"></i>
-                    </button>
-                </form>
+            <div class="card-body">
+                <div class="row align-items-center no-gutters">
+                    <div class="col mr-2">
+                        <span class="text-sm-left text-gray-600 font-weight-bold h5">{{.Year}}</span>
+                    </div>
+                    <div class="col-auto ml-4 mr-1">
+                        {{if $admin}}
+                        <form action="/topics/{{.TopicID}}/events/{{.EventID}}/delete" method="POST">
+                            {{$csrf}}
+                            <a href="/topics/{{.TopicID}}/events/{{.EventID}}/edit" title="Ereignis editieren">
+                                <i class="fas fa-edit x-hover-red fa-2x text-gray-500 mr-3"></i>
+                            </a>
+                            <a onclick="$(this).closest('form').submit();" title="Ereignis löschen"><i
+                                    class="fas fa-trash-alt x-hover-red fa-2x text-gray-500"></i></a>
+                        </form>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{end}}
+    </div>
+    {{if .User.Admin}}
+    <div class="col-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 align-items-center no-gutters bg-gradient-dark">
+                <h6 class="text-white font-weight-bold m-0">
+                    Neues Ereignis
+                    <i class="fas fa-plus text-danger x-icon-right"></i>
+                </h6>
+            </div>
+            <div class="card-body">
+                <p>Als Admin haben Sie hier die Möglichkeit, ein neues Ereignis für das Thema '{{.Topic.Name}}' zu
+                    erstellen,
+                    welches ab sofort in den Quizzes abgefragt wird.</p>
+                <p class="text-center">
+                    <a href="/topics/{{.Topic.TopicID}}/events/new"><i
+                            class="fas fa-plus-circle text-gray-200 fa-6x"></i></a>
+                </p>
+                <a href="/topics/{{.Topic.TopicID}}/events/new" class="mt-4 btn btn-outline-light btn-danger btn-block x-hover-dark
+                text-white font-weight-bold btn-user">Neues Ereignis erstellen</a>
             </div>
         </div>
     </div>
+    {{end}}
 </div>
-{{end}}
-{{end}}
-
-{{define "sidebar"}}
-{{if .User.Admin}}
-<div class="x-card">
-    <div class="card-body">
-        <h5 class="card-title">Neues Ereignis erstellen</h5>
-        <p class="card-text">
-            Erstellen Sie ein neues Ereignis.
-        </p>
-        <a href="/topics/{{.Topic.TopicID}}/events/new" class="x-button">Neues Ereignis</a>
-    </div>
-</div>
-{{end}}
 {{end}}

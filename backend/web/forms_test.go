@@ -25,6 +25,7 @@ func TestValidateTopicForm(t *testing.T) {
 		startYear   int
 		endYear     int
 		description string
+		image       string
 	}
 
 	// Declare test cases
@@ -40,6 +41,7 @@ func TestValidateTopicForm(t *testing.T) {
 				startYear:   1800,
 				endYear:     1900,
 				description: "",
+				image:       "https://image.png",
 			},
 			want: true,
 		},
@@ -49,6 +51,7 @@ func TestValidateTopicForm(t *testing.T) {
 				startYear:   1800,
 				endYear:     1900,
 				description: "",
+				image:       "https://image.png",
 			},
 			want: false,
 		},
@@ -59,6 +62,7 @@ func TestValidateTopicForm(t *testing.T) {
 				startYear:   1800,
 				endYear:     1900,
 				description: "",
+				image:       "https://image.png",
 			},
 			want: false,
 		},
@@ -68,6 +72,7 @@ func TestValidateTopicForm(t *testing.T) {
 				name:        "Topic 1",
 				endYear:     1900,
 				description: "",
+				image:       "https://image.png",
 			},
 			want: false,
 		},
@@ -77,6 +82,7 @@ func TestValidateTopicForm(t *testing.T) {
 				name:        "Topic 1",
 				startYear:   1800,
 				description: "",
+				image:       "https://image.png",
 			},
 			want: false,
 		},
@@ -87,6 +93,7 @@ func TestValidateTopicForm(t *testing.T) {
 				startYear:   1900,
 				endYear:     1800,
 				description: "",
+				image:       "https://image.png",
 			},
 			want: false,
 		},
@@ -97,6 +104,7 @@ func TestValidateTopicForm(t *testing.T) {
 				startYear:   1900,
 				endYear:     time.Now().Year() + 1,
 				description: "",
+				image:       "https://image.png",
 			},
 			want: false,
 		},
@@ -111,7 +119,173 @@ func TestValidateTopicForm(t *testing.T) {
 					"ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla " +
 					"consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. " +
 					"In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede " +
-					"mollis pretium. Integer tincidunt. Cras dapibus.",
+					"mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean " +
+					"vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. " +
+					"Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut " +
+					"metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. " +
+					"Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget " +
+					"condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam.",
+				image: "https://image.png",
+			},
+			want: false,
+		},
+		{
+			name: "#9 OK (IMAGE .PNG)",
+			form: input{
+				name:        "Topic 1",
+				startYear:   1800,
+				endYear:     1900,
+				description: "",
+				image:       "https://image.PNG",
+			},
+			want: true,
+		},
+		{
+			name: "#10 OK (IMAGE .JPG)",
+			form: input{
+				name:        "Topic 1",
+				startYear:   1800,
+				endYear:     1900,
+				description: "",
+				image:       "https://image.jpg",
+			},
+			want: true,
+		}, {
+			name: "#11 OK (IMAGE .JPEG)",
+			form: input{
+				name:        "Topic 1",
+				startYear:   1800,
+				endYear:     1900,
+				description: "",
+				image:       "https://image.jpeg",
+			},
+			want: true,
+		},
+		{
+			name: "#12 OK (IMAGE .GIF)",
+			form: input{
+				name:        "Topic 1",
+				startYear:   1800,
+				endYear:     1900,
+				description: "",
+				image:       "https://image.gif",
+			},
+			want: true,
+		},
+		{
+			name: "#13 OK (IMAGE HTTP://)",
+			form: input{
+				name:        "Topic 1",
+				startYear:   1800,
+				endYear:     1900,
+				description: "",
+				image:       "http://image.png",
+			},
+			want: true,
+		},
+		{
+			name: "#14 OK (IMAGE HTTPS://)",
+			form: input{
+				name:        "Topic 1",
+				startYear:   1800,
+				endYear:     1900,
+				description: "",
+				image:       "https://image.png",
+			},
+			want: true,
+		},
+		{
+			name: "#15 OK (IMAGE WWW.)",
+			form: input{
+				name:        "Topic 1",
+				startYear:   1800,
+				endYear:     1900,
+				description: "",
+				image:       "www.image.png",
+			},
+			want: true,
+		},
+		{
+			name: "#16 IMAGE CONTAINS SPACE",
+			form: input{
+				name:        "Topic 1",
+				startYear:   1800,
+				endYear:     1900,
+				description: "",
+				image:       "http://ima ge.png",
+			},
+			want: false,
+		},
+		{
+			name: "#17 IMAGE MISSING",
+			form: input{
+				name:        "Topic 1",
+				startYear:   1800,
+				endYear:     1900,
+				description: "",
+			},
+			want: false,
+		},
+		{
+			name: "#18 IMAGE TOO LONG",
+			form: input{
+				name:        "Topic 1",
+				startYear:   1800,
+				endYear:     1900,
+				description: "",
+				image: "https://Loremipsumdolorsitamet,consectetueradipiscingelit.Aeneancommodoligulaegetdolor." +
+					"Aeneanmassa.Cumsociisnatoquepenatibusetmagnisdisparturientmontes,nasceturridiculusmus.Donecquamf" +
+					"elis,ultriciesnec,pellentesqueeu,pretiumquis,sem.Nullaconsequatmassaquisenim.Donecpedejusto,frin" +
+					"gillavel,aliquetnec,vulputateeget,arcu.Inenimjusto,rhoncusut,imperdieta,venenatisvitae,justo.Nul" +
+					"lamdictumfeliseupedemollispretium.Integertincidunt.Crasdapibus.Vivamuselementumsempernisi.Aenean" +
+					"vulputateeleifendtellus.Aeneanleoligula,porttitoreu,consequatvitae,eleifendac,enim.Aliquamlorema" +
+					"nte,dapibusin,viverraquis,feugiata,tellus.Phasellusviverranullautmetusvariuslaoreet.Quisquerutru" +
+					"m.Aeneanimperdiet.Etiamultriciesnisivelaugue.Curabiturullamcorperultriciesnisi.Namegetdui.Etiamr" +
+					"honcus.Maecenastempus,tellusegetcondimentumrhoncus,semquamsemperlibero,sitametadipiscingsemneque" +
+					"sedipsum.Namquamnunc,blanditvel,luctuspulvinar,hendreritid,lorem.Maecenasnecodioetantetinciduntt" +
+					"empus.Donecvitaesapienutliberovenenatisfaucibus.Nullamquisante.Etiamsitametorciegeterosfaucibust" +
+					"incidunt.Duisleo.Sedfringillamaurissitametnibh.Donecsodalessagittismagna.Sedconsequat,leoegetbib" +
+					"endumsodales,auguevelitcursusnunc,quisgravidamagnamialibero.Fuscevulputateeleifendsapien.Vestibu" +
+					"lumpurusquam,scelerisqueut,mollissed,nonummyid,metus.Nullamaccumsanloremindui.Crasultriciesmieut" +
+					"urpishendreritfringilla.VestibulumanteipsumprimisinfaucibusorciluctusetultricesposuerecubiliaCur" +
+					"ae;Inacduiquismiconsectetuerlacinia.Nampretiumturpisetarcu.Duisarcutortor,suscipiteget,imperdiet" +
+					"nec,imperdietiaculis,ipsum.Sedaliquamultricesmauris.Integerantearcu,accumsana,consectetuereget,p" +
+					"osuereut,mauris.Praesentadipiscing.Phasellusullamcorperipsumrutrumnunc.Nuncnonummymetus.Vestibul" +
+					"umvolutpatpretiumlibero.Crasiddui.Aeneanuterosetnislsagittisvestibulum.Nullamnullaeros,ultricies" +
+					"sitamet,nonummyid,imperdietfeugiat,pede.Sedlectus.Donecmollishendreritrisus.Phasellusnecseminjus" +
+					"topellentesquefacilisis.Etiamimperdietimperdietorci.Nuncnecneque.Phasellusleodolor,tempusnon,auc" +
+					"toret,hendreritquis,nisi.Curabiturligulasapien,tinciduntnon,euismodvitae,posuereimperdiet,leo.Ma" +
+					"ecenasmalesuada.Praesentcongueeratatmassa.Sedcursusturpisvitaetortor.Donecposuerevulputatearcu.P" +
+					"hasellusaccumsancursusvelit.Vestibulumanteipsumprimisinfaucibusorciluctusetultricesposuerecubili" +
+					"aCurae;Sedaliquam,nisiquisporttitorcongue,eliterateuismodorci,acplaceratdolorlectusquisorci.Phas" +
+					"ellusconsectetuervestibulumelit.Aeneantellusmetus,bibendumsed,posuereac,mattisnon,nunc.Vestibulu" +
+					"mfringillapedesitametaugue.Inturpis.Pellentesqueposuere.Praesentturpis.Aeneanposuere,tortorsedcu" +
+					"rsusfeugiat,nuncaugueblanditnunc,eusollicitudinurnadolorsagittislacus.Donecelitlibero,sodalesnec" +
+					",volutpata,suscipitnon,turpis.Nullamsagittis.Suspendissepulvinar,augueacvenenatiscondimentum,sem" +
+					"liberovolutpatnibh,necpellentesquevelitpedequisnunc.Vestibulumanteipsumprimisinfaucibusorciluctu" +
+					"setultricesposuerecubiliaCurae;Fusceidpurus.Utvariustinciduntlibero.Phasellusdolor.Maecenasvesti" +
+					"bulummollisdiam.Pellentesqueutneque.Pellentesquehabitantmorbitristiquesenectusetnetusetmalesuada" +
+					"famesacturpisegestas.Induimagna,posuereeget,vestibulumet,temporauctor,justo.Inacfelisquistortorm" +
+					"alesuadapretium.Pellentesqueauctornequenecurna.Proinsapienipsum,portaa,auctorquis,euismodut,mi.A" +
+					"eneanviverrarhoncuspede.Pellentesquehabitantmorbitristiquesenectusetnetusetmalesuadafamesacturpi" +
+					"segestas.Utnonenimeleifendfelispretiumfeugiat.Vivamusquismi.Phasellusaest.Phasellusmagna.Inhacha" +
+					"bitasseplateadictumst.Curabituratlacusacvelitornarelobortis.Curabiturafelisinnuncfringillatristi" +
+					"que.Morbimattisullamcorpervelit.Phasellusgravidasempernisi.Nullamvelsem.Pellentesqueliberotortor" +
+					",tinciduntet,tincidunteget,sempernec,quam.Sedhendrerit.Morbiacfelis.Nuncegestas,augueatpellentes" +
+					"quelaoreet,feliserosvehiculaleo,atmalesuadavelitleoquispede.Donecinterdum,metusethendreritalique" +
+					"t,dolordiamsagittisligula,egetegestasliberoturpisvelmi.Nuncnulla.Fuscerisusnisl,viverraet,tempor" +
+					"et,pretiumin,sapien.Donecvenenatisvulputatelorem.Morbinecmetus.Phasellusblanditleoutodio.Maecena" +
+					"sullamcorper,duietplaceratfeugiat,erospedevariusnisi,condimentumviverrafelisnuncetlorem.Sedmagna" +
+					"purus,fermentumeu,tincidunteu,variusut,felis.Inauctorlobortislacus.Quisqueliberometus,condimentu" +
+					"mnec,tempora,commodomollis,magna.Vestibulumullamcorpermaurisatligula.Fuscefermentum.Nullamcursus" +
+					"laciniaerat.Praesentblanditlaoreetnibh.Fusceconvallismetusidfelisluctusadipiscing.Pellentesqueeg" +
+					"estas,nequesitametconvallispulvinar,justonullaeleifendaugue,acauctororcileononest.Quisqueidmi.Ut" +
+					"tincidunttincidunterat.Etiamfeugiatloremnonmetus.Vestibulumdapibusnuncacaugue.Curabiturvestibulu" +
+					"maliquamleo.Praesentegestasnequeeuenim.Inhachabitasseplateadictumst.Fusceaquam.Etiamutpurusmatti" +
+					"smaurissodalelaciniaerat.Praesentblanditlaoreetnibh.Fusceconvallismetusidfelisluctusadipiscing.P" +
+					"ellentesqueegestas,nequesitametconvallispulvinar,justonullaeleifendaugue,acauctororcileononest.Q" +
+					"uisqueidmi.Uttincidunttincidunterat.Etiamfeugiatloremnonmetus.Vestibulumdapibusnuncacaugue.Curab" +
+					"iturvestibulumaliquamleo.png",
 			},
 			want: false,
 		},
@@ -126,6 +300,7 @@ func TestValidateTopicForm(t *testing.T) {
 				StartYear:   test.form.startYear,
 				EndYear:     test.form.endYear,
 				Description: test.form.description,
+				Image:       test.form.image,
 				Errors:      FormErrors{},
 			}
 
