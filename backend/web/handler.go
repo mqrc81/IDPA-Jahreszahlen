@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -28,6 +29,13 @@ const (
 	staticPath   = "frontend/static"
 	templatePath = "frontend/html/templates/"
 	layout       = "frontend/html/layout.html"
+
+	topicsURL   = "/topics"
+	scoresURL   = "/scores"
+	profileURL  = "/users/profile"
+	loginURL    = "/users/login"
+	registerURL = "/users/login"
+	usersURL    = "/users/list"
 )
 
 var (
@@ -37,6 +45,41 @@ var (
 	// Parsed HTML-templates to be executed in their respective HTTP-handler
 	// functions when needed
 	homeTemplate, http404Template *template.Template
+
+	// Possible search result matches from the navigation bar search input
+	searchResultsHandlers = map[string]string{
+		"quiz":       topicsURL,
+		"thema":      topicsURL,
+		"themen":     topicsURL,
+		"ereignisse": topicsURL,
+		"spielen":    topicsURL,
+		"ereignis":   topicsURL,
+
+		"leaderboard": scoresURL,
+		"ranking":     scoresURL,
+		"tabelle":     scoresURL,
+		"resultat":    scoresURL,
+		"resultate":   scoresURL,
+		"punkte":      scoresURL,
+
+		"account":      profileURL,
+		"konto":        profileURL,
+		"profil":       profileURL,
+		"passwort":     profileURL,
+		"mail":         profileURL,
+		"email":        profileURL,
+		"username":     profileURL,
+		"benutzername": profileURL,
+
+		"login":     loginURL,
+		"einloggen": loginURL,
+
+		"register":     registerURL,
+		"registrieren": registerURL,
+
+		"user":     usersURL,
+		"benutzer": usersURL,
+	}
 )
 
 // init gets initialized with the package.
@@ -84,6 +127,7 @@ func NewHandler(store x.Store, sessions *scs.SessionManager, csrfKey []byte) *Ha
 
 	// Home
 	handler.Get("/", handler.Home())
+	handler.Get("/search", handler.Search())
 
 	// Topics
 	handler.Route("/topics", func(r chi.Router) {
@@ -240,6 +284,49 @@ func (h *Handler) Home() http.HandlerFunc {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+// Search is a GET-method.
+//
+// It examines the search-query in the navbar and redirects user to a fitting
+// handler, if any.
+func (h *Handler) Search() http.HandlerFunc {
+
+	return func(res http.ResponseWriter, req *http.Request) {
+
+		// Retrieve search result from form
+		searchQuery := req.URL.Query().Get("search")
+		searchQueries := strings.Split(strings.ToLower(searchQuery), " ")
+		fmt.Println("search", searchQuery, searchQueries)
+
+		// Loop through possible search results to get redirected
+		topics, err := h.store.GetTopics()
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Add topics to search results
+		searchResults := searchResultsHandlers
+		for _, topic := range topics {
+			searchResults[strings.ToLower(topic.Name)] = "/topics/" + strconv.Itoa(topic.TopicID)
+		}
+		fmt.Println(searchResults)
+
+		// Loop through possible search results
+		for _, search := range searchQueries {
+			if searchResults[search] != "" { // redirect in case of match
+				fmt.Println("found", searchResults[search])
+				http.Redirect(res, req, searchResults[search], http.StatusFound)
+				return
+			}
+		}
+
+		// Search query didn't find a match
+		h.sessions.Put(req.Context(), "flash_info",
+			"Es wurde kein Suchergebnis gefunden. Versuchen Sie es genauer und in ganzen Worten.")
+		http.Redirect(res, req, req.Referer(), http.StatusFound)
 	}
 }
 

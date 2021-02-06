@@ -84,14 +84,6 @@ label {
     border-radius: 3% !important;
 }
 
-.x-checkbox {
-    float: left;
-}
-
-.x-pagination {
-    float: right;
-}
-
 #userlist {
     text-align: left !important;
 }
@@ -119,4 +111,16 @@ label {
 
 .x-transparent {
     color: transparent;
+}
+
+.x-first {
+    background-color: rgba(255, 215, 0, 0.1) !important;
+}
+
+.x-second {
+    background-color: rgba(192, 192, 192, 0.1) !important;
+}
+
+.x-third {
+    background-color: rgba(176, 141, 87, 0.1) !important;
 }

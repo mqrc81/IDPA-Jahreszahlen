@@ -56,7 +56,7 @@ Leaderboard
                 </thead>
                 <tbody>
                 {{range .Leaderboard}}
-                <tr>
+                <tr class="{{if eq .Rank 1}}x-first{{else}}{{if eq .Rank 2}}x-second{{else}}{{if eq .Rank 3}}x-third{{end}}{{end}}{{end}}">
                     <td class="font-weight-bold">{{.Rank}}</td>
                     <td>{{.UserName}}</td>
                     <td>{{.TopicName}}</td>
