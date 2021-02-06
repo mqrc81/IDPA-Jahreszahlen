@@ -14,7 +14,7 @@ Leaderboard
     <div class="card-body">
         <div class="row">
             <div class="col-md-6 text-nowrap">
-                <div aria-controls="dataTable">
+                <div>
                     <label>Anzahl&nbsp;
                         <select class="form-control form-control-sm custom-select custom-select-sm"
                                 onchange="location = this.value">
@@ -35,14 +35,16 @@ Leaderboard
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="text-md-right dataTables_filter" id="dataTable_filter">
-                    <label><input type="search" class="form-control form-control-sm" aria-controls="dataTable"
-                                  placeholder="Search"></label>
+                <div class="text-md-right">
+                    <label>
+                        <input type="text" id="filter_leaderboard" class="form-control"
+                               placeholder="Benutzer/Thema filtern" onkeyup="filterTable()">
+                    </label>
                 </div>
             </div>
         </div>
-        <div class="table-responsive table mt-2" role="grid" aria-describedby="dataTable_info">
-            <table class="table my-0" id="dataTable">
+        <div class="table-responsive table mt-2" role="grid">
+            <table class="table my-0" id="leaderboard">
                 <thead>
                 <tr>
                     <th>#</th>
@@ -67,7 +69,7 @@ Leaderboard
         </div>
         <div class="row">
             <div class="col-md-6 align-self-center">
-                <p id="dataTable_info" class="dataTables_info" role="status" aria-live="polite">
+                <p role="status">
                     Zeigt {{.ShowFrom}} bis {{.ShowTo}} von {{.ShowOf}}</p>
             </div>
             <div class="col-md-6">

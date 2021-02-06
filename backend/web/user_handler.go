@@ -281,7 +281,7 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "flash_success", "Hallo "+user.Username+"! Sie sind nun eingeloggt.")
 		if !user.Verified {
 			h.sessions.Put(req.Context(), "flash_info", "Sie haben Ihre Email noch nicht verifiziert. "+
-				"Ohne verifizierte Email können Sie im schlimmsten Fall Ihr Passwort nicht via Email zurücksetzen. "+
+				"Ohne verifizierte Email können Sie im Fall der Fälle Ihr Passwort nicht via Email zurücksetzen. "+
 				"Auf Ihrem Profil können Sie eine erneute Bestätigungs-Email versenden.")
 		}
 
