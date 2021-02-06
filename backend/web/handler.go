@@ -25,15 +25,9 @@ import (
 )
 
 const (
-	// staticPath is the path to directory of static assets, which includes
-	// CSS- and JavaScript-files, as well as images and fonts
-	staticPath = "frontend/static"
-
-	// templatePath is the path to directory of HTML-templates
-	templatePath = "frontend/templates/"
-
-	// layout defines the basic construction of all HTML-templates
-	layout = "frontend/layout.html"
+	staticPath   = "frontend/static"
+	templatePath = "frontend/html/templates/"
+	layout       = "frontend/html/layout.html"
 )
 
 var (
@@ -131,7 +125,6 @@ func NewHandler(store x.Store, sessions *scs.SessionManager, csrfKey []byte) *Ha
 	// Scores
 	handler.Route("/scores", func(router chi.Router) {
 		router.Get("/", scores.List())
-		router.Post("/", scores.Filter())
 	})
 
 	// Users

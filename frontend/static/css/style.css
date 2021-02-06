@@ -88,11 +88,6 @@ label {
     float: left;
 }
 
-.page-link {
-    background-color: #e7f4f7 !important;
-    color: black;
-}
-
 .x-pagination {
     float: right;
 }
@@ -116,10 +111,6 @@ label {
 
 #x-table {
     padding-top: 1%;
-}
-
-.black {
-    color: black;
 }
 
 .x-hover-dark:hover {

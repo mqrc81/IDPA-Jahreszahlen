@@ -34,7 +34,16 @@ func init() {
 		return
 	}
 
-	scoresListTemplate = template.Must(template.ParseFiles(layout, templatePath+"scores_list.html"))
+	scoresListTemplate = template.Must(template.New("layout.html").
+		Funcs(template.FuncMap{ // Add custom HTML-template-function to increment a number
+			"increment": func(num int) int {
+				return num + 1
+			},
+			"decrement": func(num int) int {
+				return num - 1
+			},
+		}).
+		ParseFiles(layout, templatePath+"scores_list.html"))
 }
 
 // ScoreHandler is the object for handlers to access sessions and database.
@@ -60,10 +69,17 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 		CSRF template.HTML
 
 		Leaderboard []leaderboardRow
-		Show        int  // amount of scores to be shown per page
-		Page        int  // current page
-		PrevPage    bool // false if current page is 1
-		NextPage    bool // false if scores array ends on current page
+
+		Show     int  // amount of scores shown
+		ShowFrom int  // first score's rank
+		ShowTo   int  // last score's rank
+		ShowOf   int  // total amount of scores
+		ShowAll  bool // whether all scores are shown
+
+		Page         int   // current page
+		Pages        []int // range of pages to be able to navigate to
+		PagePrevious bool  // whether there's a previous page
+		PageNext     bool  // whether there's a next page
 	}
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -78,20 +94,20 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 			return
 		}
 
-		// Retrieve values for filtering the leaderboard from sessions
-		show := h.sessions.GetInt(req.Context(), "show")
-		if show == 0 { // 'show' is 0 in case of no 'show' in the session
-			show = showDefault
-		}
-		page := h.sessions.GetInt(req.Context(), "page")
-		if page == 0 { // 'page' is 0 in case of no 'page' in the session
-			page = 1
-		}
-
 		// Execute SQL statement to get scores
 		scores, err := h.store.GetScores()
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Retrieve values from URL query for filtering the leaderboard by
+		// indicating the amount of scores to be shown and with which offset
+		showFilter := req.URL.Query().Get("show")
+		pageFilter := req.URL.Query().Get("page")
+		show, page, err := inspectFilters(showFilter, pageFilter, len(scores))
+		if err != nil {
+			http.Error(res, "", http.StatusNotFound) // redirects to the custom 404-page
 			return
 		}
 
@@ -100,45 +116,28 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 		// However, if len(scores) = 33 => scores[30:33] (ranks 31-33)
 		leaderboard := createLeaderboardRows(scores, show, page)
 
+		// Page numbers to be shown below the leaderboard in order to navigate
+		// to different pages
+		pages := createPages(page, show, len(scores))
+
 		// Execute HTML-templates with data
 		if err = scoresListTemplate.Execute(res, data{
-			SessionData: GetSessionData(h.sessions, req.Context()),
-			CSRF:        csrf.TemplateField(req),
-			Leaderboard: leaderboard,
-			Show:        show,
-			Page:        page,
-			PrevPage:    page-1 > 0,
-			NextPage:    page-1 >= (len(scores)-1)/show,
+			SessionData:  GetSessionData(h.sessions, req.Context()),
+			CSRF:         csrf.TemplateField(req),
+			Leaderboard:  leaderboard,
+			Show:         show,
+			ShowFrom:     leaderboard[0].Rank,
+			ShowTo:       leaderboard[len(leaderboard)-1].Rank,
+			ShowOf:       len(scores),
+			ShowAll:      show == len(scores),
+			Page:         page,
+			Pages:        pages,
+			PagePrevious: page != pages[0],
+			PageNext:     page != pages[len(pages)-1],
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	}
-}
-
-// Filter filters show
-func (h *ScoreHandler) Filter() http.HandlerFunc {
-
-	return func(res http.ResponseWriter, req *http.Request) {
-
-		// Retrieve values from form
-		show, _ := strconv.Atoi(req.FormValue("show_filter"))
-		pageFilter := req.FormValue("page_filter")
-		page, _ := strconv.Atoi(req.FormValue("current_page"))
-
-		switch pageFilter {
-		case "prev":
-			page--
-		case "next":
-			page++
-		}
-
-		// Add filtering options to sessions
-		h.sessions.Put(req.Context(), "show", show)
-		h.sessions.Put(req.Context(), "page", page)
-
-		// Redirect to leaderboard
-		http.Redirect(res, req, "/scores", http.StatusFound)
 	}
 }
 
@@ -170,4 +169,75 @@ func createLeaderboardRows(scores []x.Score, show int, page int) []leaderboardRo
 	}
 
 	return leaderboard
+}
+
+// inspectFilters examines the filters from the URL query, checks for all
+// possible cases and returns the amount of scores to be shown and the
+// new page.
+func inspectFilters(showFilter string, pageFilter string, scoresCount int) (int, int, error) {
+
+	// Check for invalid URL query
+	show, err := strconv.Atoi(showFilter)
+	if err != nil && showFilter != "" {
+		return 0, 0, err
+	}
+	page, err := strconv.Atoi(pageFilter)
+	if err != nil && pageFilter != "" {
+		return 0, 0, err
+	}
+
+	// Inspect 'show'
+	if show == 0 {
+		show = showDefault
+	} else if show < 0 {
+		show = scoresCount
+	} else if show != 10 && show != 25 && show != 50 {
+		if show < 20 {
+			show = 10
+		} else if show < 40 {
+			show = 25
+		} else {
+			show = 50
+		}
+	}
+
+	// Inspect 'page'
+	if page < 1 || show == scoresCount {
+		page = 1
+	} else if scoresCount < (page-1)*show {
+		page = (scoresCount - 1/show) + 1
+	}
+
+	return show, page, nil
+}
+
+// createPages generates the pages to which the user can navigate to. [tested
+// in handler_test.go]
+// Example 1: 23 scores, showing 11-20 => [< 1 '2' 3 >]
+// Example 2: 20 scores, showing 11-20 => [< 1 '2']
+// Example 3: 50 scores, showing 41-50 => [< 3 4 '5']
+func createPages(page int, show int, scoresCount int) []int {
+	var pages []int
+
+	if page == 1 { // case ['1' 2 3 >]
+		for i := 0; i <= 2; i++ {
+			if scoresCount > (page+i-1)*show {
+				pages = append(pages, page+i)
+			}
+		}
+	} else if scoresCount <= show*page { // case [< 2 3 '4']
+		for i := 2; i >= 0; i-- {
+			if page > i {
+				pages = append(pages, page-i)
+			}
+		}
+	} else {
+		for i := -1; i <= 1; i++ { // case [< 1 '2' 3 >]
+			if scoresCount > (page+i-1)*show {
+				pages = append(pages, page+i)
+			}
+		}
+	}
+
+	return pages
 }

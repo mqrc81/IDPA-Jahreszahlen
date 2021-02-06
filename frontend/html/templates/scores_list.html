@@ -1,0 +1,107 @@
+{{define "title"}}
+Leaderboard
+{{end}}
+
+{{define "header"}}
+<h1 class="text-dark mb-0">Leaderboard</h1>
+{{end}}
+
+{{define "content"}}
+<div class="card shadow">
+    <div class="card-header py-3">
+        <p class="text-primary m-0 font-weight-bold">Spielresultate</p>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 text-nowrap">
+                <div aria-controls="dataTable">
+                    <label>Anzahl&nbsp;
+                        <select class="form-control form-control-sm custom-select custom-select-sm"
+                                onchange="location = this.value">
+                            <option value="/scores?show=10&page={{.Page}}" {{if eq .Show 10}}selected{{end}}>
+                                10
+                            </option>
+                            <option value="/scores?show=25&page={{.Page}}" {{if eq .Show 25}}selected{{end}}>
+                                25
+                            </option>
+                            <option value="/scores?show=50&page={{.Page}}" {{if eq .Show 50}}selected{{end}}>
+                                50
+                            </option>
+                            <option value="/scores?show=-1&page={{.Page}}" {{if .ShowAll}}selected{{end}}>
+                                Alle
+                            </option>
+                        </select>&nbsp;
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="text-md-right dataTables_filter" id="dataTable_filter">
+                    <label><input type="search" class="form-control form-control-sm" aria-controls="dataTable"
+                                  placeholder="Search"></label>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive table mt-2" role="grid" aria-describedby="dataTable_info">
+            <table class="table my-0" id="dataTable">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Benutzer</th>
+                    <th>Thema</th>
+                    <th>Datum</th>
+                    <th>Punkte</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{range .Leaderboard}}
+                <tr>
+                    <td class="font-weight-bold">{{.Rank}}</td>
+                    <td>{{.UserName}}</td>
+                    <td>{{.TopicName}}</td>
+                    <td>{{.Date}}</td>
+                    <td class="font-weight-bold">{{.Points}}</td>
+                </tr>
+                {{end}}
+                </tbody>
+            </table>
+        </div>
+        <div class="row">
+            <div class="col-md-6 align-self-center">
+                <p id="dataTable_info" class="dataTables_info" role="status" aria-live="polite">
+                    Zeigt {{.ShowFrom}} bis {{.ShowTo}} von {{.ShowOf}}</p>
+            </div>
+            <div class="col-md-6">
+                <nav class="d-lg-flex justify-content-lg-end dataTables_paginate paging_simple_numbers">
+                    <ul class="pagination">
+                        <li class="page-item {{if not .PagePrevious}}disabled{{end}}">
+                            <a class="page-link" href="/scores?show={{.Show}}&page={{decrement .Page}}"
+                               aria-label="Previous">
+                                <span aria-hidden="true">«</span>
+                            </a>
+                        </li>
+                        {{$page := .Page}}
+                        {{$show := .Show}}
+                        {{range .Pages}}
+                        {{if eq . $page}}
+                        <li class="page-item active">
+                            <a class="page-link" href="#">{{.}}</a>
+                        </li>
+                        {{else}}
+                        <li class="page-item">
+                            <a class="page-link" href="/scores?show={{$show}}&page={{.}}">{{.}}</a>
+                        </li>
+                        {{end}}
+                        {{end}}
+                        <li class="page-item {{if not .PageNext}}disabled{{end}}">
+                            <a class="page-link" href="/scores?show={{.Show}}&page={{increment .Page}}"
+                               aria-label="Next">
+                                <span aria-hidden="true">»</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

@@ -1073,7 +1073,7 @@ func createPhase3Questions(events []x.Event) []phase3Question {
 
 // binarySearchForPoints searches for the index, where the user's score
 // would be if all scores of this topic were sorted by points in descending
-// order.
+// order. [tested in handler_test.go]
 // It looks for this recursively, in a binary-search way, since this is the
 // most efficient way of looking for this index.
 // Time complexity: O(√n) using binary-search instead of O(n) using iteration;
