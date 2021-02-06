@@ -105,6 +105,14 @@ label {
     color: #5a5c69 !important;
 }
 
+.x-hover-blue:hover {
+    color: #224abe !important;
+}
+
+.x-hover-red:hover {
+    color: #e74a3b !important;
+}
+
 .x-icon-right {
     float: right;
 }

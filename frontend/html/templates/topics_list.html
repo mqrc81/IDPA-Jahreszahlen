@@ -7,33 +7,61 @@ Themen
 {{end}}
 
 {{define "content"}}
-{{range .Topics}}
-<div class="x-card">
-    <div class="card-body">
-        <p>
-            <a href="#" class="d-block card-title text-body mt-1 h5">
-                {{.Name}} ({{.StartYear}} - {{.EndYear}})
-            </a>
-        </p>
-        <p class="card-text">{{.Description}}</p>
-        <p class="card-text">{{.EventsCount}} Ereignisse<br>
-            {{.ScoresCount}}x gespielt</p>
-        <a href="/topics/{{.TopicID}}" class="x-button"><i class="fas fa-search"></i> Thema anschauen</a>
+<div class="row">
+    {{$admin := .User.Admin}}
+    <div class="{{if $admin}}col-8{{else}}col-12{{end}}">
+        {{range .Topics}}
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <a href="/topics/{{.TopicID}}">
+                    <div class="text-primary h5 mb-0 mt-1 font-weight-bold ">
+                        <span class="mr-2">{{.Name}}</span>
+                        <span class="text-sm-left text-gray-500">({{.StartYear}} - {{.EndYear}})</span>
+                    </div>
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center no-gutters">
+                    <div class="col mr-2">
+                        <a class="stretched-link" href="/topics/{{.TopicID}}">
+                            <span class="text-dark h6">{{.Description}}</span>
+                        </a>
+                    </div>
+                    <div class="col-auto ml-4">
+                        {{if $admin}}
+                        <a href="/topics/{{.TopicID}}/edit" class="mr-4">
+                            <i class="fas fa-edit x-hover-red fa-2x text-gray-300"></i>
+                        </a>
+                        <a href="/topics/{{.TopicID}}/delete">
+                            <i class="fas fa-trash-alt x-hover-red fa-2x text-gray-300"></i>
+                        </a>
+                        {{else}}
+                        <a href="/topics/{{.TopicID}}/quiz/1">
+                            <i class="fas fa-play x-hover-blue fa-2x text-gray-300"></i>
+                        </a>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{end}}
     </div>
-</div>
-{{end}}
-{{end}}
-
-{{define "sidebar"}}
-{{if .User.Admin}}
-<div class="x-card">
-    <div class="card-body">
-        <h5 class="card-title">Neues Thema erstellen</h5>
-        <p class="card-text">
-            Erstellen Sie ein neues Thema mitsamt ihren Ereignissen.
-        </p>
-        <a href="/topics/new" class="x-button">Neues Thema</a>
+    {{if .User.Admin}}
+    <div class="col-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 align-items-center no-gutters bg-gradient-dark">
+                <h6 class="text-white font-weight-bold m-0">
+                    Neues Thema
+                    <i class="fas fa-plus text-danger x-icon-right"></i></h6>
+            </div>
+            <div class="card-body">
+                <p>Als Admin haben Sie hier Möglichkeit, einer neues Thema zu erstellen, inklusive ihren
+                    Ereignissen.</p>
+                <a href="/topics/new" class="mt-4 btn btn-outline-light btn-danger btn-block x-hover-dark
+                text-white font-weight-bold btn-user">Neues Thema erstellen</a>
+            </div>
+        </div>
     </div>
+    {{end}}
 </div>
-{{end}}
 {{end}}

@@ -287,7 +287,7 @@ func (h *Handler) Home() http.HandlerFunc {
 	}
 }
 
-// Search is a GET-method.
+// Search is a GET-method that is accessible to anyone.
 //
 // It examines the search-query in the navbar and redirects user to a fitting
 // handler, if any.
