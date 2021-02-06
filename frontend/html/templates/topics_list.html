@@ -3,7 +3,7 @@ Themen
 {{end}}
 
 {{define "header"}}
-<h1 class="mb-0">Themen</h1>
+<h1 class="mb-0" xmlns="http://www.w3.org/1999/html">Themen</h1>
 {{end}}
 
 {{define "content"}}
@@ -27,13 +27,10 @@ Themen
                             <span class="text-dark h6">{{.Description}}</span>
                         </a>
                     </div>
-                    <div class="col-auto ml-4">
+                    <div class="col-auto ml-4 mr-1">
                         {{if $admin}}
-                        <a href="/topics/{{.TopicID}}/edit" class="mr-4">
+                        <a href="/topics/{{.TopicID}}/edit">
                             <i class="fas fa-edit x-hover-red fa-2x text-gray-300"></i>
-                        </a>
-                        <a href="/topics/{{.TopicID}}/delete">
-                            <i class="fas fa-trash-alt x-hover-red fa-2x text-gray-300"></i>
                         </a>
                         {{else}}
                         <a href="/topics/{{.TopicID}}/quiz/1">

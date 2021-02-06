@@ -54,7 +54,6 @@ func (h *TopicHandler) List() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
-		CSRF template.HTML
 
 		Topics []x.Topic
 	}
@@ -71,7 +70,6 @@ func (h *TopicHandler) List() http.HandlerFunc {
 		// Execute HTML-templates with data
 		if err = topicsListTemplate.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
-			CSRF:        csrf.TemplateField(req),
 			Topics:      topics,
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
