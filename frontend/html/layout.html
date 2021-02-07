@@ -28,7 +28,7 @@
                 <div class="sidebar-brand-text mx-3"><span>Jahreszahlen</span></div>
             </a>
             <hr class="sidebar-divider my-0">
-            <ul class="nav navbar-nav text-light" id="accordionSidebar">
+            <ul class="nav navbar-nav text-light">
                 <li class="nav-item"><a class="nav-link" href="/">
                     <i class="fas fa-home"></i><span class="mx-1">Home</span></a>
                 </li>
@@ -106,7 +106,7 @@
                                     {{with .User.Username}}{{.}}{{else}}Gast{{end}}
                                 </span>
                                     <img class="border rounded-circle img-profile"
-                                         src="/frontend/static/img/default_user.png">
+                                         src="/frontend/static/img/default_user.png" alt="default profile picture">
                                 </a>
                                 <div class="dropdown-menu shadow dropdown-menu-right animated--grow-in">
                                     <a class="dropdown-item {{if not .LoggedIn}}disabled{{end}}" href="/users/profile">

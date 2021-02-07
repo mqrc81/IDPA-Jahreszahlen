@@ -7,61 +7,61 @@ Registrieren
 {{end}}
 
 {{define "content"}}
-<form action="/users/register" method="POST" class="form">
-    {{.CSRF}}
-    <label for="username">Benutzername</label>
-    <div class="form-group">
-        <input type="text" name="username" id="username"
-               class="form-control {{with .Form.Errors.Username}}is-invalid{{end}}"
-               placeholder="Benutzername"
-               value="{{with .Form.Username}}{{.}}{{end}}">
-    </div>
-
-    {{with .Form.Errors.Username}}
-    <div class="x-invalid-form">{{.}}</div>
-    {{end}}
-
-    <br>
-
-    <label for="email">Email</label>
-    <div class="form-group">
-        <input type="text" name="email" id="email"
-               class="form-control {{with .Form.Errors.Email}}is-invalid{{end}}"
-               placeholder="Email"
-               value="{{with .Form.Email}}{{.}}{{end}}">
-    </div>
-
-    {{with .Form.Errors.Email}}
-    <div class="x-invalid-form">{{.}}</div>
-    {{end}}
-
-    <br>
-
-    <label for="password">Passwort</label>
-    <div class="form-group">
-        <input type="password" name="password" id="password"
-               class="form-control {{with .Form.Errors.Password}}is-invalid{{end}}"
-               placeholder="Passwort"
-               value="{{with .Form.Password}}{{.}}{{end}}">
-    </div>
-
-    {{with .Form.Errors.Password}}
-    <div class="x-invalid-form">{{.}}</div>
-    {{end}}
-
-    <br>
-    <button type="submit" class="x-button">Registrieren</button>
-</form>
-{{end}}
-
-{{define "sidebar"}}
-<div class="x-card">
-    <div class="card-body">
-        <h5 class="card-title">Ich habe bereits ein Account!</h5>
-        <p class="card-text">
-            Falls Sie schon ein Account haben, loggen Sie sich hier ein.
-        </p>
-        <a href="/users/login" class="x-button">Einloggen</a>
+<div class="row">
+    <div class="col-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <p class="text-primary m-0 font-weight-bold">Neuer Account erstellen</p>
+            </div>
+            <div class="card-body">
+                <form action="/users/register" method="POST" class="form">
+                    {{.CSRF}}
+                    <div class="form-row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="username"><strong>Benutzername</strong></label>
+                                <input type="text" name="username" id="username"
+                                       class="form-control {{with .Form.Errors.Username}}is-invalid{{end}}"
+                                       value="{{with .Form.Username}}{{.}}{{end}}">
+                                {{with .Form.Errors.Username}}
+                                <div class="text-sm-left text-danger">{{.}}</div>
+                                {{end}}
+                            </div>
+                            <div class="form-group">
+                                <label for="email"><strong>Email</strong></label>
+                                <input type="text" name="email" id="email"
+                                       class="form-control {{with .Form.Errors.Email}}is-invalid{{end}}"
+                                       value="{{with .Form.Email}}{{.}}{{end}}">
+                                {{with .Form.Errors.Email}}
+                                <div class="text-sm-left text-danger">{{.}}</div>
+                                {{end}}
+                            </div>
+                            <div class="form-group">
+                                <label for="password"><strong>Passwort</strong></label>
+                                <input type="password" name="password" id="password"
+                                       class="form-control {{with .Form.Errors.Password}}is-invalid{{end}}"
+                                       value="{{with .Form.Password}}{{.}}{{end}}">
+                                {{with .Form.Errors.Password}}
+                                <div class="text-sm-left text-danger">{{.}}</div>
+                                {{end}}
+                            </div>
+                            <br>
+                            <div class="row justify-content-center">
+                                <div class="col-6">
+                                    <button class="btn btn-primary btn-block text-white btn-user" type="submit">
+                                        Einloggen
+                                    </button>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="justify-content-center d-flex mb-2">
+                                <a class="text-sm-left" href="/users/login">Account vorhanden?</a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 {{end}}
