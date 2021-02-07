@@ -1,49 +1,54 @@
 {{define "title"}}
-Benutzername ändern
+Benutzernamen ändern
 {{end}}
 
 {{define "header"}}
-<h1 class="mb-0">Benutzername ändern</h1>
+<h1 class="mb-0">Benutzernamen ändern</h1>
 {{end}}
 
 {{define "content"}}
-<div class="x-card">
-    <div class="card-body">
-        <form action="/users/edit/username" method="POST" class="form">
-            {{.CSRF}}
-            <label for="username">Neuer Benutzername</label>
-            <div class="form-group">
-                <input type="text" name="username" id="username"
-                       class="form-control {{with .Form.Errors.NewUsername}}is-invalid{{end}}"
-                       placeholder="Benutzername"
-                       value="{{with .Form.NewUsername}}{{.}}{{end}}">
+<div class="row">
+    <div class="col-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <p class="text-primary m-0 font-weight-bold">Benutzernamen ändern</p>
             </div>
-
-            {{with .Form.Errors.NewUsername}}
-            <div class="x-invalid-form">{{.}}</div>
-            {{end}}
-            <br>
-
-            <label for="password">Passwort</label>
-            <div class="form-group">
-                <input type="password" name="password" id="password"
-                       class="form-control {{with .Form.Errors.Password}}is-invalid{{end}}"
-                       placeholder="Password"
-                       value="{{with .Form.Password}}{{.}}{{end}}">
+            <div class="card-body">
+                <form action="/users/edit/username" method="POST" class="form">
+                    {{.CSRF}}
+                    <div class="form-row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="username"><strong>Neuer Benutzername</strong></label>
+                                <input type="text" name="username" id="username"
+                                       class="form-control {{with .Form.Errors.NewUsername}}is-invalid{{end}}"
+                                       value="{{with .Form.NewUsername}}{{.}}{{end}}">
+                                {{with .Form.Errors.NewUsername}}
+                                <div class="text-sm-left text-danger">{{.}}</div>
+                                {{end}}
+                            </div>
+                            <div class="form-group">
+                                <label for="password"><strong>Passwort</strong></label>
+                                <input type="password" name="password" id="password"
+                                       class="form-control {{with .Form.Errors.Password}}is-invalid{{end}}"
+                                       value="{{with .Form.Password}}{{.}}{{end}}">
+                                {{with .Form.Errors.Password}}
+                                <div class="text-sm-left text-danger">{{.}}</div>
+                                {{end}}
+                            </div>
+                            <br>
+                            <div class="row justify-content-center">
+                                <div class="col-6">
+                                    <button class="btn btn-primary btn-block text-white btn-user" type="submit">
+                                        Benutzernamen ändern
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
-
-            {{with .Form.Errors.Password}}
-            <div class="x-invalid-form">{{.}}</div>
-            {{end}}
-            <br>
-
-            <button type="submit" class="x-button">Ändern</button>
-        </form>
+        </div>
     </div>
 </div>
-
-{{end}}
-
-{{define "sidebar"}}
-
 {{end}}
