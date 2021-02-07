@@ -3,6 +3,7 @@
 package util
 
 import (
+	"math"
 	"reflect"
 	"testing"
 	"time"
@@ -39,6 +40,100 @@ func TestAbs(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 
 			if got := Abs(test.num); got != test.want {
+				t.Errorf("Abs() = %v, want %v", got, test.want)
+			}
+		})
+	}
+}
+
+// TestMin tests returning the smallest of many numbers.
+func TestMin(t *testing.T) {
+
+	// Declare test cases
+	tests := []struct {
+		name string
+		nums []int
+		want int
+	}{
+		{
+			name: "#1 OK",
+			nums: []int{5, 7, 29, 1},
+			want: 1,
+		},
+		{
+			name: "#2 0 NUMBERS",
+			nums: []int{},
+			want: 0,
+		},
+		{
+			name: "#3 OK (1 NUMBER)",
+			nums: []int{3},
+			want: 3,
+		},
+		{
+			name: "#4 OK (SMALLEST POSSIBLE INT)",
+			nums: []int{23, -100, math.MinInt32},
+			want: math.MinInt32,
+		},
+		{
+			name: "#5 OK (BIGGEST POSSIBLE INT)",
+			nums: []int{23, -100, math.MaxInt32},
+			want: -100,
+		},
+	}
+
+	// Run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			if got := Min(test.nums...); got != test.want {
+				t.Errorf("Abs() = %v, want %v", got, test.want)
+			}
+		})
+	}
+}
+
+// TestMax tests returning the smallest of many numbers.
+func TestMax(t *testing.T) {
+
+	// Declare test cases
+	tests := []struct {
+		name string
+		nums []int
+		want int
+	}{
+		{
+			name: "#1 OK",
+			nums: []int{5, 7, 29, 1},
+			want: 29,
+		},
+		{
+			name: "#2 0 NUMBERS",
+			nums: []int{},
+			want: 0,
+		},
+		{
+			name: "#3 OK (1 NUMBER)",
+			nums: []int{3},
+			want: 3,
+		},
+		{
+			name: "#4 OK (SMALLEST POSSIBLE INT)",
+			nums: []int{23, -100, math.MinInt32},
+			want: 23,
+		},
+		{
+			name: "#5 OK (BIGGEST POSSIBLE INT)",
+			nums: []int{23, -100, math.MaxInt32},
+			want: math.MaxInt32,
+		},
+	}
+
+	// Run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			if got := Max(test.nums...); got != test.want {
 				t.Errorf("Abs() = %v, want %v", got, test.want)
 			}
 		})
