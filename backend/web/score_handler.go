@@ -170,6 +170,7 @@ func createLeaderboardRows(scores []x.Score, show int, page int) []leaderboardRo
 // inspectFilters examines the filters from the URL query, checks for all
 // possible cases and returns the amount of scores to be shown and the
 // new page.
+// (Tested in test_handler.go)
 func inspectFilters(showFilter string, pageFilter string, scoresCount int) (int, int) {
 
 	// Check for invalid URL query
@@ -177,6 +178,8 @@ func inspectFilters(showFilter string, pageFilter string, scoresCount int) (int,
 	page, _ := strconv.Atoi(pageFilter)
 
 	// Inspect 'show'
+	// 'show' = 0 if no 'show' URL query was found
+	// 'show' may only be 10, 25, 50 or all
 	if show == 0 {
 		show = showDefault
 	} else if show < 0 {
@@ -192,6 +195,9 @@ func inspectFilters(showFilter string, pageFilter string, scoresCount int) (int,
 	}
 
 	// Inspect 'page'
+	// Catch leaderboard rows out of bounds (user is on page 2, showing 10
+	// rows, total scores are 22 and user chooses to show 25 rows => page drops
+	// from 2 to 1)
 	if page < 1 || show == scoresCount {
 		page = 1
 	} else if scoresCount < (page-1)*show {
@@ -201,11 +207,11 @@ func inspectFilters(showFilter string, pageFilter string, scoresCount int) (int,
 	return show, page
 }
 
-// createPages generates the pages to which the user can navigate to. [tested
-// in handler_test.go]
+// createPages generates the pages to which the user can navigate to.
 // Example 1: 23 scores, showing 11-20 => [< 1 '2' 3 >]
 // Example 2: 20 scores, showing 11-20 => [< 1 '2']
 // Example 3: 50 scores, showing 41-50 => [< 3 4 '5']
+// (Tested in test_handler.go)
 func createPages(show int, page int, scoresCount int) []int {
 	var pages []int
 

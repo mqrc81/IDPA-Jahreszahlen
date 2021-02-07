@@ -7,49 +7,55 @@ Login
 {{end}}
 
 {{define "content"}}
-<form action="/users/login" method="POST" class="form">
-    {{.CSRF}}
-    <label for="username">Benutzername/Email</label>
-    <div class="form-group">
-        <input type="text" name="username" id="username"
-               class="form-control {{with .Form.Errors.UsernameOrEmail}}is-invalid{{end}}"
-               placeholder="Benutzername"
-               value="{{with .Form.UsernameOrEmail}}{{.}}{{end}}">
-    </div>
-
-    {{with .Form.Errors.UsernameOrEmail}}
-    <div class="x-invalid-form">{{.}}</div>
-    {{end}}
-
-    <br>
-
-    <label for="password">Passwort</label>
-    <div class="form-group">
-        <input type="password" name="password" id="password"
-               class="form-control {{with .Form.Errors.Password}}is-invalid{{end}}"
-               placeholder="Passwort"
-               value="{{with .Form.Password}}{{.}}{{end}}">
-    </div>
-
-    {{with .Form.Errors.Password}}
-    <div class="x-invalid-form">{{.}}</div>
-    {{end}}
-
-    <br>
-    <button type="submit" class="x-button">Einloggen</button>
-    <a class="x-link" href="/users/forgot/password">Passwort vergessen?</a>
-
-</form>
-{{end}}
-
-{{define "sidebar"}}
-<div class="x-card">
-    <div class="card-body">
-        <h5 class="card-title">Ich habe noch kein Account!</h5>
-        <p class="card-text">
-            Falls Sie noch kein Account haben, registrieren Sie sich hier.
-        </p>
-        <a href="/users/register" class="x-button">Registrieren</a>
+<div class="row">
+    <div class="col-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <p class="text-primary m-0 font-weight-bold">Willkommen zurück!</p>
+            </div>
+            <div class="card-body">
+                <form action="/users/login" method="POST" class="form">
+                    {{.CSRF}}
+                    <div class="form-row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="username"><strong>Benutzername oder Email</strong></label>
+                                <input type="text" name="username" id="username"
+                                       class="form-control {{with .Form.Errors.UsernameOrEmail}}is-invalid{{end}}"
+                                       value="{{with .Form.UsernameOrEmail}}{{.}}{{end}}">
+                                {{with .Form.Errors.UsernameOrEmail}}
+                                <div class="small text-danger">{{.}}</div>
+                                {{end}}
+                            </div>
+                            <div class="form-group">
+                                <label for="password"><strong>Passwort</strong></label>
+                                <input type="password" name="password" id="password"
+                                       class="form-control {{with .Form.Errors.Password}}is-invalid{{end}}"
+                                       value="{{with .Form.Password}}{{.}}{{end}}">
+                                {{with .Form.Errors.Password}}
+                                <div class="small text-danger">{{.}}</div>
+                                {{end}}
+                            </div>
+                            <br>
+                            <div class="row justify-content-center">
+                                <div class="col-6">
+                                    <button class="btn btn-primary btn-block text-white btn-user" type="submit">
+                                        Einloggen
+                                    </button>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="justify-content-center d-flex mb-2">
+                                <a class="text-sm-left" href="/users/register">Account erstellen!</a>
+                            </div>
+                            <div class="justify-content-center d-flex">
+                                <a class="text-sm-left" href="/users/forgot/password">Passwort vergessen?</a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 {{end}}
