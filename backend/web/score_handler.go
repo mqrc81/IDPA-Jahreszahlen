@@ -105,11 +105,7 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 		// indicating the amount of scores to be shown and with which offset
 		showFilter := req.URL.Query().Get("show")
 		pageFilter := req.URL.Query().Get("page")
-		show, page, err := inspectFilters(showFilter, pageFilter, len(scores))
-		if err != nil {
-			http.Error(res, "", http.StatusNotFound) // redirects to the custom 404-page
-			return
-		}
+		show, page := inspectFilters(showFilter, pageFilter, len(scores))
 
 		// Create table of scores for the current page & show size
 		// Example: page = 3, show = 15 => scores[30:45] (ranks 31-45)
@@ -118,7 +114,7 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 
 		// Page numbers to be shown below the leaderboard in order to navigate
 		// to different pages
-		pages := createPages(page, show, len(scores))
+		pages := createPages(show, page, len(scores))
 
 		// Execute HTML-templates with data
 		if err = scoresListTemplate.Execute(res, data{
@@ -174,17 +170,11 @@ func createLeaderboardRows(scores []x.Score, show int, page int) []leaderboardRo
 // inspectFilters examines the filters from the URL query, checks for all
 // possible cases and returns the amount of scores to be shown and the
 // new page.
-func inspectFilters(showFilter string, pageFilter string, scoresCount int) (int, int, error) {
+func inspectFilters(showFilter string, pageFilter string, scoresCount int) (int, int) {
 
 	// Check for invalid URL query
-	show, err := strconv.Atoi(showFilter)
-	if err != nil && showFilter != "" {
-		return 0, 0, err
-	}
-	page, err := strconv.Atoi(pageFilter)
-	if err != nil && pageFilter != "" {
-		return 0, 0, err
-	}
+	show, _ := strconv.Atoi(showFilter)
+	page, _ := strconv.Atoi(pageFilter)
 
 	// Inspect 'show'
 	if show == 0 {
@@ -205,10 +195,10 @@ func inspectFilters(showFilter string, pageFilter string, scoresCount int) (int,
 	if page < 1 || show == scoresCount {
 		page = 1
 	} else if scoresCount < (page-1)*show {
-		page = (scoresCount - 1/show) + 1
+		page = ((scoresCount - 1) / show) + 1
 	}
 
-	return show, page, nil
+	return show, page
 }
 
 // createPages generates the pages to which the user can navigate to. [tested
@@ -216,7 +206,7 @@ func inspectFilters(showFilter string, pageFilter string, scoresCount int) (int,
 // Example 1: 23 scores, showing 11-20 => [< 1 '2' 3 >]
 // Example 2: 20 scores, showing 11-20 => [< 1 '2']
 // Example 3: 50 scores, showing 41-50 => [< 3 4 '5']
-func createPages(page int, show int, scoresCount int) []int {
+func createPages(show int, page int, scoresCount int) []int {
 	var pages []int
 
 	if page == 1 { // case ['1' 2 3 >]
