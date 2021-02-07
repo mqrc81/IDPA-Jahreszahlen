@@ -668,7 +668,7 @@ func (h *UserHandler) ResetPassword() http.HandlerFunc {
 		}
 
 		// Validate expiration time of token
-		if token.Expiry.After(time.Now()) {
+		if time.Now().After(token.Expiry) {
 			// If the token has expired (after 1 hour), then redirect back with
 			// flash message
 			h.sessions.Put(req.Context(), "flash_error", "Der Token ist abgelaufen. Sie haben jeweils 1 Stunde Zeit, "+
@@ -704,15 +704,15 @@ func (h *UserHandler) ResetPasswordSubmit() http.HandlerFunc {
 			Password: req.FormValue("password"),
 		}
 
+		// Retrieve token from session
+		token := h.sessions.Get(req.Context(), "token").(x.Token)
+
 		// Validate form
 		if !form.Validate() {
 			h.sessions.Put(req.Context(), "form", form)
 			http.Redirect(res, req, req.Referer(), http.StatusFound)
 			return
 		}
-
-		// Retrieve token from session
-		token := h.sessions.Get(req.Context(), "token").(x.Token)
 
 		// Execute SQL statement to get user
 		user, err := h.store.GetUser(token.UserID)
@@ -748,6 +748,6 @@ func (h *UserHandler) ResetPasswordSubmit() http.HandlerFunc {
 			"Bitte loggen Sie sich ein.")
 
 		// Redirect to login
-		http.Redirect(res, req, "/users/login", http.StatusNotFound)
+		http.Redirect(res, req, "/users/login", http.StatusFound)
 	}
 }

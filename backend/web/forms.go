@@ -27,6 +27,7 @@ func init() {
 	gob.Register(EditUsernameForm{})
 	gob.Register(EditEmailForm{})
 	gob.Register(EditPasswordForm{})
+	gob.Register(ResetPasswordForm{})
 	gob.Register(ForgotPasswordForm{})
 	gob.Register(FormErrors{})
 }
@@ -332,7 +333,7 @@ func (form *ForgotPasswordForm) Validate() bool {
 	if form.Email == "" {
 		form.Errors["Email"] = "Bitte Email angeben."
 	} else if form.IncorrectEmail {
-		form.Errors["Email"] = "Ungültige Email."
+		form.Errors["Email"] = "Es gibt keinen Account mit dieser Email."
 	} else if form.UnverifiedEmail {
 		form.Errors["Email"] = "Ihre Email wurde nie bestätigt. Sie können derzeit das Passwort nicht zurücksetzen."
 	}

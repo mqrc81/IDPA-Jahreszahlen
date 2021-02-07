@@ -59,7 +59,7 @@ func PasswordResetEmail(user x.User, token string) Email {
 <p>Klicken Sie <strong><a href="localhost:3000/users/reset/password?token=` + token + `">hier</a></strong>, um Ihr
 Passwort zurückzusetzen.</p>
 <p></p>
-<p>(oder kopieren Sie diesen Link in Ihren Browser: localhost:3000/users/password/reset?token=` + token + `).</p>
+<p>(oder kopieren Sie diesen Link in Ihren Browser: localhost:3000/users/reset/password?token=` + token + `).</p>
 <p></p>
 <p>Antworten Sie nicht auf diese Email.</p>
 `
