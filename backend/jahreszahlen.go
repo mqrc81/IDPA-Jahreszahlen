@@ -75,7 +75,7 @@ type TopicStore interface {
 // EventStore stores functions using events for the database-layer.
 type EventStore interface {
 	GetEvent(eventID int) (Event, error)
-	CountEvents() (int, error) // unused
+	CountEvents() (int, error)
 	CreateEvent(event *Event) error
 	UpdateEvent(event *Event) error
 	DeleteEvent(eventID int) error
@@ -97,8 +97,7 @@ type UserStore interface {
 type ScoreStore interface {
 	GetScores() ([]Score, error)
 	GetScoresByTopic(topicID int) ([]Score, error)
-	GetScoresByUser(userID int) ([]Score, error)
-	GetScoresByTopicAndUser(topicID int, userID int) ([]Score, error)
+	GetScoresByUser(userID int) ([]Score, error) // unused
 	CountScores() (int, error)
 	CountScoresByDate(start time.Time, end time.Time) (int, error)
 	CreateScore(score *Score) error

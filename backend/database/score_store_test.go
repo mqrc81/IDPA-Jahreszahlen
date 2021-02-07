@@ -283,82 +283,46 @@ func TestGetScoresByUser(t *testing.T) {
 	}
 }
 
-// TestGetScoresByTopicAndUser tests getting all scores of a certain topic and
-// a certain user.
-func TestGetScoresByTopicAndUser(t *testing.T) {
+// TestCountScores tests getting amount of scores.
+func TestCountScores(t *testing.T) {
 
 	// New mock database
 	db, mock := NewMock()
 	store := &ScoreStore{DB: db}
 	defer db.Close()
 
-	queryMatch := "SELECT (.+) FROM scores"
+	queryMatch := "SELECT COUNT((.+)) FROM scores"
 
-	tScores := []x.Score{tScore}
-	table := []string{"score_id", "topic_id", "user_id", "points", "date", "topic_name", "user_name"}
+	table := []string{"COUNT(*)"}
 
 	// Declare test cases
 	tests := []struct {
-		name       string
-		topicID    int
-		userID     int
-		mock       func(topicID int, userID int)
-		wantScores []x.Score
-		wantError  bool
+		name            string
+		mock            func()
+		wantScoresCount int
+		wantError       bool
 	}{
 		{
 			// When everything works as intended
-			name:    "#1 OK",
-			topicID: tScores[0].TopicID,
-			userID:  tScores[0].UserID,
-			mock: func(topicID int, userID int) {
-				rows := sqlmock.NewRows(table)
-				for _, score := range tScores {
-					rows = rows.AddRow(score.ScoreID, score.TopicID, score.UserID, score.Points, score.Date,
-						score.TopicName, score.UserName)
-				}
+			name: "#1 OK",
+			mock: func() {
+				rows := sqlmock.NewRows(table).AddRow(3)
 
-				mock.ExpectQuery(queryMatch).WithArgs(topicID, userID).WillReturnRows(rows)
+				mock.ExpectQuery(queryMatch).WillReturnRows(rows)
 			},
-			wantScores: tScores,
-			wantError:  false,
+			wantScoresCount: 3,
+			wantError:       false,
 		},
 		{
 			// When the scores table is empty
-			name:    "#2 OK (NO ROWS)",
-			topicID: tScores[0].TopicID,
-			userID:  tScores[0].UserID,
-			mock: func(topicID int, userID int) {
+			name: "#2 NO ROWS",
+			mock: func() {
 				rows := sqlmock.NewRows(table)
 
-				mock.ExpectQuery(queryMatch).WithArgs(topicID, userID).WillReturnRows(rows)
+				mock.ExpectQuery(queryMatch).WillReturnRows(rows).WillReturnError(errors.New("no scores found"))
 			},
-			wantScores: nilScores,
-			wantError:  false,
-		},
-		{
-			// When topic with given topic ID doesn't exist
-			name:    "#3 TOPIC NOT FOUND",
-			topicID: 0,
-			userID:  tScores[0].UserID,
-			mock: func(topicID int, userID int) {
-				mock.ExpectQuery(queryMatch).WithArgs(topicID, userID).
-					WillReturnError(errors.New("topic with given id does not exist"))
-			},
-			wantScores: nilScores,
-			wantError:  true,
-		},
-		{
-			// When user with given user ID doesn't exist
-			name:    "#4 USER NOT FOUND",
-			topicID: tScores[0].TopicID,
-			userID:  0,
-			mock: func(topicID int, userID int) {
-				mock.ExpectQuery(queryMatch).WithArgs(topicID, userID).
-					WillReturnError(errors.New("user with given id does not exist"))
-			},
-			wantScores: nilScores,
-			wantError:  true,
+			wantScoresCount: 0,
+			wantError:       true,
 		},
 	}
 
@@ -366,16 +330,99 @@ func TestGetScoresByTopicAndUser(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 
-			test.mock(test.topicID, test.userID)
+			test.mock()
 
-			scores, err := store.GetScoresByTopicAndUser(test.topicID, test.userID)
+			scoresCount, err := store.CountScores()
 
 			if (err != nil) != test.wantError {
-				t.Errorf("GetScoresByTopicAndUser() error = %v, want error %v", err, test.wantError)
+				t.Errorf("CountScores() error = %v, want error %v", err, test.wantError)
 				return
 			}
-			if err == nil && !reflect.DeepEqual(scores, test.wantScores) {
-				t.Errorf("GetScoresByTopicAndUser() = %v, want %v", scores, test.wantScores)
+			if err == nil && !reflect.DeepEqual(scoresCount, test.wantScoresCount) {
+				t.Errorf("CountScores() = %v, want %v", scoresCount, test.wantScoresCount)
+			}
+		})
+	}
+}
+
+// TestCountScoresByDate tests getting amount of scores by date.
+func TestCountScoresByDate(t *testing.T) {
+
+	// New mock database
+	db, mock := NewMock()
+	store := &ScoreStore{DB: db}
+	defer db.Close()
+
+	queryMatch := "SELECT COUNT((.+)) FROM scores"
+
+	table := []string{"COUNT(*)"}
+
+	// Declare test cases
+	tests := []struct {
+		name            string
+		start           time.Time
+		end             time.Time
+		mock            func(start time.Time, to time.Time)
+		wantScoresCount int
+		wantError       bool
+	}{
+		{
+			// When everything works as intended
+			name:  "#1 OK",
+			start: time.Now().AddDate(0, -1, 0),
+			end:   time.Now().AddDate(0, 0, 0),
+			mock: func(start time.Time, end time.Time) {
+				rows := sqlmock.NewRows(table).AddRow(3)
+
+				mock.ExpectQuery(queryMatch).WithArgs(start, end).WillReturnRows(rows)
+			},
+			wantScoresCount: 3,
+			wantError:       false,
+		},
+		{
+			// When the scores table is empty
+			name:  "#2 NO ROWS",
+			start: time.Now().AddDate(0, -1, 0),
+			end:   time.Now().AddDate(0, 0, 0),
+			mock: func(start time.Time, end time.Time) {
+				rows := sqlmock.NewRows(table)
+
+				mock.ExpectQuery(queryMatch).WithArgs(start,
+					end).WillReturnRows(rows).WillReturnError(errors.New("no scores found"))
+			},
+			wantScoresCount: 0,
+			wantError:       true,
+		},
+		{
+			// When the start-date is after the to-date table is empty
+			name:  "#3 START AFTER END",
+			start: time.Now().AddDate(0, 0, 0),
+			end:   time.Now().AddDate(0, -1, 0),
+			mock: func(start time.Time, end time.Time) {
+				rows := sqlmock.NewRows(table)
+
+				mock.ExpectQuery(queryMatch).WithArgs(start,
+					end).WillReturnRows(rows).WillReturnError(errors.New("no scores found"))
+			},
+			wantScoresCount: 0,
+			wantError:       true,
+		},
+	}
+
+	// Run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			test.mock(test.start, test.end)
+
+			scoresCount, err := store.CountScoresByDate(test.start, test.end)
+
+			if (err != nil) != test.wantError {
+				t.Errorf("CountScoresByDate() error = %v, want error %v", err, test.wantError)
+				return
+			}
+			if err == nil && !reflect.DeepEqual(scoresCount, test.wantScoresCount) {
+				t.Errorf("CountScoresByDate() = %v, want %v", scoresCount, test.wantScoresCount)
 			}
 		})
 	}

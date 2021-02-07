@@ -22,6 +22,7 @@ var (
 		StartYear:   1800,
 		EndYear:     1900,
 		Description: "Test Description",
+		Image:       "https://test-image.png",
 		Events: []x.Event{
 			tEvent,
 			{
@@ -44,6 +45,7 @@ var (
 			StartYear:   tTopic.StartYear,
 			EndYear:     tTopic.EndYear,
 			Description: tTopic.Description,
+			Image:       tTopic.Image,
 			ScoresCount: tTopic.ScoresCount,
 			EventsCount: tTopic.EventsCount,
 		},
@@ -53,6 +55,7 @@ var (
 			StartYear:   1700,
 			EndYear:     1800,
 			Description: "Test Description",
+			Image:       "https://test-image-2.png",
 			ScoresCount: 30,
 			EventsCount: 15,
 		},
@@ -75,7 +78,8 @@ func TestGetTopic(t *testing.T) {
 	queryMatch := "SELECT (.+) FROM topics"
 	queryMatchEvents := "SELECT (.+) FROM events"
 
-	table := []string{"topic_id", "name", "start_year", "end_year", "description", "scores_count", "events_count"}
+	table := []string{"topic_id", "name", "start_year", "end_year", "description", "image", "scores_count",
+		"events_count"}
 	tableEvents := []string{"event_id", "topic_id", "name", "year", "date"}
 
 	// Declare test cases
@@ -93,7 +97,7 @@ func TestGetTopic(t *testing.T) {
 			mock: func(topicID int) {
 				rows := sqlmock.NewRows(table).
 					AddRow(tTopic.TopicID, tTopic.Name, tTopic.StartYear, tTopic.EndYear, tTopic.Description,
-						tTopic.ScoresCount, tTopic.EventsCount)
+						tTopic.Image, tTopic.ScoresCount, tTopic.EventsCount)
 
 				mock.ExpectQuery(queryMatch).WithArgs(topicID).WillReturnRows(rows)
 
@@ -152,7 +156,8 @@ func TestGetTopics(t *testing.T) {
 
 	queryMatch := "SELECT (.+) FROM topics"
 
-	table := []string{"topic_id", "name", "start_year", "end_year", "description", "scores_count", "events_count"}
+	table := []string{"topic_id", "name", "start_year", "end_year", "description", "image", "scores_count",
+		"events_count"}
 
 	// Declare test cases
 	tests := []struct {
@@ -168,7 +173,7 @@ func TestGetTopics(t *testing.T) {
 				rows := sqlmock.NewRows(table)
 				for _, topic := range tTopics {
 					rows = rows.AddRow(topic.TopicID, topic.Name, topic.StartYear, topic.EndYear, topic.Description,
-						topic.ScoresCount, topic.EventsCount)
+						topic.Image, topic.ScoresCount, topic.EventsCount)
 
 					mock.ExpectQuery(queryMatch).WillReturnRows(rows)
 				}
@@ -292,7 +297,8 @@ func TestCreateTopic(t *testing.T) {
 			name:  "#1 OK",
 			topic: tTopic,
 			mock: func(topic x.Topic) {
-				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description).
+				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description,
+					topic.Image).
 					WillReturnResult(sqlmock.NewResult(int64(topic.TopicID), 1))
 			},
 			wantError: false,
@@ -304,9 +310,11 @@ func TestCreateTopic(t *testing.T) {
 				StartYear:   tTopic.StartYear,
 				EndYear:     tTopic.EndYear,
 				Description: tTopic.Description,
+				Image:       tTopic.Image,
 			},
 			mock: func(topic x.Topic) {
-				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description).
+				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description,
+					topic.Image).
 					WillReturnError(errors.New("name can not be empty"))
 			},
 			wantError: true,
@@ -318,9 +326,11 @@ func TestCreateTopic(t *testing.T) {
 				Name:        tTopic.Name,
 				EndYear:     tTopic.EndYear,
 				Description: tTopic.Description,
+				Image:       tTopic.Image,
 			},
 			mock: func(topic x.Topic) {
-				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description).
+				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description,
+					topic.Image).
 					WillReturnError(errors.New("start-year can not be empty"))
 			},
 			wantError: true,
@@ -332,9 +342,11 @@ func TestCreateTopic(t *testing.T) {
 				Name:        tTopic.Name,
 				StartYear:   tTopic.StartYear,
 				Description: tTopic.Description,
+				Image:       tTopic.Image,
 			},
 			mock: func(topic x.Topic) {
-				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description).
+				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description,
+					topic.Image).
 					WillReturnError(errors.New("end-year can not be empty"))
 			},
 			wantError: true,
@@ -347,12 +359,31 @@ func TestCreateTopic(t *testing.T) {
 				Name:      tTopic.Name,
 				StartYear: tTopic.StartYear,
 				EndYear:   tTopic.EndYear,
+				Image:     tTopic.Image,
 			},
 			mock: func(topic x.Topic) {
-				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description).
+				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description,
+					topic.Image).
 					WillReturnResult(sqlmock.NewResult(int64(topic.TopicID), 1))
 			},
 			wantError: false,
+		},
+		{
+			// When image is missing
+			name: "#5 IMAGE MISSING",
+			topic: x.Topic{
+				TopicID:     tTopic.TopicID,
+				Name:        tTopic.Name,
+				StartYear:   tTopic.StartYear,
+				EndYear:     tTopic.EndYear,
+				Description: tTopic.Description,
+			},
+			mock: func(topic x.Topic) {
+				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description,
+					topic.Image).
+					WillReturnError(errors.New("image can not be empty"))
+			},
+			wantError: true,
 		},
 	}
 
@@ -394,7 +425,7 @@ func TestUpdateTopic(t *testing.T) {
 			topic: tTopic,
 			mock: func(topic x.Topic) {
 				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description,
-					topic.TopicID).
+					tTopic.Image, topic.TopicID).
 					WillReturnResult(sqlmock.NewResult(int64(topic.TopicID), 1))
 			},
 			wantError: false,
@@ -408,10 +439,11 @@ func TestUpdateTopic(t *testing.T) {
 				StartYear:   tTopic.StartYear,
 				EndYear:     tTopic.EndYear,
 				Description: tTopic.Description,
+				Image:       tTopic.Image,
 			},
 			mock: func(topic x.Topic) {
 				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description,
-					topic.TopicID).
+					tTopic.Image, topic.TopicID).
 					WillReturnError(errors.New("topic with given id does not exist"))
 			},
 			wantError: true,
@@ -424,10 +456,11 @@ func TestUpdateTopic(t *testing.T) {
 				StartYear:   tTopic.StartYear,
 				EndYear:     tTopic.EndYear,
 				Description: tTopic.Description,
+				Image:       tTopic.Image,
 			},
 			mock: func(topic x.Topic) {
 				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description,
-					topic.TopicID).
+					tTopic.Image, topic.TopicID).
 					WillReturnError(errors.New("name can not be empty"))
 			},
 			wantError: true,
@@ -440,10 +473,11 @@ func TestUpdateTopic(t *testing.T) {
 				Name:        tTopic.Name,
 				EndYear:     tTopic.EndYear,
 				Description: tTopic.Description,
+				Image:       tTopic.Image,
 			},
 			mock: func(topic x.Topic) {
 				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description,
-					topic.TopicID).
+					tTopic.Image, topic.TopicID).
 					WillReturnError(errors.New("start-year can not be empty"))
 			},
 			wantError: true,
@@ -456,10 +490,11 @@ func TestUpdateTopic(t *testing.T) {
 				Name:        tTopic.Name,
 				StartYear:   tTopic.StartYear,
 				Description: tTopic.Description,
+				Image:       tTopic.Image,
 			},
 			mock: func(topic x.Topic) {
 				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description,
-					topic.TopicID).
+					tTopic.Image, topic.TopicID).
 					WillReturnError(errors.New("end-year can not be empty"))
 			},
 			wantError: true,
@@ -472,13 +507,30 @@ func TestUpdateTopic(t *testing.T) {
 				Name:      tTopic.Name,
 				StartYear: tTopic.StartYear,
 				EndYear:   tTopic.EndYear,
+				Image:     tTopic.Image,
 			},
 			mock: func(topic x.Topic) {
 				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description,
-					topic.TopicID).
+					tTopic.Image, topic.TopicID).
 					WillReturnResult(sqlmock.NewResult(int64(topic.TopicID), 1))
 			},
 			wantError: false,
+		},
+		{
+			// When image is missing
+			name: "#5 IMAGE MISSING",
+			topic: x.Topic{
+				TopicID:     tTopic.TopicID,
+				Name:        tTopic.Name,
+				StartYear:   tTopic.StartYear,
+				Description: tTopic.Description,
+			},
+			mock: func(topic x.Topic) {
+				mock.ExpectExec(queryMatch).WithArgs(topic.Name, topic.StartYear, topic.EndYear, topic.Description,
+					tTopic.Image, topic.TopicID).
+					WillReturnError(errors.New("image can not be empty"))
+			},
+			wantError: true,
 		},
 	}
 

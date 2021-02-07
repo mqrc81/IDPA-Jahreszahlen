@@ -131,8 +131,8 @@ func (store *TopicStore) UpdateTopic(topic *x.Topic) error {
 		topic.StartYear,
 		topic.EndYear,
 		topic.Description,
-		topic.TopicID,
 		topic.Image,
+		topic.TopicID,
 	); err != nil {
 		return fmt.Errorf("error updating topic: %w", err)
 	}

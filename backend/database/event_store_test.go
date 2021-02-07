@@ -128,7 +128,7 @@ func TestCountEvents(t *testing.T) {
 			mock: func() {
 				rows := sqlmock.NewRows(table)
 
-				mock.ExpectQuery(queryMatch).WillReturnRows(rows).WillReturnError(errors.New("no users found"))
+				mock.ExpectQuery(queryMatch).WillReturnRows(rows).WillReturnError(errors.New("no events found"))
 			},
 			wantEventsCount: 0,
 			wantError:       true,
