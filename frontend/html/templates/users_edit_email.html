@@ -19,7 +19,7 @@ Email ändern
                     <div class="form-row">
                         <div class="col">
                             <div class="form-group">
-                                <label for="email"><strong>Neue Email</strong></label>
+                                <label class="mb-1" for="email"><strong>Neue Email</strong></label>
                                 <input type="text" name="email" id="email"
                                        class="form-control {{with .Form.Errors.NewEmail}}is-invalid{{end}}"
                                        value="{{with .Form.NewEmail}}{{.}}{{end}}">
@@ -28,7 +28,7 @@ Email ändern
                                 {{end}}
                             </div>
                             <div class="form-group">
-                                <label for="password"><strong>Passwort</strong></label>
+                                <label class="mt-2 mb-1" for="password"><strong>Passwort</strong></label>
                                 <input type="password" name="password" id="password"
                                        class="form-control {{with .Form.Errors.Password}}is-invalid{{end}}"
                                        value="{{with .Form.Password}}{{.}}{{end}}">

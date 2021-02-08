@@ -8,7 +8,7 @@ Ereignis erstellen
 
 {{define "content"}}
 <div class="row">
-    <div class="col-8">
+    <div class="col-9">
         <div class="card shadow mb-4">
             <div class="card-header py-3">
                 <p class="text-primary m-0 font-weight-bold">Neues Ereignis für '{{.Topic.Name}}'</p>
@@ -19,9 +19,9 @@ Ereignis erstellen
                     <div class="form-row">
                         <div class="col">
                             <div class="form-group">
-                                <label for="name"><strong>Ereignis</strong></label>
+                                <label class="mb-1" for="name"><strong>Ereignis</strong></label>
                                 <input type="text" name="name" id="name"
-                                       placeholder="Name des Ereignisses"
+                                       placeholder="Namen des Ereignisses"
                                        class="form-control {{with .Form.Errors.Name}}is-invalid{{end}}"
                                        value="{{with .Form.Name}}{{.}}{{end}}">
                                 {{with .Form.Errors.Name}}
@@ -29,7 +29,7 @@ Ereignis erstellen
                                 {{end}}
                             </div>
                             <div class="form-group">
-                                <label for="year"><strong>Jahr</strong></label>
+                                <label class="mt-2 mb-1" for="year"><strong>Jahr</strong></label>
                                 <input type="text" name="year" id="year"
                                        placeholder="Jahr/Datum des Geschehens (erlaubte Formate: 2000 / 12.2000 / 30.12.2000)"
                                        class="form-control {{with .Form.Errors.Year}}is-invalid{{end}}"
@@ -40,7 +40,7 @@ Ereignis erstellen
                             </div>
                             <br>
                             <div class="row justify-content-center">
-                                <div class="col-6">
+                                <div class="col-4">
                                     <button class="btn btn-primary btn-block text-white btn-user" type="submit">
                                         Ereignis erstellen
                                     </button>

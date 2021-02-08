@@ -7,7 +7,6 @@ package web
 import (
 	"html/template"
 	"net/http"
-	"reflect"
 	"strconv"
 
 	"github.com/alexedwards/scs/v2"
@@ -130,6 +129,7 @@ func (h *TopicHandler) CreateStore() http.HandlerFunc {
 			StartYear:   startYear,
 			EndYear:     endYear,
 			Description: req.FormValue("description"),
+			Image:       req.FormValue("image"),
 		}
 
 		// Validate form
@@ -224,26 +224,9 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 			return
 		}
 
-		// If this is not redirected back after already submitting once, fill
-		// the form with values of the topic
-		// A non-existing form gets filled with an empty placeholder map to
-		// avoid errors (sessions.go :57), so we check if the form is a map, in
-		// order to either pre-fill the form with values of the topic or leave
-		// the values the user submitted
-		sessionData := GetSessionData(h.sessions, req.Context())
-		if reflect.ValueOf(sessionData.Form).Kind() == reflect.Map { // if the form is an empty map
-			sessionData.Form = TopicForm{
-				Name:        topic.Name,
-				StartYear:   topic.StartYear,
-				EndYear:     topic.EndYear,
-				Description: topic.Description,
-				Image:       topic.Image,
-			}
-		}
-
 		// Execute HTML-templates with data
 		if err = topicsEditTemplate.Execute(res, data{
-			SessionData: sessionData,
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Topic:       topic,
 		}); err != nil {

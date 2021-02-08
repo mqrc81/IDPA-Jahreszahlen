@@ -7,58 +7,83 @@ Themen
 {{end}}
 
 {{define "content"}}
-<form action="/topics" method="POST" class="form">
-    {{.CSRF}}
-
-    <label for="name">Thema:</label>
-    <div class="form-group">
-        <input type="text" name="name" id="name"
-               class="form-control {{with .Form.Errors.Name}}is-invalid{{end}}"
-               placeholder="Titel des Themas"
-               value="{{with .Form.Name}}{{.}}{{end}}">
-    </div>
-
-    {{with .Form.Errors.Name}}
-    <div class="x-invalid-form">{{.}}</div>
-    {{end}}
-
-    <br>
-    <label for="year">Zeitspanne:</label>
-    <div class="row">
-        <div class="col">
-            <input type="number" name="start_year" id="year"
-                   class="form-control {{with .Form.Errors.Year}}is-invalid{{end}}"
-                   placeholder="Von"
-                   value="{{with .Form.StartYear}}{{.}}{{end}}">
+<div class="row">
+    <div class="col-9">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <p class="text-primary m-0 font-weight-bold">Neues Thema</p>
+            </div>
+            <div class="card-body">
+                <form action="/topics" method="POST" class="form">
+                    {{.CSRF}}
+                    <div class="form-row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label class="mb-1" for="name"><strong>Thema</strong></label>
+                                <input type="text" name="name" id="name"
+                                       placeholder="Namen des Themas"
+                                       class="form-control {{with .Form.Errors.Name}}is-invalid{{end}}"
+                                       value="{{with .Form.Name}}{{.}}{{end}}">
+                                {{with .Form.Errors.Name}}
+                                <div class="text-sm-left text-danger">{{.}}</div>
+                                {{end}}
+                            </div>
+                            <div class="form-group">
+                                <label class="mt-2 mb-1" for="start_year"
+                                       for="end_year"><strong>Zeitspanne</strong></label>
+                                <div class="row">
+                                    <div class="col mr-1">
+                                        <input type="text" name="start_year" id="start_year"
+                                               placeholder="Start-Jahr der Epoche"
+                                               class="form-control {{with .Form.Errors.Year}}is-invalid{{end}}"
+                                               value="{{with .Form.StartYear}}{{.}}{{end}}">
+                                    </div>
+                                    <h5>_</h5>
+                                    <div class="col ml-1">
+                                        <input type="text" name="end_year" id="end_year"
+                                               placeholder="End-Jahr der Epoche"
+                                               class="form-control {{with .Form.Errors.Year}}is-invalid{{end}}"
+                                               value="{{with .Form.EndYear}}{{.}}{{end}}">
+                                    </div>
+                                </div>
+                                {{with .Form.Errors.Year}}
+                                <div class="text-sm-left text-danger">{{.}}</div>
+                                {{end}}
+                            </div>
+                            <div class="form-group">
+                                <label class="mt-2 mb-1" for="description"><strong>Beschreibung</strong></label>
+                                <textarea type="text" name="description" id="description" rows="4"
+                                          placeholder="Optionale Beschreibung (empfohlen)"
+                                          class="form-control {{with .Form.Errors.Description}}is-invalid{{end}}">
+                                    {{- with .Form.Description}}{{.}}{{end -}}
+                                </textarea>
+                                {{with .Form.Errors.Description}}
+                                <div class="text-sm-left text-danger">{{.}}</div>
+                                {{end}}
+                            </div>
+                            <div class="form-group">
+                                <label class="mt-2 mb-1" for="image"><strong>Bild</strong></label>
+                                <input type="text" name="image" id="image"
+                                       placeholder="URL zu einem Bild (erlaubte Formate: .PNG, .JPG, .JPEG, .GIF)"
+                                       class="form-control {{with .Form.Errors.Image}}is-invalid{{end}}"
+                                       value="{{with .Form.Image}}{{.}}{{end}}">
+                                {{with .Form.Errors.Image}}
+                                <div class="text-sm-left text-danger">{{.}}</div>
+                                {{end}}
+                            </div>
+                            <br>
+                            <div class="row justify-content-center">
+                                <div class="col-4">
+                                    <button class="btn btn-primary btn-block text-white btn-user" type="submit">
+                                        Thema erstellen
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
-        _
-        <div class="col">
-            <input type="number" name="end_year" id=""
-                   class="form-control {{with .Form.Errors.Year}}is-invalid{{end}}"
-                   placeholder="Bis"
-                   value="{{with .Form.EndYear}}{{.}}{{end}}">
-        </div>
     </div>
-
-    {{with .Form.Errors.Year}}
-    <div class="x-invalid-form">{{.}}</div>
-    {{end}}
-
-    <br>
-    <label for="description">Beschreibung:</label>
-    <div class="form-group">
-            <textarea name="description" id="description" rows="3"
-                      class="form-control {{with .Form.Errors.Description}}is-invalid{{end}}"
-                      placeholder="Optionale Beschreibung des Themas">
-                {{- with .Form.Description}}{{.}}{{end -}}
-            </textarea>
-    </div>
-
-    {{with .Form.Errors.Description}}
-    <div class="x-invalid-form">{{.}}</div>
-    {{end}}
-
-    <br>
-    <button type="submit" class="x-button">Thema erstellen</button>
-</form>
+</div>
 {{end}}

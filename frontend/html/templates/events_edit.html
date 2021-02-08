@@ -8,7 +8,7 @@ Ereignis bearbeiten
 
 {{define "content"}}
 <div class="row">
-    <div class="col-8">
+    <div class="col-9">
         <div class="card shadow mb-4">
             <div class="card-header py-3">
                 <p class="text-primary m-0 font-weight-bold">Ereignis '{{.Event.Name}}'</p>
@@ -19,7 +19,7 @@ Ereignis bearbeiten
                     <div class="form-row">
                         <div class="col">
                             <div class="form-group">
-                                <label for="name"><strong>Ereignis</strong></label>
+                                <label class="mb-1" for="name"><strong>Ereignis</strong></label>
                                 <input type="text" name="name" id="name"
                                        class="form-control {{with .Form.Errors.Name}}is-invalid{{end}}"
                                        value="{{with .Form.Name}}{{.}}{{else}}{{with .Form.Errors.Year}}{{else}}{{.Event.Name}}{{end}}{{end}}">
@@ -28,7 +28,7 @@ Ereignis bearbeiten
                                 {{end}}
                             </div>
                             <div class="form-group">
-                                <label for="year"><strong>Jahr</strong></label>
+                                <label class="mt-2 mb-1" for="year"><strong>Jahr</strong></label>
                                 <input type="text" name="year" id="year"
                                        class="form-control {{with .Form.Errors.Year}}is-invalid{{end}}"
                                        value="{{with .Form.YearOrDate}}{{.}}{{else}}{{with .Form.Errors.Year}}{{else}}{{.Event.Year}}{{end}}{{end}}">
@@ -38,7 +38,7 @@ Ereignis bearbeiten
                             </div>
                             <br>
                             <div class="row justify-content-center">
-                                <div class="col-6">
+                                <div class="col-4">
                                     <button class="btn btn-primary btn-block text-white btn-user" type="submit">
                                         Ereignis bearbeiten
                                     </button>
