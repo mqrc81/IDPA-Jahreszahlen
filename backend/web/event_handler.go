@@ -7,7 +7,6 @@ package web
 import (
 	"html/template"
 	"net/http"
-	"reflect"
 	"strconv"
 
 	"github.com/alexedwards/scs/v2"
@@ -254,24 +253,9 @@ func (h *EventHandler) Edit() http.HandlerFunc {
 			return
 		}
 
-		// If this is not redirected back after already submitting once, fill
-		// the form with values of the event
-		// A non-existing form gets filled with an empty placeholder map to
-		// avoid errors (sessions.go :57), so we check if the form is a map, in
-		// order to either pre-fill the form with values of the event or leave
-		// the values the user submitted
-		sessionData := GetSessionData(h.sessions, req.Context())
-		if reflect.ValueOf(sessionData.Form).Kind() == reflect.Map { // if the form is an empty map
-			sessionData.Form = EventForm{
-				Name: event.Name,
-				Year: event.Year,
-				Date: event.Date,
-			}
-		}
-
 		// Execute HTML-templates with data
 		if err = eventsEditTemplate.Execute(res, data{
-			SessionData: sessionData,
+			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
 			Event:       event,
 		}); err != nil {

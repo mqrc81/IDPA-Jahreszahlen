@@ -33,7 +33,7 @@ Ereignis erstellen
                                 <input type="text" name="year" id="year"
                                        placeholder="Jahr/Datum des Geschehens (erlaubte Formate: 2000 / 12.2000 / 30.12.2000)"
                                        class="form-control {{with .Form.Errors.Year}}is-invalid{{end}}"
-                                       value="{{with .Form.Year}}{{.}}{{end}}">
+                                       value="{{with .Form.YearOrDate}}{{.}}{{end}}">
                                 {{with .Form.Errors.Year}}
                                 <div class="text-sm-left text-danger">{{.}}</div>
                                 {{end}}
