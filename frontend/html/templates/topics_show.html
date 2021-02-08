@@ -31,11 +31,37 @@
                         <a href="/topics/{{.Topic.TopicID}}/edit" title="Thema editieren">
                             <i class="fas fa-edit x-hover-red fa-4x text-gray-500"></i>
                         </a>
-                        <form action="/topics/{{.Topic.TopicID}}/delete" method="POST">
-                            {{.CSRF}}
-                            <a onclick="$(this).closest('form').submit();" title="Thema löschen"><i
-                                    class="fas fa-trash-alt x-hover-red fa-4x text-gray-500"></i></a>
-                        </form>
+                        <a href="#topicDeleteModal" data-bs-toggle="modal" title="Thema löschen">
+                            <i class="fas fa-trash-alt x-hover-red fa-4x text-gray-500"></i>
+                        </a>
+                        <div id="topicDeleteModal" class="modal fade">
+                            <form action="/topics/{{.Topic.TopicID}}/delete" method="POST">
+                                {{.CSRF}}
+                                <div class="modal-dialog modal-confirm">
+                                    <div class="modal-content">
+                                        <div class="modal-header flex-column">
+                                            <div class="icon-box">
+                                                <i class="fas fa-trash-alt fa-2x"></i>
+                                            </div>
+                                            <h4 class="modal-title w-100">Sind Sie sicher?</h4>
+                                            <button type="button" class="close" data-bs-dismiss="modal"
+                                                    aria-hidden="true">&times;
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Das Löschen eines Themas kann nicht rückgängig gemacht werden. Damit
+                                                werden auch alle Ereignisse gelöscht.</p>
+                                        </div>
+                                        <div class="modal-footer justify-content-center">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                Abbrechen
+                                            </button>
+                                            <button type="submit" class="btn btn-danger">Löschen</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
                         {{end}}
                     </div>
                 </div>
