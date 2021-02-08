@@ -22,7 +22,7 @@ Ereignis bearbeiten
                                 <label class="mb-1" for="name"><strong>Ereignis</strong></label>
                                 <input type="text" name="name" id="name"
                                        class="form-control {{with .Form.Errors.Name}}is-invalid{{end}}"
-                                       value="{{with .Form.Name}}{{.}}{{else}}{{with .Form.Errors.Year}}{{else}}{{.Event.Name}}{{end}}{{end}}">
+                                       value="{{with .Form.Name}}{{.}}{{else}}{{with .Form.Errors.Name}}{{else}}{{.Event.Name}}{{end}}{{end}}">
                                 {{with .Form.Errors.Name}}
                                 <div class="text-sm-left text-danger">{{.}}</div>
                                 {{end}}
