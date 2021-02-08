@@ -183,10 +183,11 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 		}
 
 		// Send email to verify a user's email
-		EmailVerificationEmail(user, token.TokenID).Send()
-		h.sessions.Put(req.Context(), "flash_info",
-			"Eine Bestätigungs-Email wurde an "+form.Email+" versandt. Bitte tätigen Sie diesen Link, "+
-				"um Ihre Email zu verifizieren.")
+		email := EmailVerificationEmail(user, token.TokenID)
+		if err = email.CreateAndSend(); err == nil {
+			h.sessions.Put(req.Context(), "flash_info", "Eine Bestätigungs-Email wurde an "+form.Email+" versandt. "+
+				"Bitte tätigen Sie diesen Link, um Ihre Email zu verifizieren.")
+		}
 
 		// Redirect to Home
 		http.Redirect(res, req, "/", http.StatusFound)
@@ -527,11 +528,14 @@ func (h *UserHandler) ResendVerifyEmail() http.HandlerFunc {
 			return
 		}
 
-		// Add flash message to session
-		h.sessions.Put(req.Context(), "flash_info", "Eine Bestätigungs-Email wurde an "+user.Email+" versandt.")
-
 		// Send email to verify a user's email
-		EmailVerificationEmail(user, token.TokenID).Send()
+		email := EmailVerificationEmail(user, token.TokenID)
+		if err := email.CreateAndSend(); err == nil {
+			h.sessions.Put(req.Context(), "flash_info", "Eine Bestätigungs-Email wurde an "+user.Email+" versandt.")
+		} else { // if error occurred and email wasn't sent successfully
+			h.sessions.Put(req.Context(), "flash_error",
+				"Beim Versenden der Email ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.")
+		}
 
 		// Redirect to home-page
 		http.Redirect(res, req, "/", http.StatusFound)
@@ -618,11 +622,14 @@ func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 		}
 
 		// Send email to reset a user's password
-		PasswordResetEmail(user, token.TokenID).Send()
-
-		// Add flash message to session
-		h.sessions.Put(req.Context(), "flash_success",
-			"Eine Email zum Zurücksetzen Ihres Passworts wurde an "+form.Email+" versandt.")
+		email := PasswordResetEmail(user, token.TokenID)
+		if err = email.CreateAndSend(); err == nil {
+			h.sessions.Put(req.Context(), "flash_success",
+				"Eine Email zum Zurücksetzen Ihres Passworts wurde an "+form.Email+" versandt.")
+		} else { // if error occurred and email wasn't sent successfully
+			h.sessions.Put(req.Context(), "flash_error",
+				"Beim Versenden der Email ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.")
+		}
 
 		// Redirect to home-page
 		http.Redirect(res, req, "/", http.StatusFound)

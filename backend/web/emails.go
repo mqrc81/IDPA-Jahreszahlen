@@ -4,8 +4,6 @@
 package web
 
 import (
-	"fmt"
-	"log"
 	"os"
 
 	"github.com/sendgrid/sendgrid-go"
@@ -15,99 +13,71 @@ import (
 )
 
 const (
-	fromName    = "Jahreszahlen"
-	fromAddress = "jahreszahlenapp@gmail.com"
-
-	passwordResetSubject     = "Passwort Zurücksetzen - " + fromName
-	emailVerificationSubject = "Email Bestätigen - " + fromName
+	url                     = "http://localhost:3000" // 'http://' necessary so SendGrid recognizes the link
+	verifyEmailTemplateID   = "d-fd2d13b01f78469994803ff4b1041532"
+	resetPasswordTemplateID = "d-c2848673e6b34e6a9e23585341ddc7cf"
 )
 
-// Email consists of data for an email to be sent out.
-type Email struct {
-	To      *mail.Email
-	Subject string
-	Body    string
-	HTML    string
+var (
+	fromEmail = mail.NewEmail("Jahreszahlen", "jahreszahlenapp@gmail.com")
+)
+
+// EmailData consists of details needed to create and send an email.
+type EmailData struct {
+	TemplateID string
+	Recipient  *mail.Email
+	Link       string
 }
 
-// Send sends an email to a user.
-func (email Email) Send() {
-	// Create new SendGrid client
-	client := sendgrid.NewSendClient(os.Getenv("SG_APIKEY"))
-
-	// Create sender
-	from := mail.NewEmail(fromName, fromAddress)
+// CreateAndSend sends an email to a user.
+func (data EmailData) CreateAndSend() error {
 
 	// Create new email
-	newEmail := mail.NewSingleEmail(from, email.Subject, email.To, email.Body, email.HTML)
+	email := mail.NewV3Mail()
+	email.SetFrom(fromEmail)
+	email.SetTemplateID(data.TemplateID) // email HTML template made with SendGrid
+
+	personalization := mail.NewPersonalization()
+	personalization.AddTos(data.Recipient)
+
+	// Set variables for dynamic HTML template of email
+	personalization.SetDynamicTemplateData("username", data.Recipient.Name)
+	personalization.SetDynamicTemplateData("link", data.Link)
+	email.AddPersonalizations(personalization)
 
 	// Send email
-	if _, err := client.Send(newEmail); err != nil {
-		log.Printf("error sending email: %v", err)
-	}
-	fmt.Println("Sent email to " + email.To.Name + " <" + email.To.Address + ">")
+	request := sendgrid.GetRequest(os.Getenv("SG_APIKEY"), "/v3/mail/send", "https://api.sendgrid.com")
+	request.Method = "POST"
+	request.Body = mail.GetRequestBody(email)
+	_, err := sendgrid.API(request)
+
+	return err
 }
 
-// PasswordResetEmail creates an email for resetting the user's password to be
-// sent out to a user.
-func PasswordResetEmail(user x.User, token string) Email {
+// PasswordResetEmail returns details necessary in order to create and send an
+// email to reset a user's password.
+func PasswordResetEmail(user x.User, token string) EmailData {
 
-	// Create email body
-	html := `
-<p>Hallo ` + user.Username + `,</p>
-<p></p>
-<p>Klicken Sie <strong><a href="localhost:3000/users/reset/password?token=` + token + `">hier</a></strong>, um Ihr
-Passwort zurückzusetzen.</p>
-<p></p>
-<p>(oder kopieren Sie diesen Link in Ihren Browser: localhost:3000/users/reset/password?token=` + token + `).</p>
-<p></p>
-<p>Antworten Sie nicht auf diese Email.</p>
-`
+	recipient := mail.NewEmail(user.Username, user.Email)
+	link := url + "/users/reset/password?token=" + token
 
-	body := "Hallo " + user.Username + ",\n" +
-		"\n" +
-		"Klicken Sie auf diesen Link, um Ihr Passwort zurückzusetzen:\n" +
-		"localhost:3000/users/reset/password?token=" + token
-
-	// New recipient
-	to := mail.NewEmail(user.Username, user.Email)
-
-	return Email{
-		To:      to,
-		Subject: passwordResetSubject,
-		Body:    body,
-		HTML:    html,
+	return EmailData{
+		TemplateID: resetPasswordTemplateID,
+		Recipient:  recipient,
+		Link:       link,
 	}
 }
 
-// EmailVerificationEmail creates an email to reset the password to be sent out
-// to a user.
-func EmailVerificationEmail(user x.User, token string) Email {
+// EmailVerificationEmail returns details necessary in order to create and send
+// an email to verify a user's email.
+func EmailVerificationEmail(user x.User, token string) EmailData {
 
-	// Create email body
-	html := `
-<p>Hallo ` + user.Username + `,</p>
-<p></p>
-<p>Klicken Sie <strong><a href="localhost:3000/users/verify/email?token=` + token + `">hier</a></strong>, um Ihre 
-Email zu bestätigen.</p>
-<p></p>
-<p>(oder kopieren Sie diesen Link in Ihren Browser: localhost:3000/users/verify/email?token=` + token + `).</p>
-<p></p>
-<p>Antworten Sie nicht auf diese Email.</p>
-`
+	recipient := mail.NewEmail(user.Username, user.Email)
+	link := url + "/users/verify/email?token=" + token
 
-	body := "Hallo " + user.Username + ",\n" +
-		"\n" +
-		"Klicken Sie auf diesen Link, um Ihre Email zu bestätigen:\n" +
-		"localhost:3000/users/email/verify?token=" + token
-
-	// New recipient
-	to := mail.NewEmail(user.Username, user.Email)
-
-	return Email{
-		To:      to,
-		Subject: emailVerificationSubject,
-		Body:    body,
-		HTML:    html,
+	return EmailData{
+		TemplateID: verifyEmailTemplateID,
+		Recipient:  recipient,
+		Link:       link,
 	}
 }
