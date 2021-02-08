@@ -16,7 +16,7 @@
             <div class="col-6">
                 <div class="card shadow border-left-info mb-4">
                     <div class="card-body">
-                        {{.Topic.Description}}
+                        {{with .Topic.Description}}{{.}}{{else}}Keine Beschreibung{{end}}
                     </div>
                 </div>
                 <div class="mx-4 mt-5">
@@ -50,7 +50,8 @@
                                         </div>
                                         <div class="modal-body">
                                             <p>Das Löschen eines Themas kann nicht rückgängig gemacht werden. Damit
-                                                werden auch alle Ereignisse gelöscht.</p>
+                                                werden auch alle Ereignisse und Spielresultate dieses Themas
+                                                gelöscht.</p>
                                         </div>
                                         <div class="modal-footer justify-content-center">
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">

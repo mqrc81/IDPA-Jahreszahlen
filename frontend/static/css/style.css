@@ -194,8 +194,25 @@ label {
     border: 3px solid #e74a3b;
 }
 
+.modal-confirm .icon-box-yellow {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    border-radius: 50%;
+    z-index: 9;
+    text-align: center;
+    border: 3px solid #f6c23e;
+}
+
 .modal-confirm .icon-box i {
     color: #e74a3b;
+    font-size: 46px;
+    display: inline-block;
+    margin-top: 13px;
+}
+
+.modal-confirm .icon-box-yellow i {
+    color: #f6c23e;
     font-size: 46px;
     display: inline-block;
     margin-top: 13px;
@@ -226,8 +243,16 @@ label {
     background: #e74a3b;
 }
 
+.modal-confirm .btn-danger-yellow {
+    background: #f6c23e;
+}
+
 .modal-confirm .btn-danger:hover, .modal-confirm .btn-danger:focus {
     background: #e74a3b;
+}
+
+.modal-confirm .btn-danger-yellow:hover, .modal-confirm .btn-danger-yellow:focus {
+    background: #f6c23e;
 }
 
 .trigger-btn {

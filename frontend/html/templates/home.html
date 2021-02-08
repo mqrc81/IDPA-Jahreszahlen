@@ -21,7 +21,7 @@ Home
                             <span>{{.UsersCount}}</span>
                         </div>
                     </div>
-                    <div class="col-auto"><i class="fas fa-user fa-2x text-gray-300"></i></div>
+                    <div class="col-auto"><i class="fas fa-users fa-2x text-gray-300"></i></div>
                 </div>
             </div>
         </div>
@@ -95,11 +95,9 @@ Home
                             <div class="text-info font-weight-bold text-xs mb-1">
                                 <span>#{{increment $i}}</span>
                             </div>
-                            <div>
-                                <span class="h5 font-weight-bold"><a
-                                        href="/topics/{{$t.TopicID}}">{{$t.Name}}</a></span>
-                                <span class="text-sm-left font-weight-bold"> ({{$t.StartYear}} - {{$t.EndYear}})</span>
-                            </div>
+                            <span class="h5 font-weight-bold">
+                                    <a href="/topics/{{$t.TopicID}}">{{$t.Name}}</a></span>
+                            <span class="text-sm-left font-weight-bold"> ({{$t.StartYear}} - {{$t.EndYear}})</span>
                             <div class="ml-3 mt-2 font-weight-bold text-sm-left">
                                 <span>{{$t.EventsCount}} Ereignisse</span>
                             </div>

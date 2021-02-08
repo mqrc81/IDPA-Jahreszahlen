@@ -366,7 +366,12 @@ func (h *UserHandler) List() http.HandlerFunc {
 		SessionData
 		CSRF template.HTML
 
-		Users []x.User
+		Users              []x.User
+		Admins             []x.User
+		UsersCount         int
+		VerifiedUsersCount int
+		PlayedUsersCount   int
+		AdminsCount        int
 	}
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -389,11 +394,31 @@ func (h *UserHandler) List() http.HandlerFunc {
 			return
 		}
 
+		// Store admins separately
+		var admins []x.User
+		var verified, played int
+		for _, u := range users {
+			if u.Admin {
+				admins = append(admins, u)
+			}
+			if u.Verified {
+				verified++
+			}
+			if u.ScoresCount > 0 {
+				played++
+			}
+		}
+
 		// Execute HTML-templates with data
 		if err = usersListTemplate.Execute(res, data{
-			Users:       users,
-			SessionData: GetSessionData(h.sessions, req.Context()),
-			CSRF:        csrf.TemplateField(req),
+			Users:              users,
+			Admins:             admins,
+			UsersCount:         len(users),
+			VerifiedUsersCount: verified,
+			PlayedUsersCount:   played,
+			AdminsCount:        len(admins),
+			SessionData:        GetSessionData(h.sessions, req.Context()),
+			CSRF:               csrf.TemplateField(req),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusFound)
 			return
