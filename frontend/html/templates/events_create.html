@@ -7,37 +7,50 @@ Ereignis erstellen
 {{end}}
 
 {{define "content"}}
-
-<h5>Ereignis zum Thema '{{.Topic.Name}}'</h5>
-
-<form action="/topics/{{.Topic.TopicID}}/events" method="POST" class="form">
-    {{.CSRF}}
-    <label for="name">Ereignis:</label>
-    <div class="form-group">
-        <input type="text" name="name" id="name"
-               class="form-control {{with .Form.Errors.Name}}is-invalid{{end}}"
-               placeholder="Titel des Ereignisses"
-               value="{{with .Form.Name}}{{.}}{{end}}">
+<div class="row">
+    <div class="col-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <p class="text-primary m-0 font-weight-bold">Neues Ereignis für '{{.Topic.Name}}'</p>
+            </div>
+            <div class="card-body">
+                <form action="/topics/{{.Topic.TopicID}}/events" method="POST" class="form">
+                    {{.CSRF}}
+                    <div class="form-row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="name"><strong>Ereignis</strong></label>
+                                <input type="text" name="name" id="name"
+                                       placeholder="Name des Ereignisses"
+                                       class="form-control {{with .Form.Errors.Name}}is-invalid{{end}}"
+                                       value="{{with .Form.Name}}{{.}}{{end}}">
+                                {{with .Form.Errors.Name}}
+                                <div class="text-sm-left text-danger">{{.}}</div>
+                                {{end}}
+                            </div>
+                            <div class="form-group">
+                                <label for="year"><strong>Jahr</strong></label>
+                                <input type="text" name="year" id="year"
+                                       placeholder="Jahr/Datum des Geschehens (erlaubte Formate: 2000 / 12.2000 / 30.12.2000)"
+                                       class="form-control {{with .Form.Errors.Year}}is-invalid{{end}}"
+                                       value="{{with .Form.Year}}{{.}}{{end}}">
+                                {{with .Form.Errors.Year}}
+                                <div class="text-sm-left text-danger">{{.}}</div>
+                                {{end}}
+                            </div>
+                            <br>
+                            <div class="row justify-content-center">
+                                <div class="col-6">
+                                    <button class="btn btn-primary btn-block text-white btn-user" type="submit">
+                                        Ereignis erstellen
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-
-    {{with .Form.Errors.Name}}
-    <div class="x-invalid-form">{{.}}</div>
-    {{end}}
-
-    <br>
-    <label for="year">Jahr:</label>
-    <div class="form-group">
-        <input type="text" name="year" id="year"
-               class="form-control {{with .Form.Errors.Year}}is-invalid{{end}}"
-               placeholder="Jahr/Datum des Geschehens"
-               value="{{with .Form.Year}}{{.}}{{end}}">
-    </div>
-
-    {{with .Form.Errors.Year}}
-    <div class="x-invalid-form">{{.}}</div>
-    {{end}}
-
-    <br>
-    <button type="submit" class="x-button">Ereignis erstellen</button>
-</form>
+</div>
 {{end}}

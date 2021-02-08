@@ -120,15 +120,16 @@ func (form *EventForm) Validate() bool {
 	}
 
 	// Validate date or year
+	if form.YearOrDate == "" {
+		form.Errors["Year"] = "Jahr/Datum darf nicht leer sein."
+	}
 	year, err := strconv.Atoi(form.YearOrDate) // convert to int
 	if err == nil {                            // if no error occurs, admin entered a year (not a date)
 		form.Year = year
 		form.Date, _ = time.Parse("2006", form.YearOrDate) // date = year + default values (e.g. 1969-01-01 00:00:00)
 
 		// Validate year
-		if form.Year == 0 {
-			form.Errors["Year"] = "Jahr darf nicht leer sein."
-		} else if form.Year <= 0 {
+		if form.Year <= 0 {
 			form.Errors["Year"] = "Jahr muss positiv sein."
 		} else if form.Year > time.Now().Year() {
 			form.Errors["Year"] = "Wird hier die Zukunft vorausgesagt?"
