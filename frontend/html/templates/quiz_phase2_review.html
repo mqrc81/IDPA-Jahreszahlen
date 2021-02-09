@@ -29,8 +29,8 @@ Phase 2 Überprüfung
 </div>
 {{end}}
 <br>
-<button type="submit" class="btn btn-primary btn-block text-white btn-user p-3">Weiter zu Phase 3</button>
 <form action="/topics/{{.TopicID}}/quiz/3" method="POST" class="form">
     {{.CSRF}}
+    <button type="submit" class="btn btn-primary btn-block text-white btn-user p-3">Weiter zu Phase 3</button>
 </form>
 {{end}}
