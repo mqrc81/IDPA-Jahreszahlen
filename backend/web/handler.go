@@ -22,7 +22,6 @@ import (
 	"github.com/gorilla/csrf"
 
 	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/util"
 )
 
 const (
@@ -242,8 +241,7 @@ func (h *Handler) Home() http.HandlerFunc {
 		sort.Slice(topics, func(n1, n2 int) bool {
 			return topics[n1].ScoresCount > topics[n2].ScoresCount
 		})
-		// Only use the 5 topics with the highest amount of scores
-		topics = topics[:util.Min(len(topics), 5)]
+		topics = topics[:min(len(topics), 5)] // only use the 5 topics with the highest amount of scores
 
 		// Execute SQL statement to get amount of users
 		usersCount, err := h.store.CountUsers()
@@ -401,4 +399,21 @@ func (h *Handler) fileServer(path string, dir http.FileSystem) {
 		fs := http.StripPrefix(pathPrefix, http.FileServer(dir))
 		fs.ServeHTTP(res, req)
 	})
+}
+
+// min returns the smallest out of all the numbers.
+func min(nums ...int) int {
+
+	if len(nums) == 0 {
+		return 0
+	}
+
+	minNumber := nums[0]
+	for _, num := range nums {
+		if num < minNumber {
+			minNumber = num
+		}
+	}
+
+	return minNumber
 }

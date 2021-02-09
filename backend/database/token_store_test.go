@@ -12,13 +12,12 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 
 	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/util"
 )
 
 var (
 	// tToken is a mock token for testing purposes
 	tToken = x.Token{
-		TokenID: util.GenerateString(43),
+		TokenID: "1234567890123456789012345678901234567890123",
 		UserID:  1,
 		Expiry:  time.Now().Add(time.Hour),
 	}

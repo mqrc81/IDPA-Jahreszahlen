@@ -8,11 +8,11 @@ package web
 import (
 	"encoding/gob"
 	"fmt"
+	"log"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/util"
 )
 
 // init gets initialized with the package.
@@ -87,9 +87,9 @@ func (form *TopicForm) Validate() bool {
 		form.Errors["Image"] = "URL des Fotos darf nicht leer sein."
 	} else if len(form.Image) > 5000 {
 		form.Errors["Image"] = "URL des Fotos darf 5000 Buchstaben nicht überschreiten."
-	} else if !util.Regex(form.Image, "(?i)^(https?://|www\\.).*$") {
+	} else if !regex(form.Image, "(?i)^(https?://|www\\.).*$") {
 		form.Errors["Image"] = "URL des Fotos ist kein gültiger Link."
-	} else if !util.Regex(form.Image, "(?i)^.*\\.(png|jpe?g|gif)$") {
+	} else if !regex(form.Image, "(?i)^.*\\.(png|jpe?g|gif)$") {
 		form.Errors["Image"] = "URL des Fotos muss auf '.PNG', '.JPG', '.JPEG' oder '.GIF' enden."
 	} else if strings.Contains(form.Image, " ") {
 		form.Errors["Image"] = "URL des Fotos ist ungültig."
@@ -367,15 +367,15 @@ func (errors *FormErrors) validateUsername(username string, errorName string) {
 		(*errors)[errorName] = "Benutzername muss mindestens 3 Zeichen lang sein."
 	} else if len(username) > 20 {
 		(*errors)[errorName] = "Benutzername darf höchstens 20 Zeichen lang sein."
-	} else if !util.Regex(username, "^[a-zA-Z0-9._]*$") {
+	} else if !regex(username, "^[a-zA-Z0-9._]*$") {
 		(*errors)[errorName] = "Benutzername darf nur Buchstaben, Zahlen, '.' und '_' enthalten."
-	} else if !util.Regex(username, "[a-zA-Z]") {
+	} else if !regex(username, "[a-zA-Z]") {
 		(*errors)[errorName] = "Benutzername muss mindestens 1 Buchstaben enthalten."
-	} else if util.Regex(username, "^[._]") {
+	} else if regex(username, "^[._]") {
 		(*errors)[errorName] = "Benutzername darf nicht mit '.' oder '_' beginnen."
-	} else if util.Regex(username, "[._]$") {
+	} else if regex(username, "[._]$") {
 		(*errors)[errorName] = "Benutzername darf nicht mit '.' oder '_' enden."
-	} else if util.Regex(username, "[_.]{2}") {
+	} else if regex(username, "[_.]{2}") {
 		(*errors)[errorName] = "Benutzername darf '.' und '_' nicht aufeinanderfolgend haben."
 	}
 }
@@ -388,7 +388,7 @@ func (errors *FormErrors) validateEmail(email string, errorName string) {
 		(*errors)[errorName] = "Email muss mindestens 3 Zeichen lang sein."
 	} else if len(email) > 100 {
 		(*errors)[errorName] = "Email darf höchstens 100 Zeichen lang sein."
-	} else if !util.Regex(email, "^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,4}$") {
+	} else if !regex(email, "^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,4}$") {
 		(*errors)[errorName] = "Ungültiges Email-Format."
 	}
 }
@@ -399,13 +399,24 @@ func (errors *FormErrors) validatePassword(password string, errorName string) {
 		(*errors)[errorName] = "Bitte Passwort angeben."
 	} else if len(password) < 8 {
 		(*errors)[errorName] = "Passwort muss mindestens 8 Zeichen lang sein."
-	} else if !util.Regex(password, "[!@#$%^&*]") {
+	} else if !regex(password, "[!@#$%^&*]") {
 		(*errors)[errorName] = "Passwort muss ein Sonderzeichen enthalten (!@#$%^&*)."
-	} else if !util.Regex(password, "[a-z]") {
+	} else if !regex(password, "[a-z]") {
 		(*errors)[errorName] = "Passwort muss mindestens ein Kleinbuchstaben enthalten."
-	} else if !util.Regex(password, "[A-Z]") {
+	} else if !regex(password, "[A-Z]") {
 		(*errors)[errorName] = "Passwort muss mindestens ein Grossbuchstaben enthalten."
-	} else if !util.Regex(password, "\\d") {
+	} else if !regex(password, "\\d") {
 		(*errors)[errorName] = "Passwort muss mindestens eine Zahl enthalten."
 	}
+}
+
+// regex checks if a certain regular expression matches a certain string.
+func regex(str string, regex string) bool {
+
+	match, err := regexp.MatchString(regex, str)
+	if err != nil {
+		log.Printf("error comparing regular-expression '%v' to string '%v': %v", regex, str, err)
+	}
+
+	return match
 }

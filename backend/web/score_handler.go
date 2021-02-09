@@ -168,7 +168,7 @@ func createLeaderboardRows(scores []x.Score, show int, page int) []leaderboardRo
 // inspectFilters examines the filters from the URL query, checks for all
 // possible cases and returns the amount of scores to be shown and the
 // new page.
-// (Tested in test_handler.go)
+// (Tested in handler_test.go)
 func inspectFilters(showFilter string, pageFilter string, scoresCount int) (int, int) {
 
 	// Check for invalid URL query
@@ -209,7 +209,7 @@ func inspectFilters(showFilter string, pageFilter string, scoresCount int) (int,
 // Example 1: 23 scores, showing 11-20 => [< 1 '2' 3 >]
 // Example 2: 20 scores, showing 11-20 => [< 1 '2']
 // Example 3: 50 scores, showing 41-50 => [< 3 4 '5']
-// (Tested in test_handler.go)
+// (Tested in handler_test.go)
 func createPages(show int, page int, scoresCount int) []int {
 	var pages []int
 

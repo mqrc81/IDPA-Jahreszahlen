@@ -314,3 +314,37 @@ func TestScoreCreatePages(t *testing.T) {
 		})
 	}
 }
+
+// TestGenerateRandomString tests generating a random string of a certain length.
+func TestGenerateRandomString(t *testing.T) {
+
+	// Declare test cases
+	tests := []struct {
+		name    string
+		len     int // function parameter
+		wantLen int
+	}{
+		{
+			name:    "#1 OK",
+			len:     32,
+			wantLen: 32,
+		},
+		{
+			name:    "#2 OK (BIG INT)",
+			len:     987654321,
+			wantLen: 987654321,
+		},
+	}
+
+	// Run tests
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := generateRandomString(test.len)
+
+			if len(got) != test.wantLen || reflect.TypeOf(got) != reflect.TypeOf("") {
+				t.Errorf("GenerateString() = %v, want string of length %v", got, test.wantLen)
+				return
+			}
+		})
+	}
+}

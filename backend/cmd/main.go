@@ -4,6 +4,7 @@
 package main
 
 import (
+	"crypto/rand"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,7 +13,6 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/database"
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/util"
 	"github.com/mqrc81/IDPA-Jahreszahlen/backend/web"
 )
 
@@ -47,7 +47,11 @@ func main() {
 	}
 
 	// Generate random 32-byte key for CSRF-protection
-	csrfKey := util.GenerateBytes(32)
+	csrfKey := make([]byte, 32)
+
+	if _, err = rand.Read(csrfKey); err != nil {
+		log.Fatalf("error generating csrf-key: %v", err)
+	}
 
 	// Initialize HTTP-handlers, including router and middleware
 	handler := web.NewHandler(store, sessions, csrfKey)

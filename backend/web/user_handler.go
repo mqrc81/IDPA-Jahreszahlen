@@ -5,8 +5,11 @@
 package web
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/gob"
 	"html/template"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -18,7 +21,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/util"
 )
 
 const (
@@ -172,7 +174,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 
 		// New token
 		token := x.Token{
-			TokenID: util.GenerateString(TokenLength),
+			TokenID: generateRandomString(TokenLength),
 			UserID:  user.UserID,
 		}
 
@@ -586,7 +588,7 @@ func (h *UserHandler) ResendVerifyEmail() http.HandlerFunc {
 
 		// New token
 		token := x.Token{
-			TokenID: util.GenerateString(TokenLength),
+			TokenID: generateRandomString(TokenLength),
 			UserID:  user.UserID,
 		}
 
@@ -678,7 +680,7 @@ func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 
 		// New token
 		token := x.Token{
-			TokenID: util.GenerateString(TokenLength),
+			TokenID: generateRandomString(TokenLength),
 			UserID:  user.UserID,
 			Expiry:  time.Now().Add(time.Hour),
 		}
@@ -825,4 +827,17 @@ func (h *UserHandler) ResetPasswordSubmit() http.HandlerFunc {
 		// Redirect to login
 		http.Redirect(res, req, "/users/login", http.StatusFound)
 	}
+}
+
+// generateRandomString generates a random string of a certain length.
+// (Tested in handler_test.go)
+func generateRandomString(len int) string {
+
+	key := make([]byte, len)
+
+	if _, err := rand.Read(key); err != nil {
+		log.Fatalf("error generating random key: %v", err)
+	}
+
+	return base64.URLEncoding.EncodeToString(key)[:len]
 }

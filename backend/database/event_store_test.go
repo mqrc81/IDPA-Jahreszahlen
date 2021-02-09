@@ -8,11 +8,11 @@ import (
 	"errors"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 
 	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/util"
 )
 
 var (
@@ -22,7 +22,7 @@ var (
 		TopicID: 1,
 		Name:    "Test Event 1",
 		Year:    1800,
-		Date:    util.Date(1800, 1, 1),
+		Date:    time.Date(1800, 1, 1, 0, 0, 0, 0, time.UTC),
 	}
 )
 

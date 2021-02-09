@@ -29,7 +29,6 @@ import (
 	"github.com/gorilla/csrf"
 
 	x "github.com/mqrc81/IDPA-Jahreszahlen/backend"
-	"github.com/mqrc81/IDPA-Jahreszahlen/backend/util"
 )
 
 const (
@@ -481,7 +480,7 @@ func (h *QuizHandler) Phase2Submit() http.HandlerFunc {
 			} else {
 				// Get absolute value of difference between user's guess and
 				// correct year
-				difference := util.Abs(correctYear - questions[num].UserGuess)
+				difference := abs(correctYear - questions[num].UserGuess)
 
 				// Check if the user's guess is close and potentially add
 				// partial points (the closer the guess, the more points)
@@ -733,7 +732,7 @@ func (h *QuizHandler) Phase3Submit() http.HandlerFunc {
 
 			// Get absolute value of difference between user's guess and
 			// correct order
-			difference := util.Abs(order - num) // num represents the user's order
+			difference := abs(order - num) // num represents the user's order
 
 			// Check if guess was correct
 			if difference == 0 {
@@ -1078,7 +1077,7 @@ func createPhase3Questions(events []x.Event) []phase3Question {
 // most efficient way of looking for this index.
 // Time complexity: O(√n) using binary-search instead of O(n) using iteration;
 // 50000 scores take 224 iterations max instead of 50000 max (=> scalable).
-// (Tested in test_handler.go)
+// (Tested in handler_test.go)
 func binarySearchForPoints(points int, scores []x.Score, floor int, ceil int) int {
 	if len(scores) == 0 {
 		return 0
@@ -1105,4 +1104,14 @@ func binarySearchForPoints(points int, scores []x.Score, floor int, ceil int) in
 		// Binary-search with lower half (higher points)
 		return binarySearchForPoints(points, scores, floor, middle-1) // example: scores 10 - 16
 	}
+}
+
+// abs returns the absolute value of a number.
+func abs(num int) int {
+
+	if num < 0 {
+		return -num
+	}
+
+	return num
 }

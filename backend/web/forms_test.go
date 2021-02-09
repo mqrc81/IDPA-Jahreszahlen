@@ -1239,3 +1239,56 @@ func TestValidatePassword(t *testing.T) {
 		})
 	}
 }
+
+// TestRegex tests comparing a string to a regular expression.
+func TestRegex(t *testing.T) {
+
+	// Function parameters
+	type compare struct {
+		str   string
+		regex string
+	}
+
+	// Declare test cases
+	tests := []struct {
+		name    string
+		compare compare
+		want    bool
+	}{
+		{
+			name: "#1 OK",
+			compare: compare{
+				str:   "abcdefg1asd",
+				regex: "\\d",
+			},
+			want: true,
+		},
+		{
+			name: "#2 OK (EMAIL)",
+			compare: compare{
+				str:   "test@mail.com",
+				regex: "^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,4}$",
+			},
+			want: true,
+		},
+		{
+			name: "#3 INVALID ITERATION",
+			compare: compare{
+				str: "Passw0rd!",
+				// Iterative regex checking (with ?=) is not supported in Go
+				regex: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+			},
+			want: false, // error expected
+		},
+	}
+
+	// Run tests
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			if got := regex(tt.compare.str, tt.compare.regex); got != tt.want {
+				t.Errorf("Regex() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
