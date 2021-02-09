@@ -63,8 +63,9 @@ func (store *ScoreStore) GetScoresByTopic(topicID int) ([]x.Score, error) {
 	return scores, nil
 }
 
-// GetScoresByUser gets scores of a certain user, sorted by points descending.
-func (store *ScoreStore) GetScoresByUser(userID int) ([]x.Score, error) {
+// GetScoresByTopicAndUser gets scores of a certain topic and user, sorted by
+// points descending.
+func (store *ScoreStore) GetScoresByTopicAndUser(topicID int, userID int) ([]x.Score, error) {
 	var scores []x.Score
 
 	query := `
@@ -74,12 +75,13 @@ func (store *ScoreStore) GetScoresByUser(userID int) ([]x.Score, error) {
 		FROM scores s 
 		    LEFT JOIN topics t ON t.topic_id = s.topic_id 
 		    LEFT JOIN users u ON u.user_id = s.user_id
-		WHERE s.user_id = ?
+		WHERE s.topic_id = ? 
+		  AND s.user_id = ?
 		ORDER BY points DESC
 		`
 
 	// Execute prepared statement
-	if err := store.Select(&scores, query, userID); err != nil {
+	if err := store.Select(&scores, query, topicID, userID); err != nil {
 		return []x.Score{}, fmt.Errorf("error getting scores: %w", err)
 	}
 

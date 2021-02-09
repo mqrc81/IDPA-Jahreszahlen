@@ -7,36 +7,90 @@ Profil
 {{end}}
 
 {{define "content"}}
-<div class="x-card">
-    <div class="card-body">
-        <table class="table">
-            <tbody>
-            <tr>
-                <th scope="row">Benutzername:</th>
-                <td>{{.User.Username}}</td>
-                <td><a href="/users/edit/username"><i class="fas fa-pencil-alt"></i></a></td>
-            </tr>
-            <tr>
-                <th scope="row">Email:</th>
-                <td>{{.User.Email}}</td>
-                <td><a href="/users/edit/email"><i class="fas fa-pencil-alt"></i></a></td>
-            </tr>
-            <tr>
-                <th scope="row">Passwort:</th>
-                <td>********</td>
-                <td><a href="/users/edit/password"><i class="fas fa-pencil-alt"></i></a></td>
-            </tr>
-            </tbody>
-        </table>
+<div class="row">
+    <div class="col-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <p class="text-primary m-0 font-weight-bold">Account-Daten</p>
+            </div>
+            <div class="card shadow">
+                <div class="card-body">
+                    <div class="row align-items-center no-gutters">
+                        <div class="col">
+                            <div class="row py-2">
+                                <div class="col-5">
+                                    <span class="ml-4 font-weight-bold">Benutzername:</span>
+                                </div>
+                                <div class="col-5">
+                                    <span>{{.User.Username}}</span>
+                                </div>
+                                <div class="col-2">
+                                    <span class="float-right mr-5">
+                                        <a href="/users/edit/username" title="Benutzername bearbeiten">
+                                            <i class="fas fa-pen x-hover-yellow text-gray-500"></i>
+                                        </a>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row py-2">
+                                <div class="col-5">
+                                    <span class="ml-4 font-weight-bold">Email:</span>
+                                </div>
+                                <div class="col-5">
+                                    <span>{{.User.Email}}</span>
+                                </div>
+                                <div class="col-2">
+                                    <span class="float-right mr-5">
+                                        <a href="/users/edit/email" title="Email bearbeiten">
+                                            <i class="fas fa-pen x-hover-yellow text-gray-500"></i>
+                                        </a>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row py-2">
+                                <div class="col-5">
+                                    <span class="ml-4 font-weight-bold">Passwort:</span>
+                                </div>
+                                <div class="col-5">
+                                    <span>********</span>
+                                </div>
+                                <div class="col-2">
+                                    <span class="float-right mr-5">
+                                        <a href="/users/edit/password" title="Passwort bearbeiten">
+                                            <i class="fas fa-pen x-hover-yellow text-gray-500"></i>
+                                        </a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <p class="text-primary m-0 font-weight-bold">Bestes Spielresultat pro Thema</p>
+            </div>
+            <div class="card-body">
+                {{range .ScoresPerTopic}}
+                <h4 class="small font-weight-bold">{{.TopicName}}<span class="float-right">{{.Points}}/{{.MaxPoints}} Punkte ({{.Percentage}}%)</span>
+                </h4>
+                <div class="progress mb-4">
+                    {{$p := .Percentage}}
+                    <div class="progress-bar
+                    {{if le $p 20}}bg-danger{{else}}
+                    {{if le $p 40}}bg-warning{{else}}
+                    {{if le $p 60}}bg-primary{{else}}
+                    {{if le $p 80}}bg-info
+                    {{else}}bg-success{{end}}{{end}}{{end}}{{end}}"
+                         aria-valuenow="{{.Percentage}}" aria-valuemin="0" aria-valuemax="100"
+                         style="width: {{.Percentage}}%;"></div>
+                </div>
+                {{end}}
+            </div>
+        </div>
     </div>
 </div>
-<div class="x-card">
-    <div class="card-body">
-        <a>Anzahl Spiele: {{.User.ScoresCount}} <br>Punkte Total: </a>
-    </div>
-</div>
-{{end}}
-
-{{define "sidebar"}}
-
 {{end}}

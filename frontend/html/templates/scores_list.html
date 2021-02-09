@@ -27,7 +27,7 @@ Leaderboard
                             <option value="/scores?show=50&page={{.Page}}" {{if eq .Show 50}}selected{{end}}>
                                 50
                             </option>
-                            <option value="/scores?show=-1&page={{.Page}}" {{if .ShowAll}}selected{{end}}>
+                            <option value="/scores?show=-1&page={{.Page}}" {{if eq .Show .ShowOf}}selected{{end}}>
                                 Alle
                             </option>
                         </select>&nbsp;

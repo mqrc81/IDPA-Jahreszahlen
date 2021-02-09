@@ -70,11 +70,10 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 
 		Leaderboard []leaderboardRow
 
-		Show     int  // amount of scores shown
-		ShowFrom int  // first score's rank
-		ShowTo   int  // last score's rank
-		ShowOf   int  // total amount of scores
-		ShowAll  bool // whether all scores are shown
+		Show     int // amount of scores shown
+		ShowFrom int // first score's rank
+		ShowTo   int // last score's rank
+		ShowOf   int // total amount of scores
 
 		Page         int   // current page
 		Pages        []int // range of pages to be able to navigate to
@@ -125,7 +124,6 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 			ShowFrom:     leaderboard[0].Rank,
 			ShowTo:       leaderboard[len(leaderboard)-1].Rank,
 			ShowOf:       len(scores),
-			ShowAll:      show == len(scores),
 			Page:         page,
 			Pages:        pages,
 			PagePrevious: page != pages[0],

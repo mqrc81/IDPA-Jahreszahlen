@@ -328,7 +328,8 @@ func (h *UserHandler) Profile() http.HandlerFunc {
 	type data struct {
 		SessionData
 
-		User x.User
+		User           x.User
+		ScoresPerTopic []scoresPerTopic
 	}
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -344,15 +345,57 @@ func (h *UserHandler) Profile() http.HandlerFunc {
 		}
 		user := userInf.(x.User)
 
+		// Execute SQL statement to get topics
+		topics, err := h.store.GetTopics()
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Create chart with scores per topic
+		var scoresChart []scoresPerTopic
+		for _, topic := range topics {
+			// Execute SQL statement to get scores
+			scores, err := h.store.GetScoresByTopicAndUser(topic.TopicID, user.UserID)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			// Get user's best points for this topic and max possible points
+			var bestPoints int
+			if len(scores) > 0 {
+				bestPoints = scores[0].Points
+			}
+			maxPoints := p1Questions*p1Points + p2Questions*p2Points + topic.EventsCount*p3Points
+
+			scoresChart = append(scoresChart, scoresPerTopic{
+				TopicName:  topic.Name,
+				Points:     bestPoints,
+				MaxPoints:  maxPoints,
+				Percentage: bestPoints * 100 / maxPoints,
+			})
+		}
+
 		// Execute HTML-templates with data
 		if err := usersProfileTemplate.Execute(res, data{
-			User:        user,
-			SessionData: GetSessionData(h.sessions, req.Context()),
+			User:           user,
+			ScoresPerTopic: scoresChart,
+			SessionData:    GetSessionData(h.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
+}
+
+// scoresPerTopic represents 1 row of the chart with user's points for each
+// topic.
+type scoresPerTopic struct {
+	TopicName  string
+	Points     int
+	MaxPoints  int
+	Percentage int
 }
 
 // List is a GET-method that is accessible to any admin.

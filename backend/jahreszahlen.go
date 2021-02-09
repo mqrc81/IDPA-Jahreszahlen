@@ -97,7 +97,7 @@ type UserStore interface {
 type ScoreStore interface {
 	GetScores() ([]Score, error)
 	GetScoresByTopic(topicID int) ([]Score, error)
-	GetScoresByUser(userID int) ([]Score, error) // unused
+	GetScoresByTopicAndUser(topicID int, userID int) ([]Score, error)
 	CountScores() (int, error)
 	CountScoresByDate(start time.Time, end time.Time) (int, error)
 	CreateScore(score *Score) error
