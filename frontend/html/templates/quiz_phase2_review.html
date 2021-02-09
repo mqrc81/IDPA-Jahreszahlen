@@ -8,27 +8,29 @@ Phase 2 Überprüfung
 
 {{define "content"}}
 {{range $i, $q := .Questions}}
-<div class="x-card">
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <p class="text-primary m-0 font-weight-bold">{{$q.EventName}}</p>
+    </div>
     <div class="card-body">
-
         <div class="form-group">
-            <h5><label for="{{$i}}">{{$q.EventName}}</label></h5>
             <input type="number" name="{{$i}}" id="{{$i}}"
                    value="{{$q.UserGuess}}" class="form-control
                             {{if eq $q.UserGuess $q.EventYear}}
-                                correct-year
+                                text-success
                             {{else}}
-                                incorrect-year
+                                text-danger
                             {{end}}">
             {{if ne $q.UserGuess $q.EventYear}}
-            <p class="incorrect-year">Richtige Antwort: {{$q.EventYear}}</p>
+            <p class="text-sm-left text-danger">Richtige Antwort: {{$q.EventYear}}</p>
             {{end}}
         </div>
     </div>
 </div>
 {{end}}
-<form action="/topics/{{.TopicID}}/quiz/2/review" method="POST" class="form">
+<br>
+<button type="submit" class="btn btn-primary btn-block text-white btn-user p-3">Weiter zu Phase 3</button>
+<form action="/topics/{{.TopicID}}/quiz/3" method="POST" class="form">
     {{.CSRF}}
-    <button type="submit" class="x-button">Weiter zu Phase 3</button>
 </form>
 {{end}}

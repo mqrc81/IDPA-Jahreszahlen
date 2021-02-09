@@ -8,33 +8,33 @@ Phase 1 Überprüfung
 
 {{define "content"}}
 {{range $i, $q := .Questions}} <!-- $i = index, $q = question -->
-<div class="x-card">
-    <h5>{{.EventName}}</h5>
-
+{{$user := $q.UserGuess}}
+{{$year := $q.EventYear}}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <p class="text-primary m-0 font-weight-bold">{{$q.EventName}}</p>
+    </div>
     <div class="card-body">
-        {{$user := $q.UserGuess}}
-        {{$year := $q.EventYear}}
-
         {{range $q.Choices}}
         <div class="form-check">
             <input class="form-check-input" type="radio" name="{{$i}}" id="{{$i}}" value="{{.}}"
                    {{if eq . $user}}checked{{end}}>
-            <label for="{{$i}}" class="form-check-label
+            <label for="{{$i}}" class="form-check-label text-sm-left
                             {{if eq . $year}}
-                                correct-year
+                                text-success
                             {{else}}
                             {{if eq . $user}}
-                                incorrect-year
+                                text-danger
                             {{end}}
                             {{end}}">
                 {{.}}
                 {{if eq . $year}} <!-- correct year -->
                 {{if eq . $user}}
-                <i class="fas fa-check"></i> <!-- user guessed the correct year -->
+                <i class="fas fa-check text-success"></i> <!-- user guessed the correct year -->
                 {{end}}
                 {{else}}
                 {{if eq . $user}}
-                <i class="fas fa-times"></i> <!-- user guessed this year, which wasn't correct -->
+                <i class="fas fa-times text-danger"></i> <!-- user guessed this year, which wasn't correct -->
                 {{end}}
                 {{end}}
             </label>
@@ -43,8 +43,11 @@ Phase 1 Überprüfung
     </div>
 </div>
 {{end}}
+
+<br>
 <form action="/topics/{{.TopicID}}/quiz/1/review" method="POST" class="form">
     {{.CSRF}}
-    <button type="submit" class="x-button">Weiter zu Phase 2</button>
+    <button type="submit" class="btn btn-primary btn-block text-white btn-user p-3">Weiter zu Phase 2</button>
 </form>
+
 {{end}}

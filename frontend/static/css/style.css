@@ -31,15 +31,6 @@ label {
     padding: 2% !important;
 }
 
-.x-card {
-    background: white;
-    margin-bottom: 2%;
-    border-right: solid lightgrey 1px;
-    border-radius: 1% !important;
-    padding: 1%;
-    box-shadow: 2px 1px 2px lightgrey !important;
-}
-
 .x-button {
     color: black !important;
     text-decoration: none !important;
@@ -86,19 +77,6 @@ label {
 
 #userlist {
     text-align: left !important;
-}
-
-.fa-check, .correct-year {
-    color: limegreen !important;
-}
-
-.fa-times, .incorrect-year {
-    color: #dc3545 !important;
-}
-
-.fa-long-arrow-alt-down {
-    font-size: 700%;
-    padding-left: 75%;
 }
 
 .x-hover-dark:hover {
