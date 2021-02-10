@@ -87,8 +87,8 @@ func (form *TopicForm) Validate() bool {
 		form.Errors["Image"] = "URL des Fotos darf nicht leer sein."
 	} else if len(form.Image) > 5000 {
 		form.Errors["Image"] = "URL des Fotos darf 5000 Buchstaben nicht überschreiten."
-	} else if !regex(form.Image, "(?i)^(https?://|www\\.).*$") {
-		form.Errors["Image"] = "URL des Fotos ist kein gültiger Link."
+	} else if !regex(form.Image, "(?i)^(https?://).*$") {
+		form.Errors["Image"] = "URL des Fotos muss mit HTTP:// oder HTTPS:// beginnen."
 	} else if !regex(form.Image, "(?i)^.*\\.(png|jpe?g|gif)$") {
 		form.Errors["Image"] = "URL des Fotos muss auf '.PNG', '.JPG', '.JPEG' oder '.GIF' enden."
 	} else if strings.Contains(form.Image, " ") {

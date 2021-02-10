@@ -9,29 +9,47 @@ Phase 3
 {{define "content"}}
 <form action="/topics/{{.TopicID}}/quiz/3" method="POST" class="form">
     {{.CSRF}}
-    <div class="x-card">
+    <div class="card shadow mb-4">
         <div class="card-body">
-            <div class="row">
-                <div class="col-2">
-                    <i class="fas fa-long-arrow-alt-down"></i>
+            <span class="font-weight-bold">Mit Doppelklick auf ein Ereignis verschiebt es sich auf die andere Seite.
+                Versuchen Sie alle Ereignisse in der richtigen Reihenfolge rechts abzubilden.</span>
+        </div>
+    </div>
+    <div class="row row-cols-2">
+        <div class="col">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <p class="text-primary m-0 font-weight-bold">Alle Ereignisse</p>
                 </div>
-                <div id="x-table" class="col-6">
-                    <table class="table table-bordered">
-                        <tr>
-                            <td>val1<input hidden name="questions" id="0" value="Belgien wird unabhängig"/></td>
-                        </tr>
-                        <tr>
-                            <td>val2<input hidden name="questions" id="1" value="Erster Opiumkrieg endet"/></td>
-                        </tr>
-                        <tr>
-                            <td>val3<input hidden name="questions" id="2" value="Krimkrieg beginnt"/></td>
-                        </tr>
-                    </table>
+                <div class="card-body">
+                    {{range .Questions}}
+                    <div onclick="addToResults(this.firstElementChild)" class="x-pointer-cursor x-hover-blue">
+                        <div class="card shadow">
+                            <div class="card-body">
+                                <div class="row align-items-center no-gutters">
+                                    <div class="col mr-2">
+                                        <span class="h6 font-weight-bold"><input type="hidden" name="guesses"
+                                                                                 value="{{.Order}}">{{.EventName}}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <p class="text-primary m-0 font-weight-bold">In der richtigen Reihenfolge</p>
+                </div>
+                <div class="card-body" id="results">
 
                 </div>
             </div>
         </div>
     </div>
-    <button type="submit" class="x-button">Überprüfen</button>
+    <button type="submit" class="btn btn-primary btn-block text-white btn-user p-3">Überprüfen</button>
 </form>
 {{end}}

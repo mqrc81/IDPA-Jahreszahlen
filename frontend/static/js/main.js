@@ -1,3 +1,5 @@
+// Used in leaderboard. It searches through the 'username' and 'topic' columns
+// and hides all rows without a match, for real-time filtering.
 function filterTable() {
 
     // Declare variables
@@ -26,4 +28,10 @@ function filterTable() {
             }
         }
     }
+}
+
+// Used in phase 3 of quiz. Clones the element and stores it in the results
+// table. It also removes the event-listener for activating this function.
+function addToResults(element) {
+    document.getElementById('results').append(element);
 }

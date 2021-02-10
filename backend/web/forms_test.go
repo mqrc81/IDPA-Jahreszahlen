@@ -195,7 +195,7 @@ func TestValidateTopicForm(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "#15 OK (IMAGE WWW.)",
+			name: "#15 IMAGE WWW.",
 			form: input{
 				name:        "Topic 1",
 				startYear:   1800,
@@ -203,7 +203,7 @@ func TestValidateTopicForm(t *testing.T) {
 				description: "",
 				image:       "www.image.png",
 			},
-			want: true,
+			want: false,
 		},
 		{
 			name: "#16 IMAGE CONTAINS SPACE",

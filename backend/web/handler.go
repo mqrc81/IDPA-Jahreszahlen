@@ -7,7 +7,6 @@ package web
 
 import (
 	"context"
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -122,7 +121,6 @@ func NewHandler(store x.Store, sessions *scs.SessionManager, csrfKey []byte) *Ha
 	handler.Use(handler.withUser)
 
 	// Serve static files
-	fmt.Println("Serving staticPath files...")
 	handler.fileServer("/"+staticPath+"/", http.Dir(staticPath))
 
 	// Home

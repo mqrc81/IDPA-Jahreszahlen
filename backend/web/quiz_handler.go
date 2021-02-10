@@ -602,7 +602,7 @@ func (h *QuizHandler) Phase3Prepare() http.HandlerFunc {
 		// HTML-templates
 		// This includes marking the order of the events for future calculation
 		// of the user's points and shuffling them
-		quiz.Questions = createPhase3Questions(quiz.Topic.Events)
+		quiz.Questions = createPhase3Questions(&quiz.Topic.Events)
 
 		// Pass quiz data to session
 		h.sessions.Put(req.Context(), "quiz", quiz)
@@ -617,6 +617,7 @@ func (h *QuizHandler) Phase3Prepare() http.HandlerFunc {
 // It consists of a form with all events of the topic, where the user has to
 // put the events in chronological order.
 func (h *QuizHandler) Phase3() http.HandlerFunc {
+
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
@@ -693,7 +694,7 @@ func (h *QuizHandler) Phase3Submit() http.HandlerFunc {
 
 		// Retrieve quiz data from session
 		quiz, ok := h.sessions.Get(req.Context(), "quiz").(QuizData)
-		questions := quiz.Questions.([]phase3Question)
+		_ = quiz.Questions.([]phase3Question)
 
 		// Validate the token of the quiz-data, so that the user can't go back
 		// in order to change his answers after having seen the review
@@ -712,38 +713,22 @@ func (h *QuizHandler) Phase3Submit() http.HandlerFunc {
 
 		// Retrieve form from table of inputs
 		if err := req.ParseForm(); err != nil {
-			fmt.Println("err:", err)
+			http.Error(res, err.Error(), http.StatusConflict)
+			return
 		}
-		guesses := req.Form["questions"]
-		fmt.Println("Form[questions]:", guesses) // TEMP
+		guesses := req.Form["guesses"]
 
-		// Create map of questions to check a question's order given its name
-		questionsMap := make(map[string]int)
-		for _, question := range questions {
-			questionsMap[question.EventName] = question.Order
-		}
-
-		// Loop through user's order of events of phase 3
-		for num := 0; num < len(questions); num++ {
-
-			// TODO
-
-			order := questionsMap[guesses[num]] // correct order of the event
-
-			// Get absolute value of difference between user's guess and
-			// correct order
-			difference := abs(order - num) // num represents the user's order
-
-			// Check if guess was correct
-			if difference == 0 {
-				quiz.CorrectGuesses++
-				questions[num].CorrectGuess = true
+		// Loop through user's guessing order to calculate points
+		// Value of the form input was the event's actual order, so by
+		// comparing it to the user's order, we get the difference in position
+		// If a user's guess is 3 spots off, he gets 2 points (5-3); if user
+		// was spot on, he gets 5 points for that event
+		for eventsOrder, guess := range guesses {
+			guessOrder, _ := strconv.Atoi(guess)
+			potentialPoints := p3Points - abs(eventsOrder-guessOrder)
+			if potentialPoints > 0 {
+				quiz.Points += potentialPoints
 			}
-
-			// User gets a max of 5 potential points, -1 per differ of order
-			// Example: order of event: 7, user's guess of order of event: 10
-			// => user gets 2 points (5-[10-7])
-			// TEMP quiz.Points += p3Points - difference
 		}
 
 		// Retrieve user from session
@@ -780,6 +765,7 @@ func (h *QuizHandler) Phase3Review() http.HandlerFunc {
 
 		TopicID   int
 		TopicName string
+		Events    []x.Event
 		Questions []phase3Question
 	}
 
@@ -825,6 +811,9 @@ func (h *QuizHandler) Phase3Review() http.HandlerFunc {
 		if err = quizPhase3ReviewTemplate.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 			CSRF:        csrf.TemplateField(req),
+			TopicID:     quiz.Topic.TopicID,
+			TopicName:   quiz.Topic.Name,
+			Events:      quiz.Topic.Events,
 			Questions:   quiz.Questions.([]phase3Question),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -1044,16 +1033,16 @@ type phase3Question struct {
 
 // createPhase3Questions generates a phase3Question struct for all events of
 // the topic.
-func createPhase3Questions(events []x.Event) []phase3Question {
+func createPhase3Questions(events *[]x.Event) []phase3Question {
 	var questions []phase3Question
 
 	// Sort array of events by date, in order to add 'order' value to questions
 	sort.Slice(events, func(n1, n2 int) bool {
-		return events[n1].Date.Before(events[n2].Date)
+		return (*events)[n1].Date.Before((*events)[n2].Date)
 	})
 
 	// Loop through all events and turn them into questions
-	for i, event := range events {
+	for i, event := range *events {
 		questions = append(questions, phase3Question{
 			EventName: event.Name,
 			EventYear: event.Year,
@@ -1075,7 +1064,7 @@ func createPhase3Questions(events []x.Event) []phase3Question {
 // order.
 // It looks for this recursively, in a binary-search way, since this is the
 // most efficient way of looking for this index.
-// Time complexity: O(√n) using binary-search instead of O(n) using iteration;
+// Time complexity: O(log n) using binary-search instead of O(n) using iteration;
 // 50000 scores take 224 iterations max instead of 50000 max (=> scalable).
 // (Tested in handler_test.go)
 func binarySearchForPoints(points int, scores []x.Score, floor int, ceil int) int {
