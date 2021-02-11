@@ -58,9 +58,9 @@ func (form *TopicForm) Validate() bool {
 
 	// Validate name
 	if form.Name == "" {
-		form.Errors["Name"] = "Titel darf nicht leer sein."
+		form.Errors["Name"] = "Name darf nicht leer sein."
 	} else if len(form.Name) > 50 {
-		form.Errors["Name"] = "Titel darf 50 Zeichen nicht überschreiten."
+		form.Errors["Name"] = "Name darf 50 Zeichen nicht überschreiten."
 	}
 
 	// Validate start- and end-year
@@ -114,9 +114,9 @@ func (form *EventForm) Validate() bool {
 
 	// Validate name
 	if form.Name == "" {
-		form.Errors["Name"] = "Titel darf nicht leer sein."
-	} else if len(form.Name) > 110 {
-		form.Errors["Name"] = "Titel darf 110 Zeichen nicht überschreiten."
+		form.Errors["Name"] = "Name darf nicht leer sein."
+	} else if len(form.Name) > 150 {
+		form.Errors["Name"] = "Name darf 150 Zeichen nicht überschreiten."
 	}
 
 	// Validate date or year
