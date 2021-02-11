@@ -1,5 +1,5 @@
 {{define "title"}}
-Title
+Phase 3 - Überprüfung
 {{end}}
 
 {{define "header"}}
@@ -7,5 +7,50 @@ Title
 {{end}}
 
 {{define "content"}}
-
+<div class="row row-cols-2">
+    <div class="col">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <p class="text-primary m-0 font-weight-bold">Ihre Reihenfolge</p>
+            </div>
+            <div class="card-body">
+                {{range $i, $g := .Guesses}}
+                <div class="card shadow">
+                    <div class="card-body {{if eq $i $g}}bg-light-green{{else}}bg-light-red{{end}}">
+                        <div class="row align-items-center no-gutters">
+                            <div class="col mr-2">
+                                {{$e := index $.Events $g}}
+                                <span class="h6 font-weight-bold">{{$e.Name}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{end}}
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <p class="text-primary m-0 font-weight-bold">In der richtigen Reihenfolge</p>
+            </div>
+            <div class="card-body">
+                {{range .Events}}
+                <div class="card shadow">
+                    <div class="card-body">
+                        <div class="row align-items-center no-gutters">
+                            <div class="col mr-2">
+                                <span class="h6 font-weight-bold">{{.Name}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{end}}
+            </div>
+        </div>
+    </div>
+</div>
+<form action="/topics/{{.TopicID}}/quiz/summary" method="GET">
+    <button type="submit" class="btn btn-primary btn-block text-white btn-user p-3">Quiz beenden</button>
+</form>
 {{end}}

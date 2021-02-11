@@ -241,3 +241,11 @@ label {
 .x-pointer-cursor {
     cursor: pointer;
 }
+
+.bg-light-green {
+    background-color: rgba(28, 200, 170, 0.3) !important;
+}
+
+.bg-light-red {
+    background-color: rgba(231, 74, 59, 0.3) !important;
+}

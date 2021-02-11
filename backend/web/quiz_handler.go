@@ -602,7 +602,7 @@ func (h *QuizHandler) Phase3Prepare() http.HandlerFunc {
 		// HTML-templates
 		// This includes marking the order of the events for future calculation
 		// of the user's points and shuffling them
-		quiz.Questions = createPhase3Questions(&quiz.Topic.Events)
+		quiz.Questions, quiz.Topic.Events = createPhase3Questions(quiz.Topic.Events)
 
 		// Pass quiz data to session
 		h.sessions.Put(req.Context(), "quiz", quiz)
@@ -723,12 +723,14 @@ func (h *QuizHandler) Phase3Submit() http.HandlerFunc {
 		// comparing it to the user's order, we get the difference in position
 		// If a user's guess is 3 spots off, he gets 2 points (5-3); if user
 		// was spot on, he gets 5 points for that event
+		var guessesInt []int
 		for eventsOrder, guess := range guesses {
 			guessOrder, _ := strconv.Atoi(guess)
 			potentialPoints := p3Points - abs(eventsOrder-guessOrder)
 			if potentialPoints > 0 {
 				quiz.Points += potentialPoints
 			}
+			guessesInt = append(guessesInt, guessOrder)
 		}
 
 		// Retrieve user from session
@@ -745,8 +747,9 @@ func (h *QuizHandler) Phase3Submit() http.HandlerFunc {
 			return
 		}
 
-		// Pass quiz data to session
+		// Pass quiz data and user's guesses to session
 		h.sessions.Put(req.Context(), "quiz", quiz)
+		h.sessions.Put(req.Context(), "guesses", guessesInt)
 
 		// Redirect to review of phase 3
 		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/3/review", http.StatusFound)
@@ -766,7 +769,7 @@ func (h *QuizHandler) Phase3Review() http.HandlerFunc {
 		TopicID   int
 		TopicName string
 		Events    []x.Event
-		Questions []phase3Question
+		Guesses   []int
 	}
 
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -814,7 +817,7 @@ func (h *QuizHandler) Phase3Review() http.HandlerFunc {
 			TopicID:     quiz.Topic.TopicID,
 			TopicName:   quiz.Topic.Name,
 			Events:      quiz.Topic.Events,
-			Questions:   quiz.Questions.([]phase3Question),
+			Guesses:     h.sessions.Get(req.Context(), "guesses").([]int),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -1033,16 +1036,16 @@ type phase3Question struct {
 
 // createPhase3Questions generates a phase3Question struct for all events of
 // the topic.
-func createPhase3Questions(events *[]x.Event) []phase3Question {
+func createPhase3Questions(events []x.Event) ([]phase3Question, []x.Event) {
 	var questions []phase3Question
 
 	// Sort array of events by date, in order to add 'order' value to questions
 	sort.Slice(events, func(n1, n2 int) bool {
-		return (*events)[n1].Date.Before((*events)[n2].Date)
+		return events[n1].Date.Before(events[n2].Date)
 	})
 
 	// Loop through all events and turn them into questions
-	for i, event := range *events {
+	for i, event := range events {
 		questions = append(questions, phase3Question{
 			EventName: event.Name,
 			EventYear: event.Year,
@@ -1056,7 +1059,7 @@ func createPhase3Questions(events *[]x.Event) []phase3Question {
 		questions[n1], questions[n2] = questions[n2], questions[n1]
 	})
 
-	return questions
+	return questions, events
 }
 
 // binarySearchForPoints searches for the index, where the user's score
