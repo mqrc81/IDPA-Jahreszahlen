@@ -27,7 +27,7 @@ func main() {
 	fmt.Println("Starting application...")
 
 	// Access global environment variables
-	if err := godotenv.Load(".env"); err != nil {
+	if err := godotenv.Load(); err != nil {
 		log.Fatalf("error loading environment variables: %v", err)
 	}
 
