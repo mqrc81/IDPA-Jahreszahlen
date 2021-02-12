@@ -35,3 +35,6 @@ function filterTable() {
 function addToResults(element) {
     document.getElementById('results').append(element);
 }
+
+// Closes the flash message
+$('.alert').alert();

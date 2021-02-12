@@ -729,6 +729,8 @@ func (h *QuizHandler) Phase3Submit() http.HandlerFunc {
 			potentialPoints := p3Points - abs(eventsOrder-guessOrder)
 			if potentialPoints > 0 {
 				quiz.Points += potentialPoints
+			} else if potentialPoints == p3Points {
+				quiz.CorrectGuesses++
 			}
 			guessesInt = append(guessesInt, guessOrder)
 		}

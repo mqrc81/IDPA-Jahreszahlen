@@ -10,23 +10,38 @@ Auswertung
 <div class="x-card">
     <div class="card-body">
 
-        <h3>Du warst besser als <strong>{{.AverageComparison}}%</strong> aller Spieler beim Quiz über '<strong>{{.Quiz.Topic.TopicName}}</strong>'!
-        </h3>
-        <br>
+        <div class="error mx-auto" data-text="{{.Quiz.Points}}">
+            <p class="m-0 text-warning">{{.Quiz.Points}}</p>
+        </div>
         <hr>
         <br>
-        <h4>Du hast <strong>{{.Quiz.CorrectGuesses}}</strong> von <strong>{{.QuestionsCount}}</strong> Fragen richtig
-            beantwortet.</h4>
+        <ul>
+            <li class="h5 x-bottom-spacing">Das Resultat war besser als <strong class="text-primary">{{.AverageComparison}}%</strong> aller Spieler
+                beim Quiz über
+                '<strong class="text-primary">{{.Quiz.Topic.Name}}</strong>'!
+            </li>
+            <li class="h5 x-bottom-spacing">Es wurden <strong class="text-primary">{{.Quiz.CorrectGuesses}}</strong> von <strong class="text-primary">{{.QuestionsCount}}</strong>
+                Fragen richtig beantwortet.
+            </li>
+            <li class="h5">Es wurden <strong class="text-primary">{{.Quiz.Points}}</strong> von möglichen <strong
+                    class="text-primary">{{.PotentialPoints}}</strong>
+                Punkten erreicht.
+            </li>
+        </ul>
         <br>
-        <h4>Du hast <strong>{{.Quiz.Points}}</strong> von möglichen <strong>{{.PotentialPoints}}</strong> Punkte
-            erhalten.</h4>
-
-        <button class="x-button">
-            <a href="/"><i class="fas fa-home"></i> Home</a>
-        </button>
-        <button class="x-button">
-            <a href="/scores"><i class="fas fa-award"></i> Leaderboard</a>
-        </button>
+        <br>
+        <div class="row">
+            <div class="col-2">
+                <button class="py-2 btn btn-primary btn-block text-white btn-user">
+                    <a href="/"><i class="fas fa-home text-light"></i> <span class="text-light">Home</span></a>
+                </button>
+            </div>
+            <div class="col-2">
+                <button class="py-2 col btn btn-primary btn-block text-white btn-user">
+                    <a href="/scores"><i class="fas fa-trophy text-light"></i> <span class="text-light">Zum Leaderboard</span></a>
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 {{end}}
