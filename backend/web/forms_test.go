@@ -402,8 +402,8 @@ func TestValidateEventForm(t *testing.T) {
 			name: "#10 NAME TOO LONG",
 			form: input{
 				name: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. " +
-					"Aenean massa. Cum sociis.",
-				yearOrDate: "2#5#101800",
+					"Aenean massa. Cum sociis natoque penatibus et magnis dis parturient.",
+				yearOrDate: "25.10.1800",
 			},
 			want: false,
 		},
@@ -411,7 +411,7 @@ func TestValidateEventForm(t *testing.T) {
 			name: "#11 DATE IN THE FUTURE (DD.MM.YYYY)",
 			form: input{
 				name:       "Event 1",
-				yearOrDate: future.Format("0#20#12006"),
+				yearOrDate: future.Format("02.01.2006"),
 			},
 			want: false,
 		},
@@ -419,7 +419,7 @@ func TestValidateEventForm(t *testing.T) {
 			name: "#12 DATE IN THE FUTURE (MM.YYYY)",
 			form: input{
 				name:       "Event 1",
-				yearOrDate: future.Format("0#12006"),
+				yearOrDate: future.Format("01.2006"),
 			},
 			want: false,
 		},

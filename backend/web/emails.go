@@ -1,5 +1,6 @@
-// Responsible for creating and sending out emails for various purposes, such as resetting of a
-// password or verifying of a user. This email service is provided by SendGrid.
+// Responsible for creating and sending out emails for various purposes, such
+// as resetting of a password or verifying of an email. This email service,
+// including the HTML-templates sent with the emails, is provided by SendGrid.
 
 package web
 
@@ -13,11 +14,17 @@ import (
 )
 
 const (
-	url = "http://localhost:3000" // 'http://' necessary so SendGrid recognizes the URL
-
 	// IDs of email HTML-templates created on SendGrid.com
 	verifyEmailTemplateID   = "d-fd2d13b01f78469994803ff4b1041532"
 	resetPasswordTemplateID = "d-c2848673e6b34e6a9e23585341ddc7cf"
+)
+
+const (
+	sendgridEndpoint = "/v3/mail/send"
+	sendgridHost     = "https://api.sendgrid.com"
+
+	resetPasswordLink = "/users/reset/password?token="
+	verifyEmailLink   = "/users/verify/email?token="
 )
 
 var (
@@ -31,7 +38,7 @@ var (
 type EmailData struct {
 	TemplateID string
 	Recipient  *mail.Email
-	Link       string
+	URL        string
 }
 
 // CreateAndSend sends an email to a user.
@@ -47,11 +54,11 @@ func (data EmailData) CreateAndSend() error {
 
 	// Set variables for dynamic HTML template of email
 	personalization.DynamicTemplateData["username"] = data.Recipient.Name
-	personalization.DynamicTemplateData["link"] = data.Link
+	personalization.DynamicTemplateData["link"] = data.URL
 	email.AddPersonalizations(personalization)
 
 	// Send email
-	request := sendgrid.GetRequest(os.Getenv("SG_APIKEY"), "/v3/mail/send", "https://api.sendgrid.com")
+	request := sendgrid.GetRequest(os.Getenv("SENDGRID_API_KEY"), sendgridEndpoint, sendgridHost)
 	request.Method = "POST"
 	request.Body = mail.GetRequestBody(email)
 	_, err := sendgrid.API(request)
@@ -67,12 +74,12 @@ func PasswordResetEmail(user x.User, token string) EmailData {
 		Name:    user.Username,
 		Address: user.Email,
 	}
-	link := url + "/users/reset/password?token=" + token
+	url := os.Getenv("URL") + resetPasswordLink + token
 
 	return EmailData{
 		TemplateID: resetPasswordTemplateID,
 		Recipient:  recipient,
-		Link:       link,
+		URL:        url,
 	}
 }
 
@@ -84,11 +91,11 @@ func EmailVerificationEmail(user x.User, token string) EmailData {
 		Name:    user.Username,
 		Address: user.Email,
 	}
-	link := url + "/users/verify/email?token=" + token
+	url := os.Getenv("URL") + verifyEmailLink + token
 
 	return EmailData{
 		TemplateID: verifyEmailTemplateID,
 		Recipient:  recipient,
-		Link:       link,
+		URL:        url,
 	}
 }

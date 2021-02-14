@@ -249,3 +249,7 @@ label {
 .bg-light-red {
     background-color: rgba(231, 74, 59, 0.3) !important;
 }
+
+.x-bottom-spacing {
+    margin-bottom: 30px !important;
+}

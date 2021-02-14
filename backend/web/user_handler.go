@@ -189,6 +189,8 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 		if err = email.CreateAndSend(); err == nil {
 			h.sessions.Put(req.Context(), "flash_info", "Eine Bestätigungs-Email wurde an "+form.Email+" versandt. "+
 				"Bitte tätigen Sie diesen Link, um Ihre Email zu verifizieren.")
+		} else {
+			log.Printf("error sending email verification email to %v: %v", user.Email, err)
 		}
 
 		// Redirect to Home
@@ -605,6 +607,7 @@ func (h *UserHandler) ResendVerifyEmail() http.HandlerFunc {
 		} else { // if error occurred and email wasn't sent successfully
 			h.sessions.Put(req.Context(), "flash_error",
 				"Beim Versenden der Email ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.")
+			log.Printf("error sending email verification email to %v: %v", user.Email, err)
 		}
 
 		// Redirect to home-page
@@ -699,6 +702,7 @@ func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 		} else { // if error occurred and email wasn't sent successfully
 			h.sessions.Put(req.Context(), "flash_error",
 				"Beim Versenden der Email ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.")
+			log.Printf("error sending password reset email to %v: %v", user.Email, err)
 		}
 
 		// Redirect to home-page
