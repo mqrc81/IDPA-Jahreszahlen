@@ -89,7 +89,7 @@ func (h *ScoreHandler) List() http.HandlerFunc {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Benutzer eingeloggt sein, um das Leaderboard zu betrachten.")
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 

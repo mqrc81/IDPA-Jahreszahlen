@@ -317,7 +317,7 @@ func (h *Handler) Search() http.HandlerFunc {
 		// Loop through possible search results
 		for _, search := range searchQueries {
 			if searchResults[search] != "" { // redirect in case of match
-				http.Redirect(res, req, searchResults[search], http.StatusFound)
+				http.Redirect(res, req, searchResults[search], http.StatusSeeOther)
 				return
 			}
 		}
@@ -325,7 +325,7 @@ func (h *Handler) Search() http.HandlerFunc {
 		// Search query didn't find a match
 		h.sessions.Put(req.Context(), "flash_info",
 			"Es wurde kein Suchergebnis gefunden. Versuchen Sie es genauer und in ganzen Worten.")
-		http.Redirect(res, req, req.Referer(), http.StatusFound)
+		http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 	}
 }
 

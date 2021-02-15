@@ -82,7 +82,7 @@ func (h *UserHandler) Register() http.HandlerFunc {
 			// If a user is already logged in, then redirect back with flash
 			// message
 			h.sessions.Put(req.Context(), "flash_error", "Sie sind bereits eingeloggt.")
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -135,7 +135,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 		// Validate form
 		if !form.Validate() {
 			h.sessions.Put(req.Context(), "form", form)
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -194,7 +194,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 		}
 
 		// Redirect to Home
-		http.Redirect(res, req, "/", http.StatusFound)
+		http.Redirect(res, req, "/", http.StatusSeeOther)
 	}
 }
 
@@ -218,7 +218,7 @@ func (h *UserHandler) Login() http.HandlerFunc {
 			// If a user is already logged in, then redirect back with flash
 			// message
 			h.sessions.Put(req.Context(), "flash_error", "Sie sind bereits eingeloggt.")
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -275,7 +275,7 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 		// Validate form
 		if !form.Validate() {
 			h.sessions.Put(req.Context(), "form", form)
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -291,7 +291,7 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 		}
 
 		// Redirect to Home
-		http.Redirect(res, req, "/", http.StatusFound)
+		http.Redirect(res, req, "/", http.StatusSeeOther)
 	}
 }
 
@@ -307,7 +307,7 @@ func (h *UserHandler) Logout() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", "Sie sind gar nicht eingeloggt.")
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -318,7 +318,7 @@ func (h *UserHandler) Logout() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "flash_info", "Sie wurden erfolgreich ausgeloggt.")
 
 		// Redirect to Home
-		http.Redirect(res, req, "/", http.StatusFound)
+		http.Redirect(res, req, "/", http.StatusSeeOther)
 	}
 }
 
@@ -344,7 +344,7 @@ func (h *UserHandler) Profile() http.HandlerFunc {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error",
 				"Unzureichende Berechtigung. Loggen Sie sich zuerst ein, um Ihr Profil zu betrachten.")
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 		user := userInf.(x.User)
@@ -430,7 +430,7 @@ func (h *UserHandler) List() http.HandlerFunc {
 			// redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error",
 				"Unzureichende Berechtigung. Sie müssen als Admin eingeloggt sein, um alle Benutzer aufzulisten.")
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -467,7 +467,7 @@ func (h *UserHandler) List() http.HandlerFunc {
 			SessionData:        GetSessionData(h.sessions, req.Context()),
 			CSRF:               csrf.TemplateField(req),
 		}); err != nil {
-			http.Error(res, err.Error(), http.StatusFound)
+			http.Error(res, err.Error(), http.StatusSeeOther)
 			return
 		}
 	}
@@ -491,7 +491,7 @@ func (h *UserHandler) Delete() http.HandlerFunc {
 		}
 
 		// Redirect to list of users
-		http.Redirect(res, req, "/users", http.StatusFound)
+		http.Redirect(res, req, "/users", http.StatusSeeOther)
 	}
 }
 
@@ -522,7 +522,7 @@ func (h *UserHandler) Promote() http.HandlerFunc {
 		}
 
 		// Redirect to list of users
-		http.Redirect(res, req, "/users", http.StatusFound)
+		http.Redirect(res, req, "/users", http.StatusSeeOther)
 	}
 }
 
@@ -544,7 +544,7 @@ func (h *UserHandler) VerifyEmail() http.HandlerFunc {
 			// If token doesn't exist, then redirect to home-page with flash
 			// message.
 			h.sessions.Put(req.Context(), "flash_error", "Ihr Token zum Bestätigen der Email ist ungültig.")
-			http.Redirect(res, req, "/", http.StatusFound)
+			http.Redirect(res, req, "/", http.StatusSeeOther)
 			return
 		}
 
@@ -574,7 +574,7 @@ func (h *UserHandler) VerifyEmail() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "flash_success", "Ihre Email wurde erfolgreich bestätigt.")
 
 		// Redirect to home-page
-		http.Redirect(res, req, "/", http.StatusFound)
+		http.Redirect(res, req, "/", http.StatusSeeOther)
 	}
 }
 
@@ -611,7 +611,7 @@ func (h *UserHandler) ResendVerifyEmail() http.HandlerFunc {
 		}
 
 		// Redirect to home-page
-		http.Redirect(res, req, "/", http.StatusFound)
+		http.Redirect(res, req, "/", http.StatusSeeOther)
 	}
 }
 
@@ -635,7 +635,7 @@ func (h *UserHandler) ForgotPassword() http.HandlerFunc {
 			// If a user is already logged in, then redirect back with flash
 			// message
 			h.sessions.Put(req.Context(), "flash_error", "Sie sind bereits eingeloggt.")
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -677,7 +677,7 @@ func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 		// Validate form
 		if !form.Validate() {
 			h.sessions.Put(req.Context(), "form", form)
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -706,7 +706,7 @@ func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 		}
 
 		// Redirect to home-page
-		http.Redirect(res, req, "/", http.StatusFound)
+		http.Redirect(res, req, "/", http.StatusSeeOther)
 	}
 }
 
@@ -731,7 +731,7 @@ func (h *UserHandler) ResetPassword() http.HandlerFunc {
 			// If a user is already logged in, then redirect back with flash
 			// message
 			h.sessions.Put(req.Context(), "flash_error", "Sie sind bereits eingeloggt.")
-			http.Redirect(res, req, "/", http.StatusFound)
+			http.Redirect(res, req, "/", http.StatusSeeOther)
 			return
 		}
 
@@ -744,7 +744,7 @@ func (h *UserHandler) ResetPassword() http.HandlerFunc {
 			// If token doesn't exist, then redirect to home-page with flash
 			// message.
 			h.sessions.Put(req.Context(), "flash_error", "Der Token zum Zurücksetzen Ihres Passworts ist ungültig.")
-			http.Redirect(res, req, "/", http.StatusFound)
+			http.Redirect(res, req, "/", http.StatusSeeOther)
 			return
 		}
 
@@ -754,7 +754,7 @@ func (h *UserHandler) ResetPassword() http.HandlerFunc {
 			// flash message
 			h.sessions.Put(req.Context(), "flash_error", "Der Token ist abgelaufen. Sie haben jeweils 1 Stunde Zeit, "+
 				"um Ihr Passwort zurückzusetzen.")
-			http.Redirect(res, req, "/", http.StatusFound)
+			http.Redirect(res, req, "/", http.StatusSeeOther)
 			return
 		}
 
@@ -791,7 +791,7 @@ func (h *UserHandler) ResetPasswordSubmit() http.HandlerFunc {
 		// Validate form
 		if !form.Validate() {
 			h.sessions.Put(req.Context(), "form", form)
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -829,7 +829,7 @@ func (h *UserHandler) ResetPasswordSubmit() http.HandlerFunc {
 			"Bitte loggen Sie sich ein.")
 
 		// Redirect to login
-		http.Redirect(res, req, "/users/login", http.StatusFound)
+		http.Redirect(res, req, "/users/login", http.StatusSeeOther)
 	}
 }
 

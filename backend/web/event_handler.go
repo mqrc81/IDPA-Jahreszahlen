@@ -61,7 +61,7 @@ func (h *EventHandler) List() http.HandlerFunc {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Benutzer eingeloggt sein, um all Ereignisse eines Themas aufzulisten.")
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -113,7 +113,7 @@ func (h *EventHandler) Create() http.HandlerFunc {
 			// then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Admin eingeloggt sein, um ein neues Ereignis zu erstellen.")
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -161,7 +161,7 @@ func (h *EventHandler) CreateStore() http.HandlerFunc {
 		// Validate form
 		if !form.Validate() {
 			h.sessions.Put(req.Context(), "form", form)
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -184,7 +184,7 @@ func (h *EventHandler) CreateStore() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "flash_success", "Ereignis wurde erfolgreich erstellt.")
 
 		// Redirect to list of topics
-		http.Redirect(res, req, "/topics/"+topicIDstr+"/events", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicIDstr+"/events", http.StatusSeeOther)
 	}
 }
 
@@ -208,7 +208,7 @@ func (h *EventHandler) Delete() http.HandlerFunc {
 		}
 
 		// Redirect to list of topics
-		http.Redirect(res, req, "/topics/"+topicID+"/events", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicID+"/events", http.StatusSeeOther)
 	}
 }
 
@@ -235,7 +235,7 @@ func (h *EventHandler) Edit() http.HandlerFunc {
 			// then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Admin eingeloggt sein, um ein Ereignis zu bearbeiten.")
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -283,7 +283,7 @@ func (h *EventHandler) EditStore() http.HandlerFunc {
 		// Validate form
 		if !form.Validate() {
 			h.sessions.Put(req.Context(), "form", form)
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -306,6 +306,6 @@ func (h *EventHandler) EditStore() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "flash_success", "Ereignis wurde erfolgreich bearbeitet.")
 
 		// Redirect to list of events
-		http.Redirect(res, req, "/topics/"+topicID+"/events", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicID+"/events", http.StatusSeeOther)
 	}
 }

@@ -151,7 +151,7 @@ func (h *QuizHandler) Phase1() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -168,7 +168,7 @@ func (h *QuizHandler) Phase1() http.HandlerFunc {
 		if topic.EventsCount < minEvents {
 			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf("Das Thema '%v' hat nicht genügend Ereignisse "+
 				"(min. %v), um ein Quiz zur Verfügung zu stellen.", topic.Name, minEvents))
-			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusSeeOther)
 			return
 		}
 
@@ -225,7 +225,7 @@ func (h *QuizHandler) Phase1Submit() http.HandlerFunc {
 		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
 			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 1))
-			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusSeeOther)
 			return
 		}
 
@@ -252,7 +252,7 @@ func (h *QuizHandler) Phase1Submit() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Redirect to review of phase 1
-		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/1/review", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/1/review", http.StatusSeeOther)
 	}
 }
 
@@ -286,7 +286,7 @@ func (h *QuizHandler) Phase1Review() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -302,7 +302,7 @@ func (h *QuizHandler) Phase1Review() http.HandlerFunc {
 		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
 			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 1))
-			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusSeeOther)
 			return
 		}
 
@@ -347,7 +347,7 @@ func (h *QuizHandler) Phase2Prepare() http.HandlerFunc {
 		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
 			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 1))
-			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusSeeOther)
 			return
 		}
 
@@ -363,7 +363,7 @@ func (h *QuizHandler) Phase2Prepare() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Redirect to phase 2 of quiz
-		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/2", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/2", http.StatusSeeOther)
 	}
 }
 
@@ -398,7 +398,7 @@ func (h *QuizHandler) Phase2() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -414,7 +414,7 @@ func (h *QuizHandler) Phase2() http.HandlerFunc {
 		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
 			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 2))
-			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusSeeOther)
 			return
 		}
 
@@ -457,7 +457,7 @@ func (h *QuizHandler) Phase2Submit() http.HandlerFunc {
 		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
 			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 2))
-			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusSeeOther)
 			return
 		}
 
@@ -495,7 +495,7 @@ func (h *QuizHandler) Phase2Submit() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Redirect to review of phase 2
-		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/2/review", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/2/review", http.StatusSeeOther)
 	}
 }
 
@@ -529,7 +529,7 @@ func (h *QuizHandler) Phase2Review() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -545,7 +545,7 @@ func (h *QuizHandler) Phase2Review() http.HandlerFunc {
 		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
 			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 2))
-			http.Redirect(res, req, "/topics", http.StatusFound)
+			http.Redirect(res, req, "/topics", http.StatusSeeOther)
 			return
 		}
 
@@ -590,7 +590,7 @@ func (h *QuizHandler) Phase3Prepare() http.HandlerFunc {
 		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
 			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 2))
-			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusSeeOther)
 			return
 		}
 
@@ -608,7 +608,7 @@ func (h *QuizHandler) Phase3Prepare() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "quiz", quiz)
 
 		// Redirect to phase 2 of quiz
-		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/3", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/3", http.StatusSeeOther)
 	}
 }
 
@@ -643,7 +643,7 @@ func (h *QuizHandler) Phase3() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -659,7 +659,7 @@ func (h *QuizHandler) Phase3() http.HandlerFunc {
 		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
 			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 3))
-			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusSeeOther)
 			return
 		}
 
@@ -703,7 +703,7 @@ func (h *QuizHandler) Phase3Submit() http.HandlerFunc {
 		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
 			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 3))
-			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusSeeOther)
 			return
 		}
 
@@ -754,7 +754,7 @@ func (h *QuizHandler) Phase3Submit() http.HandlerFunc {
 		h.sessions.Put(req.Context(), "guesses", guessesInt)
 
 		// Redirect to review of phase 3
-		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/3/review", http.StatusFound)
+		http.Redirect(res, req, "/topics/"+topicIDstr+"/quiz/3/review", http.StatusSeeOther)
 	}
 }
 
@@ -789,7 +789,7 @@ func (h *QuizHandler) Phase3Review() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
-			http.Redirect(res, req, req.Referer(), http.StatusFound)
+			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
 			return
 		}
 
@@ -805,7 +805,7 @@ func (h *QuizHandler) Phase3Review() http.HandlerFunc {
 		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
 			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 3))
-			http.Redirect(res, req, "/topics", http.StatusFound)
+			http.Redirect(res, req, "/topics", http.StatusSeeOther)
 			return
 		}
 
@@ -862,7 +862,7 @@ func (h *QuizHandler) Summary() http.HandlerFunc {
 		// If 'msg' isn't empty, an error occurred
 		if msg != "" {
 			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf(msg, 3))
-			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusFound)
+			http.Redirect(res, req, "/topics/"+topicIDstr, http.StatusSeeOther)
 			return
 		}
 
