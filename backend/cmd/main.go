@@ -61,7 +61,7 @@ func main() {
 
 	// Listen on the TCP network address and call Serve with handler to handle
 	// requests on incoming connections
-	port := os.Getenv("PORT")
+	port := ":" + os.Getenv("PORT")
 	fmt.Println("Listening on port " + port + "...")
 	if err = http.ListenAndServe(port, handler); err != nil {
 		log.Fatalf("error listening on the tcp network: %v", err)
