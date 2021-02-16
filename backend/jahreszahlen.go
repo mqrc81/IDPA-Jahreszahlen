@@ -1,7 +1,10 @@
-// The collection of all global structures and interfaces to be used throughout
-// the application. The structures are not equivalent to the database tables,
-// as 1:n relationships may be stored directly in the structure of the primary
-// object for the sake of practicality (e.g topic containing array of events).
+// The collection of all global models and their database access functions to
+// be used throughout the application.
+// The structures are not equivalent to the database tables, as 1:n
+// relationships may be stored directly in the structure of the primary object
+// for the sake of practicality (e.g topic containing array of events).
+// The functions are stored in a single interface, for easier access to all
+// functions through one HTTP-handler instance.
 
 package backend
 
@@ -66,7 +69,6 @@ type Token struct {
 type TopicStore interface {
 	GetTopic(topicID int) (Topic, error)
 	GetTopics() ([]Topic, error)
-	CountTopics() (int, error) // unused
 	CreateTopic(topic *Topic) error
 	UpdateTopic(topic *Topic) error
 	DeleteTopic(topicID int) error
@@ -87,7 +89,7 @@ type UserStore interface {
 	GetUserByUsername(username string) (User, error)
 	GetUserByEmail(email string) (User, error)
 	GetUsers() ([]User, error)
-	CountUsers() (int, error) // unused
+	CountUsers() (int, error)
 	CreateUser(user *User) error
 	UpdateUser(user *User) error
 	DeleteUser(userID int) error

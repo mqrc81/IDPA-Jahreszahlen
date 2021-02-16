@@ -213,68 +213,6 @@ func TestGetTopics(t *testing.T) {
 	}
 }
 
-// TestCountTopics tests getting amount of topics.
-func TestCountTopics(t *testing.T) {
-
-	// New mock database
-	db, mock := NewMock()
-	store := &TopicStore{DB: db}
-	defer db.Close()
-
-	queryMatch := "SELECT COUNT((.+)) FROM topics"
-
-	table := []string{"COUNT(*)"}
-
-	// Declare test cases
-	tests := []struct {
-		name            string
-		mock            func()
-		wantTopicsCount int
-		wantError       bool
-	}{
-		{
-			// When everything works as intended
-			name: "#1 OK",
-			mock: func() {
-				rows := sqlmock.NewRows(table).AddRow(3)
-
-				mock.ExpectQuery(queryMatch).WillReturnRows(rows)
-			},
-			wantTopicsCount: 3,
-			wantError:       false,
-		},
-		{
-			// When topics table is empty
-			name: "#2 NO ROWS",
-			mock: func() {
-				rows := sqlmock.NewRows(table)
-
-				mock.ExpectQuery(queryMatch).WillReturnRows(rows)
-			},
-			wantTopicsCount: 0,
-			wantError:       true,
-		},
-	}
-
-	// Run tests
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-
-			test.mock()
-
-			topicsCount, err := store.CountTopics()
-
-			if (err != nil) != test.wantError {
-				t.Errorf("CountTopics() error = %v, want error %v", err, test.wantError)
-				return
-			}
-			if err == nil && !reflect.DeepEqual(topicsCount, test.wantTopicsCount) {
-				t.Errorf("CountTopics() = %v, want %v", topicsCount, test.wantTopicsCount)
-			}
-		})
-	}
-}
-
 // TestCreateTopic tests creating a new topic.
 func TestCreateTopic(t *testing.T) {
 

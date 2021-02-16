@@ -73,23 +73,6 @@ func (store *TopicStore) GetTopics() ([]x.Topic, error) {
 	return topics, nil
 }
 
-// CountTopics gets amount of topics.
-func (store *TopicStore) CountTopics() (int, error) {
-	var topicCount int
-
-	query := `
-		SELECT COUNT(topic_id) 
-		FROM topics
-		`
-
-	// Execute prepared statement
-	if err := store.Get(&topicCount, query); err != nil {
-		return 0, fmt.Errorf("error getting number of topics: %w", err)
-	}
-
-	return topicCount, nil
-}
-
 // CreateTopic creates a new topic.
 func (store *TopicStore) CreateTopic(topic *x.Topic) error {
 

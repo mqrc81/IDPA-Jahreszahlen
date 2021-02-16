@@ -88,27 +88,6 @@ func (store *ScoreStore) GetScoresByTopicAndUser(topicID int, userID int) ([]x.S
 	return scores, nil
 }
 
-// CreateScore creates a new score.
-func (store *ScoreStore) CreateScore(score *x.Score) error {
-
-	query := `
-		INSERT INTO scores(topic_id, user_id, points, date) 
-		VALUES (?, ?, ?, ?)
-		`
-
-	// Execute prepared statement
-	if _, err := store.Exec(query,
-		score.TopicID,
-		score.UserID,
-		score.Points,
-		score.Date,
-	); err != nil {
-		return fmt.Errorf("error creating score: %w", err)
-	}
-
-	return nil
-}
-
 // CountScores gets amount of scores.
 func (store *ScoreStore) CountScores() (int, error) {
 	var scoresCount int
@@ -142,4 +121,25 @@ func (store *ScoreStore) CountScoresByDate(start time.Time, end time.Time) (int,
 	}
 
 	return scoresCount, nil
+}
+
+// CreateScore creates a new score.
+func (store *ScoreStore) CreateScore(score *x.Score) error {
+
+	query := `
+		INSERT INTO scores(topic_id, user_id, points, date) 
+		VALUES (?, ?, ?, ?)
+		`
+
+	// Execute prepared statement
+	if _, err := store.Exec(query,
+		score.TopicID,
+		score.UserID,
+		score.Points,
+		score.Date,
+	); err != nil {
+		return fmt.Errorf("error creating score: %w", err)
+	}
+
+	return nil
 }
