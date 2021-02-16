@@ -165,9 +165,7 @@ func NewHandler(store x.Store, sessions *scs.SessionManager, csrfKey []byte) *Ha
 	})
 
 	// Scores
-	handler.Route("/scores", func(router chi.Router) {
-		router.Get("/", scores.List())
-	})
+	handler.Get("/scores", scores.List())
 
 	// Users
 	handler.Route("/users", func(router chi.Router) {
@@ -286,8 +284,8 @@ func (h *Handler) Home() http.HandlerFunc {
 
 // Search is a GET-method that is accessible to anyone.
 //
-// It examines the search-query in the navbar and redirects user to a fitting
-// handler, if any.
+// It examines the search-query in the navigation bar and redirects user to a
+// fitting handler, if any.
 func (h *Handler) Search() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
