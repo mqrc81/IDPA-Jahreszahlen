@@ -6,7 +6,6 @@ package web
 import (
 	"html/template"
 	"net/http"
-	"strings"
 
 	"github.com/gorilla/csrf"
 	"golang.org/x/crypto/bcrypt"
@@ -81,7 +80,7 @@ func (h *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 
 		// Retrieve values from form
 		form := EditUsernameForm{
-			NewUsername: strings.ToLower(req.FormValue("username")),
+			NewUsername: format(req.FormValue("username")),
 			Password:    req.FormValue("password"),
 		}
 
@@ -171,7 +170,7 @@ func (h *UserHandler) EditEmailSubmit() http.HandlerFunc {
 
 		// Retrieve values from form
 		form := EditEmailForm{
-			NewEmail: strings.ToLower(req.FormValue("email")),
+			NewEmail: format(req.FormValue("email")),
 			Password: req.FormValue("password"),
 		}
 

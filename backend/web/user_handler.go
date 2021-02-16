@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	TokenLength = 43
+	tokenLength = 43
 )
 
 var (
@@ -109,8 +109,8 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 
 		// Retrieve values from form
 		form := RegisterForm{
-			Username:      strings.ToLower(req.FormValue("username")),
-			Email:         strings.ToLower(req.FormValue("email")),
+			Username:      format(req.FormValue("username")),
+			Email:         format(req.FormValue("email")),
 			Password:      req.FormValue("password"),
 			UsernameTaken: false,
 			EmailTaken:    false,
@@ -174,7 +174,7 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 
 		// New token
 		token := x.Token{
-			TokenID: generateRandomString(TokenLength),
+			TokenID: generateRandomString(tokenLength),
 			UserID:  user.UserID,
 		}
 
@@ -245,7 +245,7 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 
 		// Retrieve values from form
 		form := LoginForm{
-			UsernameOrEmail:          strings.ToLower(req.FormValue("username")),
+			UsernameOrEmail:          format(req.FormValue("username")),
 			Password:                 req.FormValue("password"),
 			IncorrectUsernameOrEmail: false,
 			IncorrectPassword:        false,
@@ -590,7 +590,7 @@ func (h *UserHandler) ResendVerifyEmail() http.HandlerFunc {
 
 		// New token
 		token := x.Token{
-			TokenID: generateRandomString(TokenLength),
+			TokenID: generateRandomString(tokenLength),
 			UserID:  user.UserID,
 		}
 
@@ -663,7 +663,7 @@ func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 
 		// Retrieve email from form
 		form := ForgotPasswordForm{
-			Email: strings.ToLower(req.FormValue("email")),
+			Email: format(req.FormValue("email")),
 		}
 
 		// Check if email is valid
@@ -683,7 +683,7 @@ func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 
 		// New token
 		token := x.Token{
-			TokenID: generateRandomString(TokenLength),
+			TokenID: generateRandomString(tokenLength),
 			UserID:  user.UserID,
 			Expiry:  time.Now().Add(time.Hour),
 		}
@@ -831,6 +831,13 @@ func (h *UserHandler) ResetPasswordSubmit() http.HandlerFunc {
 		// Redirect to login
 		http.Redirect(res, req, "/users/login", http.StatusSeeOther)
 	}
+}
+
+// format returns the string of a form input in lowercase and without leading
+// and trailing whitespace.
+// Example: ' Example 123 ' => 'example 123'
+func format(str string) string {
+	return strings.ToLower(strings.Trim(str, " "))
 }
 
 // generateRandomString generates a random string of a certain length.
