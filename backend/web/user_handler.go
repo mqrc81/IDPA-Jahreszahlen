@@ -344,7 +344,7 @@ func (h *UserHandler) Profile() http.HandlerFunc {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error",
 				"Unzureichende Berechtigung. Loggen Sie sich zuerst ein, um Ihr Profil zu betrachten.")
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, "/users/login", http.StatusSeeOther)
 			return
 		}
 		user := userInf.(x.User)
