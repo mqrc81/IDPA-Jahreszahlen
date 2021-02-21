@@ -50,7 +50,7 @@ Leaderboard
                     <th>#</th>
                     <th>Benutzer</th>
                     <th>Thema</th>
-                    <th>Datum</th>
+                    <th class="d-none d-md-block">Datum</th>
                     <th>Punkte</th>
                 </tr>
                 </thead>
@@ -60,7 +60,7 @@ Leaderboard
                     <td class="font-weight-bold">{{.Rank}}</td>
                     <td>{{.UserName}}</td>
                     <td>{{.TopicName}}</td>
-                    <td>{{.Date}}</td>
+                    <td class="d-none d-md-block">{{.Date}}</td>
                     <td class="font-weight-bold">{{.Points}}</td>
                 </tr>
                 {{end}}
