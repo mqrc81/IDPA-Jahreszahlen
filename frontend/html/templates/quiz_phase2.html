@@ -9,19 +9,24 @@ Phase 2
 {{define "content"}}
 <form action="/topics/{{.TopicID}}/quiz/2" method="POST" class="form">
     {{.CSRF}}
-    {{range $i, $q := .Questions}}
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <p class="text-primary m-0 font-weight-bold">{{$q.EventName}}</p>
-        </div>
-        <div class="card-body">
-            <div class="form-group">
-                <input type="number" name="{{$i}}" id="{{$i}}" required
-                       class="form-control">
+
+    <div class="row row-cols-md-2">
+        {{range $i, $q := .Questions}}
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <p class="text-primary m-0 font-weight-bold">{{$q.EventName}}</p>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <input type="number" name="{{$i}}" id="{{$i}}" required
+                               class="form-control">
+                    </div>
+                </div>
             </div>
         </div>
+        {{end}}
     </div>
-    {{end}}
     <br>
     <button type="submit" class="btn btn-primary btn-block text-white btn-user p-3">Überprüfen</button>
 </form>

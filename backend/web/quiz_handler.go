@@ -34,7 +34,7 @@ import (
 const (
 	timeExpiry = 20 // max time to be spent in a specific phase of a quiz
 
-	p1Questions      = 3  // amount of questions in phase 1
+	p1Questions      = 4  // amount of questions in phase 1
 	p1Choices        = 3  // amount of choices per question of phase 1
 	p1Points         = 3  // amount of points per correct guess of phase 1
 	p1ChoicesMaxDiff = 10 // highest possible difference between the correct year and a random year of phase 1

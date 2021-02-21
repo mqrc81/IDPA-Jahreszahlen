@@ -10,24 +10,28 @@ Phase 1
 
 <form action="/topics/{{.TopicID}}/quiz/1" method="POST" class="form">
     {{.CSRF}}
-    {{range $i, $q := .Questions}} <!-- $i = index, $q = question -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <p class="text-primary m-0 font-weight-bold">{{$q.EventName}}</p>
-        </div>
-        <div class="card-body">
-            {{range $q.Choices}}
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="{{$i}}" id="{{$i}}" value="{{.}}" required>
-                <label class="form-check-label" for="{{$i}}">
-                    {{.}}
-                </label>
+    <div class="row row-cols-md-2">
+        {{range $i, $q := .Questions}} <!-- $i = index, $q = question -->
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <p class="text-primary m-0 font-weight-bold">{{$q.EventName}}</p>
+                </div>
+                <div class="card-body">
+                    {{range $q.Choices}}
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="{{$i}}" id="{{$i}}" value="{{.}}" required>
+                        <label class="form-check-label" for="{{$i}}">
+                            {{.}}
+                        </label>
+                    </div>
+                    {{end}}
+                </div>
             </div>
-            {{end}}
         </div>
-    </div>
-    {{end}}
+        {{end}}
 
+    </div>
     <br>
     <button type="submit" class="btn btn-primary btn-block text-white btn-user p-3">Überprüfen</button>
 </form>

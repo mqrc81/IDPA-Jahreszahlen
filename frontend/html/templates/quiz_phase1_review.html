@@ -1,4 +1,4 @@
-{{define "title"}}
+y{{define "title"}}
 Phase 1 Überprüfung
 {{end}}
 
@@ -7,19 +7,21 @@ Phase 1 Überprüfung
 {{end}}
 
 {{define "content"}}
-{{range $i, $q := .Questions}} <!-- $i = index, $q = question -->
-{{$user := $q.UserGuess}}
-{{$year := $q.EventYear}}
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <p class="text-primary m-0 font-weight-bold">{{$q.EventName}}</p>
-    </div>
-    <div class="card-body">
-        {{range $q.Choices}}
-        <div class="form-check">
-            <input class="form-check-input" type="radio" name="{{$i}}" id="{{$i}}" value="{{.}}"
-                   {{if eq . $user}}checked{{end}}>
-            <label for="{{$i}}" class="form-check-label text-sm-left
+<div class="row row-cols-md-2">
+    {{range $i, $q := .Questions}} <!-- $i = index, $q = question -->
+    {{$user := $q.UserGuess}}
+    {{$year := $q.EventYear}}
+    <div class="col-md-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <p class="text-primary m-0 font-weight-bold">{{$q.EventName}}</p>
+            </div>
+            <div class="card-body">
+                {{range $q.Choices}}
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="{{$i}}" id="{{$i}}" value="{{.}}"
+                           {{if eq . $user}}checked{{end}}>
+                    <label for="{{$i}}" class="form-check-label text-sm-left
                             {{if eq . $year}}
                                 text-success
                             {{else}}
@@ -27,22 +29,24 @@ Phase 1 Überprüfung
                                 text-danger
                             {{end}}
                             {{end}}">
-                {{.}}
-                {{if eq . $year}} <!-- correct year -->
-                {{if eq . $user}}
-                <i class="fas fa-check text-success"></i> <!-- user guessed the correct year -->
+                        {{.}}
+                        {{if eq . $year}} <!-- correct year -->
+                        {{if eq . $user}}
+                        <i class="fas fa-check text-success"></i> <!-- user guessed the correct year -->
+                        {{end}}
+                        {{else}}
+                        {{if eq . $user}}
+                        <i class="fas fa-times text-danger"></i> <!-- user guessed this year, which wasn't correct -->
+                        {{end}}
+                        {{end}}
+                    </label>
+                </div>
                 {{end}}
-                {{else}}
-                {{if eq . $user}}
-                <i class="fas fa-times text-danger"></i> <!-- user guessed this year, which wasn't correct -->
-                {{end}}
-                {{end}}
-            </label>
+            </div>
         </div>
-        {{end}}
     </div>
+    {{end}}
 </div>
-{{end}}
 
 <br>
 <form action="/topics/{{.TopicID}}/quiz/1/review" method="POST" class="form">
