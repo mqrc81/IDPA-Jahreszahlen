@@ -85,7 +85,7 @@ Benutzer
             <div class="card-header py-3">
                 <h6 class="text-primary font-weight-bold m-0">Admins</h6>
             </div>
-            <div class="row row-cols-3">
+            <div class="row row-cols-1 row-cols-md-3">
                 {{range .Admins}}
                 <div class="col">
                     <div class="card shadow py-2">
@@ -109,7 +109,7 @@ Benutzer
             <div class="card-header py-3">
                 <h6 class="text-primary font-weight-bold m-0">Benutzer</h6>
             </div>
-            <div class="row row-cols-2">
+            <div class="row row-cols-1 row-cols-md-2">
                 {{range .Users}}
                 {{if not .Admin}}
                 <div class="col">
