@@ -10,7 +10,7 @@
 {{$admin := .User.Admin}}
 {{$csrf := .CSRF}}
 <div class="row">
-    <div class="{{if .User.Admin}}col-8{{else}}col-12{{end}}">
+    <div class="{{if .User.Admin}}col-12 col-md-8{{else}}col-12{{end}}">
         {{range .Topic.Events}}
         <div class="card shadow mb-4">
             <div class="card-header">
@@ -41,17 +41,13 @@
                                                 <i class="fas fa-trash-alt fa-2x"></i>
                                             </div>
                                             <h4 class="modal-title w-100">Sind Sie sicher?</h4>
-                                            <button type="button" class="close" data-bs-dismiss="modal"
-                                                    aria-hidden="true">&times;
-                                            </button>
+                                            <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">&times;</button>
                                         </div>
                                         <div class="modal-body">
                                             <p>Das Löschen eines Ereignisses kann nicht rückgängig gemacht werden.</p>
                                         </div>
                                         <div class="modal-footer justify-content-center">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                                Abbrechen
-                                            </button>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
                                             <button type="submit" class="btn btn-danger">Löschen</button>
                                         </div>
                                     </div>
@@ -66,7 +62,7 @@
         {{end}}
     </div>
     {{if .User.Admin}}
-    <div class="col-4">
+    <div class="col-12 col-md-4">
         <div class="card shadow mb-4">
             <div class="card-header py-3 align-items-center no-gutters bg-gradient-dark">
                 <h6 class="text-white font-weight-bold m-0">
@@ -79,8 +75,7 @@
                     erstellen,
                     welches ab sofort in den Quizzes abgefragt wird.</p>
                 <p class="text-center">
-                    <a href="/topics/{{.Topic.TopicID}}/events/new"><i
-                            class="fas fa-plus-circle text-gray-200 fa-6x"></i></a>
+                    <a href="/topics/{{.Topic.TopicID}}/events/new"><i class="fas fa-plus-circle text-gray-200 fa-6x"></i></a>
                 </p>
                 <a href="/topics/{{.Topic.TopicID}}/events/new" class="mt-4 btn btn-outline-light btn-danger btn-block x-hover-dark
                 text-white font-weight-bold btn-user">Neues Ereignis erstellen</a>
