@@ -17,9 +17,7 @@ const (
 	// IDs of email HTML-templates created on SendGrid.com
 	verifyEmailTemplateID   = "d-fd2d13b01f78469994803ff4b1041532"
 	resetPasswordTemplateID = "d-c2848673e6b34e6a9e23585341ddc7cf"
-)
 
-const (
 	sendgridEndpoint = "/v3/mail/send"
 	sendgridHost     = "https://api.sendgrid.com"
 

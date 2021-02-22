@@ -9,7 +9,7 @@ Themen
 {{define "content"}}
 <div class="row">
     {{$admin := .User.Admin}}
-    <div class="{{if $admin}}col-8{{else}}col-12{{end}}">
+    <div class="{{if $admin}}col-12 col-md-8{{else}}col-12{{end}}">
         {{range .Topics}}
         <div class="card shadow mb-4">
             <div class="card-header">
@@ -44,7 +44,7 @@ Themen
         {{end}}
     </div>
     {{if .User.Admin}}
-    <div class="col-4">
+    <div class="col-12 col-md-4">
         <div class="card shadow mb-4">
             <div class="card-header py-3 align-items-center no-gutters bg-gradient-dark">
                 <h6 class="text-white font-weight-bold m-0">

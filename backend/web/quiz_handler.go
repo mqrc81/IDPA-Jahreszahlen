@@ -34,10 +34,10 @@ import (
 const (
 	timeExpiry = 20 // max time to be spent in a specific phase of a quiz
 
-	p1Questions      = 4  // amount of questions in phase 1
-	p1Choices        = 3  // amount of choices per question of phase 1
-	p1Points         = 3  // amount of points per correct guess of phase 1
-	p1ChoicesMaxDiff = 10 // highest possible difference between the correct year and a random year of phase 1
+	p1Questions           = 4  // amount of questions in phase 1
+	p1Choices             = 3  // amount of choices per question of phase 1
+	p1Points              = 3  // amount of points per correct guess of phase 1
+	p1ChoicesMaxDeviation = 10 // highest possible difference between the correct year and a random year of phase 1
 
 	p2Questions     = 4 // amount of questions in phase 2
 	p2Points        = 8 // amount of points per correct guess of phase 2
@@ -961,8 +961,8 @@ func createPhase1Questions(events []x.Event) []phase1Question {
 
 		correctYear := event.Year // the event's year
 
-		min := correctYear - p1ChoicesMaxDiff // minimum cap of random number
-		max := correctYear + p1ChoicesMaxDiff // maximum cap of random number
+		min := correctYear - p1ChoicesMaxDeviation // minimum cap of random number
+		max := correctYear + p1ChoicesMaxDeviation // maximum cap of random number
 
 		years := []int{correctYear}                 // array of years
 		yearsMap := map[int]bool{correctYear: true} // map of years to ascertain uniqueness of each year

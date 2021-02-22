@@ -22,17 +22,17 @@
                 <div class="mx-4 mt-5">
                     <div class="d-flex justify-content-between">
                         <a href="/topics/{{.Topic.TopicID}}/quiz/1" title="Quiz starten">
-                            <i class="fas fa-play x-hover-blue fa-4x text-gray-500"></i>
+                            <i class="fas fa-play x-hover-blue fa-3x text-gray-500"></i>
                         </a>
                         <a href="/topics/{{.Topic.TopicID}}/events" title="Ereignisse auflisten">
-                            <i class="fas fa-list x-hover-yellow fa-4x text-gray-500"></i>
+                            <i class="fas fa-list x-hover-yellow fa-3x text-gray-500"></i>
                         </a>
                         {{if .User.Admin}}
                         <a href="/topics/{{.Topic.TopicID}}/edit" title="Thema bearbeiten">
-                            <i class="fas fa-edit x-hover-red fa-4x text-gray-500"></i>
+                            <i class="fas fa-edit x-hover-red fa-3x text-gray-500"></i>
                         </a>
                         <a href="#topicDeleteModal" data-bs-toggle="modal" title="Thema löschen">
-                            <i class="fas fa-trash-alt x-hover-red fa-4x text-gray-500"></i>
+                            <i class="fas fa-trash-alt x-hover-red fa-3x text-gray-500"></i>
                         </a>
                         <div id="topicDeleteModal" class="modal fade">
                             <form action="/topics/{{.Topic.TopicID}}/delete" method="POST">
