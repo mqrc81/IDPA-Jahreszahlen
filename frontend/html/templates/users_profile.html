@@ -40,11 +40,20 @@ Profil
                                     <span>{{.User.Email}}</span>
                                 </div>
                                 <div class="col-1 col-md-2">
-                                    <span class="float-right mr-md-5">
-                                        <a href="/users/edit/email" title="Email bearbeiten">
-                                            <i class="fas fa-pen x-hover-yellow text-gray-500"></i>
-                                        </a>
-                                    </span>
+                                    <form action="/users/resend/email" method="POST">
+                                        {{.CSRF}}
+                                        <span class="float-right mr-md-5">
+                                            {{if not .User.Verified}}
+                                            <a class="d-none d-md-inline mr-2" onclick="this.closest('form').submit();return false;"
+                                               title="Bestätigungs-Email erneut senden">
+                                                <i class="fas fa-paper-plane x-hover-blue text-gray-500"></i>
+                                            </a>
+                                            {{end}}
+                                            <a href="/users/edit/email" title="Email bearbeiten">
+                                                <i class="fas fa-pen x-hover-yellow text-gray-500"></i>
+                                            </a>
+                                        </span>
+                                    </form>
                                 </div>
                             </div>
                             <div class="row py-2">

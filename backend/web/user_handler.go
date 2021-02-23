@@ -331,6 +331,7 @@ func (h *UserHandler) Profile() http.HandlerFunc {
 	// Data to pass to HTML-templates
 	type data struct {
 		SessionData
+		CSRF template.HTML
 
 		User           x.User
 		ScoresPerTopic []scoresPerTopic
@@ -383,10 +384,11 @@ func (h *UserHandler) Profile() http.HandlerFunc {
 		}
 
 		// Execute HTML-templates with data
-		if err := usersProfileTemplate.Execute(res, data{
+		if err = usersProfileTemplate.Execute(res, data{
+			SessionData:    GetSessionData(h.sessions, req.Context()),
+			CSRF:           csrf.TemplateField(req),
 			User:           user,
 			ScoresPerTopic: scoresChart,
-			SessionData:    GetSessionData(h.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -459,14 +461,14 @@ func (h *UserHandler) List() http.HandlerFunc {
 
 		// Execute HTML-templates with data
 		if err = usersListTemplate.Execute(res, data{
+			SessionData:        GetSessionData(h.sessions, req.Context()),
+			CSRF:               csrf.TemplateField(req),
 			Users:              users,
 			Admins:             admins,
 			UsersCount:         len(users),
 			VerifiedUsersCount: verified,
 			PlayedUsersCount:   played,
 			AdminsCount:        len(admins),
-			SessionData:        GetSessionData(h.sessions, req.Context()),
-			CSRF:               csrf.TemplateField(req),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusSeeOther)
 			return
@@ -612,7 +614,7 @@ func (h *UserHandler) ResendVerifyEmail() http.HandlerFunc {
 		}
 
 		// Redirect to home-page
-		http.Redirect(res, req, "/", http.StatusSeeOther)
+		http.Redirect(res, req, "/users/profile", http.StatusSeeOther)
 	}
 }
 
