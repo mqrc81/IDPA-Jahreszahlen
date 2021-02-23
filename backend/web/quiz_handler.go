@@ -34,17 +34,17 @@ import (
 const (
 	timeExpiry = 20 // max time to be spent in a specific phase of a quiz
 
-	p1Questions           = 4  // amount of questions in phase 1
-	p1Choices             = 3  // amount of choices per question of phase 1
-	p1Points              = 3  // amount of points per correct guess of phase 1
-	p1ChoicesMaxDeviation = 10 // highest possible difference between the correct year and a random year of phase 1
+	phase1Questions           = 4  // amount of questions in phase 1
+	phase1Choices             = 3  // amount of choices per question of phase 1
+	phase1Points              = 3  // amount of points per correct guess of phase 1
+	phase1ChoicesMaxDeviation = 10 // highest possible difference between the correct year and a random year of phase 1
 
-	p2Questions     = 4 // amount of questions in phase 2
-	p2Points        = 8 // amount of points per correct guess of phase 2
-	p2PartialPoints = 3 // amount of partial points possible in phase 2, when guess was incorrect, but close
+	phase2Questions     = 4 // amount of questions in phase 2
+	phase2Points        = 8 // amount of points per correct guess of phase 2
+	phase2PartialPoints = 3 // amount of partial points possible in phase 2, when guess was incorrect, but close
 
-	p3Questions = 10 // amount of events to be put in the correct order in phase 3
-	p3Points    = 5  // amount of points per correct guess of phase 3 (partial points: -1 per deviation from correct order)
+	phase3Questions = 10 // amount of events to be put in the correct order in phase 3
+	phase3Points    = 5  // amount of points per correct guess of phase 3 (partial points: -1 per deviation from correct order)
 
 	noPermissionError = "Unzureichende Berechtigung. Sie müssen als Benutzer eingeloggt sein, um ein Quiz zu spielen."
 )
@@ -165,7 +165,7 @@ func (h *QuizHandler) Phase1() http.HandlerFunc {
 
 		// Check if the topic has enough events to meet the requirements of no
 		// event showing up twice in phase 1 and 2
-		minEvents := p1Questions + p2Questions
+		minEvents := phase1Questions + phase2Questions
 		if topic.EventsCount < minEvents {
 			h.sessions.Put(req.Context(), "flash_error", fmt.Sprintf("Das Thema '%v' hat nicht genügend Ereignisse "+
 				"(min. %v), um ein Quiz zur Verfügung zu stellen.", topic.Name, minEvents))
@@ -235,7 +235,7 @@ func (h *QuizHandler) Phase1Submit() http.HandlerFunc {
 		quiz.TimeStamp = time.Now()
 
 		// Loop through the 3 input forms of radio-buttons of phase 1
-		for num := 0; num < p1Questions; num++ {
+		for num := 0; num < phase1Questions; num++ {
 			// Retrieve user's guess from form
 			guess, _ := strconv.Atoi(req.FormValue(strconv.Itoa(num)))
 			questions[num].UserGuess = guess
@@ -244,7 +244,7 @@ func (h *QuizHandler) Phase1Submit() http.HandlerFunc {
 			// corresponding event in the array of events of the topic
 			if guess == quiz.Topic.Events[num].Year { // if guess is correct...
 				quiz.CorrectGuesses++
-				quiz.Points += p1Points // ...user gets 3 points
+				quiz.Points += phase1Points // ...user gets 3 points
 			}
 		}
 		quiz.Questions = questions
@@ -467,17 +467,17 @@ func (h *QuizHandler) Phase2Submit() http.HandlerFunc {
 		quiz.TimeStamp = time.Now()
 
 		// Loop through the 4 input fields of phase 2
-		for num := 0; num < p2Questions; num++ {
+		for num := 0; num < phase2Questions; num++ {
 
 			// Retrieve user's guess from form
 			questions[num].UserGuess, _ = strconv.Atoi(req.FormValue(strconv.Itoa(num)))
 
 			// Check if the user's guess is correct, by comparing it to the
 			// corresponding event in the array of events of the topic
-			correctYear := quiz.Topic.Events[num+p1Questions].Year
+			correctYear := quiz.Topic.Events[num+phase1Questions].Year
 			if questions[num].UserGuess == correctYear { // if guess is correct...
 				quiz.CorrectGuesses++
-				quiz.Points += p2Points // ...user gets 8 points
+				quiz.Points += phase2Points // ...user gets 8 points
 			} else {
 				// Get absolute value of difference between user's guess and
 				// correct year
@@ -485,8 +485,8 @@ func (h *QuizHandler) Phase2Submit() http.HandlerFunc {
 
 				// Check if the user's guess is close and potentially add
 				// partial points (the closer the guess, the more points)
-				if difference < p2PartialPoints { // if guess is close...
-					quiz.Points += p2PartialPoints - difference // ...user gets partial points
+				if difference < phase2PartialPoints { // if guess is close...
+					quiz.Points += phase2PartialPoints - difference // ...user gets partial points
 				}
 			}
 		}
@@ -726,10 +726,10 @@ func (h *QuizHandler) Phase3Submit() http.HandlerFunc {
 		var guessesInt []int
 		for eventsOrder, guess := range guesses {
 			guessOrder, _ := strconv.Atoi(guess)
-			points := p3Points - abs(eventsOrder-guessOrder)
+			points := phase3Points - abs(eventsOrder-guessOrder)
 			if points > 0 {
 				quiz.Points += points
-				if points == p3Points {
+				if points == phase3Points {
 					quiz.CorrectGuesses++
 				}
 			}
@@ -819,7 +819,7 @@ func (h *QuizHandler) Phase3Review() http.HandlerFunc {
 			CSRF:        csrf.TemplateField(req),
 			TopicID:     quiz.Topic.TopicID,
 			TopicName:   quiz.Topic.Name,
-			Events:      quiz.Topic.Events[:min(p3Questions, quiz.Topic.EventsCount)],
+			Events:      quiz.Topic.Events[:min(phase3Questions, quiz.Topic.EventsCount)],
 			Guesses:     h.sessions.Get(req.Context(), "guesses").([]int),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -882,15 +882,15 @@ func (h *QuizHandler) Summary() http.HandlerFunc {
 		amountOfLowerScores := len(scores) - potentialIndexOfScore
 		averageComparison := amountOfLowerScores * 100 / len(scores)
 
-		p3Amount := min(quiz.Topic.EventsCount, p3Questions)
+		p3Amount := min(quiz.Topic.EventsCount, phase3Questions)
 		// Amount of possible points, if every guess was correct
-		potentialPoints := p1Questions*p1Points + p2Questions*p2Points + p3Amount*p3Points
+		potentialPoints := phase1Questions*phase1Points + phase2Questions*phase2Points + p3Amount*phase3Points
 
 		// Execute HTML-templates with data
 		if err = quizSummaryTemplate.Execute(res, data{
 			SessionData:       GetSessionData(h.sessions, req.Context()),
 			Quiz:              quiz,
-			QuestionsCount:    p1Questions + p2Questions + p3Amount,
+			QuestionsCount:    phase1Questions + phase2Questions + p3Amount,
 			PotentialPoints:   potentialPoints,
 			AverageComparison: averageComparison,
 		}); err != nil {
@@ -962,19 +962,19 @@ func createPhase1Questions(events []x.Event) []phase1Question {
 	var questions []phase1Question
 
 	// Loop through events 0-2 and turn them into questions
-	for _, event := range events[:p1Questions] { // events[:3] -> 0-2
+	for _, event := range events[:phase1Questions] { // events[:3] -> 0-2
 
 		correctYear := event.Year // the event's year
 
-		min := correctYear - p1ChoicesMaxDeviation // minimum cap of random number
-		max := correctYear + p1ChoicesMaxDeviation // maximum cap of random number
+		min := correctYear - phase1ChoicesMaxDeviation // minimum cap of random number
+		max := correctYear + phase1ChoicesMaxDeviation // maximum cap of random number
 
 		years := []int{correctYear}                 // array of years
 		yearsMap := map[int]bool{correctYear: true} // map of years to ascertain uniqueness of each year
 
 		// Generate unique, random numbers between min and max, to mix with the
 		// correct year
-		for c := 1; c < p1Choices; c++ {
+		for c := 1; c < phase1Choices; c++ {
 			rand.Seed(time.Now().Unix())       // set a seed to base RNG off of
 			year := rand.Intn(max-min+1) + min // generate a random number between min and max
 
@@ -1021,7 +1021,7 @@ func createPhase2Questions(events []x.Event) []phase2Question {
 	var questions []phase2Question
 
 	// Loop through events 3-7 and turn them into questions
-	for _, event := range events[p1Questions:(p2Questions + p1Questions)] { // events[3:7] -> 3-6
+	for _, event := range events[phase1Questions:(phase2Questions + phase1Questions)] { // events[3:7] -> 3-6
 		questions = append(questions, phase2Question{
 			EventName: event.Name,
 			EventYear: event.Year,
@@ -1050,7 +1050,7 @@ func createPhase3Questions(events []x.Event) ([]phase3Question, []x.Event) {
 	// put in the correct order
 	// If amount of events is smaller than amount of questions of phase 3, we
 	// utilize all the events instead, so no need to shuffle
-	if len(events) > p3Questions {
+	if len(events) > phase3Questions {
 		rand.Seed(time.Now().UnixNano()) // generate new seed to base RNG off of
 		rand.Shuffle(len(events), func(n1, n2 int) {
 			events[n1], events[n2] = events[n2], events[n1]
@@ -1059,7 +1059,7 @@ func createPhase3Questions(events []x.Event) ([]phase3Question, []x.Event) {
 
 	// Sort array of events by date, in order to add 'order' value to the
 	// first *amount* questions
-	amount := min(p3Questions, len(events))
+	amount := min(phase3Questions, len(events))
 	sort.Slice(events[:amount], func(n1, n2 int) bool {
 		return events[n1].Date.Before(events[n2].Date)
 	})
