@@ -907,7 +907,7 @@ func (h *QuizHandler) Summary() http.HandlerFunc {
 // message to be used in the error flash message after redirecting back.
 func (quiz QuizData) validate(ok bool, step int, topicID int) string {
 
-	msg := "Ein Fehler ist aufgetreten in Phase %v des Quizzes. "
+	msg := "Ein Fehler ist aufgetreten in Phase %v des Quiz. "
 
 	// Check for invalid conversion from interface to quiz-data struct
 	if !ok {
@@ -921,14 +921,14 @@ func (quiz QuizData) validate(ok bool, step int, topicID int) string {
 		// Occurs when a user manually changes the topic ID in the URL whilst
 		// in a later phase of a quiz
 		// Example: "/topics/1/quiz/2/review" -> "/topics/11/quiz/2/review"
-		return msg + "Womöglich haben Sie versucht, während des Quizzes das Thema zu ändern."
+		return msg + "Womöglich haben Sie versucht, während des Quiz das Thema zu ändern."
 	}
 
 	// Check for invalid phase
 	if step != quiz.Step {
 		// Occurs when a user manually changes the phase in the URL
 		// Example: "/topics/1/quiz/1" -> "/topics/1/quiz/3"
-		return msg + "Womöglich haben Sie versucht, eine Phase des Quizzes zu überspringen oder zu wiederholen."
+		return msg + "Womöglich haben Sie versucht, eine Phase des Quiz zu überspringen oder zu wiederholen."
 	}
 
 	// Check for invalid time stamp. Unix() displays the time passed in seconds
