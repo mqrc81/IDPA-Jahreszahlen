@@ -335,6 +335,8 @@ func (h *Handler) Search() http.HandlerFunc {
 }
 
 // HTTP404 gets called when a non-existing URL has been entered.
+//
+// Example: /abc/123
 func (h *Handler) HTTP404() http.HandlerFunc {
 
 	// Data to pass to HTML-templates
