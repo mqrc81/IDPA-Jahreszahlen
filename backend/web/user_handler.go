@@ -109,8 +109,8 @@ func (h *UserHandler) RegisterSubmit() http.HandlerFunc {
 
 		// Retrieve values from form
 		form := RegisterForm{
-			Username:      format(req.FormValue("username")),
-			Email:         format(req.FormValue("email")),
+			Username:      formatInput(req.FormValue("username")),
+			Email:         formatInput(req.FormValue("email")),
 			Password:      req.FormValue("password"),
 			UsernameTaken: false,
 			EmailTaken:    false,
@@ -245,7 +245,7 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 
 		// Retrieve values from form
 		form := LoginForm{
-			UsernameOrEmail:          format(req.FormValue("username")),
+			UsernameOrEmail:          formatInput(req.FormValue("username")),
 			Password:                 req.FormValue("password"),
 			IncorrectUsernameOrEmail: false,
 			IncorrectPassword:        false,
@@ -666,7 +666,7 @@ func (h *UserHandler) ForgotPasswordSubmit() http.HandlerFunc {
 
 		// Retrieve email from form
 		form := ForgotPasswordForm{
-			Email: format(req.FormValue("email")),
+			Email: formatInput(req.FormValue("email")),
 		}
 
 		// Check if email is valid
@@ -836,10 +836,10 @@ func (h *UserHandler) ResetPasswordSubmit() http.HandlerFunc {
 	}
 }
 
-// format returns the string of a form input in lowercase and without leading
+// formatInput returns the string of a form input in lowercase and without leading
 // and trailing whitespace.
-// Example: ' Example 123 ' => 'example 123'
-func format(str string) string {
+// Example: ' Invalid UserName 123 ' => 'invalid username 123'
+func formatInput(str string) string {
 	return strings.ToLower(strings.Trim(str, " "))
 }
 

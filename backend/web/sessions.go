@@ -7,7 +7,6 @@ package web
 import (
 	"context"
 	"database/sql"
-	"time"
 
 	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/v2"
@@ -25,7 +24,6 @@ func NewSessionManager(dataSourceName string) (*scs.SessionManager, error) {
 	}
 
 	// Configure database connections
-	db.SetConnMaxLifetime(time.Minute * 4)
 	db.SetMaxOpenConns(20)
 	db.SetMaxIdleConns(25)
 

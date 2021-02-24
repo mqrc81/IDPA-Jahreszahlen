@@ -8,8 +8,6 @@ package web
 import (
 	"encoding/gob"
 	"fmt"
-	"log"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -408,15 +406,4 @@ func (errors *FormErrors) validatePassword(password string, errorName string) {
 	} else if !regex(password, "\\d") {
 		(*errors)[errorName] = "Passwort muss mindestens eine Zahl enthalten."
 	}
-}
-
-// regex checks if a certain regular expression matches a certain string.
-func regex(str string, regex string) bool {
-
-	match, err := regexp.MatchString(regex, str)
-	if err != nil {
-		log.Printf("error comparing regular-expression '%v' to string '%v': %v", regex, str, err)
-	}
-
-	return match
 }

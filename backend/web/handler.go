@@ -426,31 +426,3 @@ func (h *Handler) fileServer(path string, dir http.FileSystem) {
 		fs.ServeHTTP(res, req)
 	})
 }
-
-// url catches empty URLs, which my occur when directly typing in a link to
-// which a user doesn't have access, without previously having visited the
-// website, in which case the 'req.Referer()' would be empty. In this case it
-// will redirect to the home-page.
-func url(url string) string {
-	if url == "" {
-		return "/"
-	}
-	return url
-}
-
-// min returns the smallest out of all the numbers.
-func min(nums ...int) int {
-
-	if len(nums) == 0 {
-		return 0
-	}
-
-	minNumber := nums[0]
-	for _, num := range nums {
-		if num < minNumber {
-			minNumber = num
-		}
-	}
-
-	return minNumber
-}

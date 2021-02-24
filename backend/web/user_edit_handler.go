@@ -80,7 +80,7 @@ func (h *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 
 		// Retrieve values from form
 		form := EditUsernameForm{
-			NewUsername: format(req.FormValue("username")),
+			NewUsername: formatInput(req.FormValue("username")),
 			Password:    req.FormValue("password"),
 		}
 
@@ -170,7 +170,7 @@ func (h *UserHandler) EditEmailSubmit() http.HandlerFunc {
 
 		// Retrieve values from form
 		form := EditEmailForm{
-			NewEmail: format(req.FormValue("email")),
+			NewEmail: formatInput(req.FormValue("email")),
 			Password: req.FormValue("password"),
 		}
 

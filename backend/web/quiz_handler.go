@@ -1117,13 +1117,3 @@ func binarySearchForPoints(points int, scores []x.Score, floor int, ceil int) in
 		return binarySearchForPoints(points, scores, floor, middle-1) // example: scores 10 - 16
 	}
 }
-
-// abs returns the absolute value of a number.
-func abs(num int) int {
-
-	if num < 0 {
-		return -num
-	}
-
-	return num
-}
