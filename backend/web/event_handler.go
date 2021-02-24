@@ -61,7 +61,7 @@ func (h *EventHandler) List() http.HandlerFunc {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Benutzer eingeloggt sein, um all Ereignisse eines Themas aufzulisten.")
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 
@@ -113,7 +113,7 @@ func (h *EventHandler) Create() http.HandlerFunc {
 			// then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Admin eingeloggt sein, um ein neues Ereignis zu erstellen.")
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 
@@ -161,7 +161,7 @@ func (h *EventHandler) CreateStore() http.HandlerFunc {
 		// Validate form
 		if !form.Validate() {
 			h.sessions.Put(req.Context(), "form", form)
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 
@@ -235,7 +235,7 @@ func (h *EventHandler) Edit() http.HandlerFunc {
 			// then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Admin eingeloggt sein, um ein Ereignis zu bearbeiten.")
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 
@@ -283,7 +283,7 @@ func (h *EventHandler) EditStore() http.HandlerFunc {
 		// Validate form
 		if !form.Validate() {
 			h.sessions.Put(req.Context(), "form", form)
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 

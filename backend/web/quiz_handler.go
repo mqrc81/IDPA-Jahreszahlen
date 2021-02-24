@@ -152,7 +152,7 @@ func (h *QuizHandler) Phase1() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 
@@ -287,7 +287,7 @@ func (h *QuizHandler) Phase1Review() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 
@@ -399,7 +399,7 @@ func (h *QuizHandler) Phase2() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 
@@ -530,7 +530,7 @@ func (h *QuizHandler) Phase2Review() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 
@@ -644,7 +644,7 @@ func (h *QuizHandler) Phase3() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 
@@ -790,7 +790,7 @@ func (h *QuizHandler) Phase3Review() http.HandlerFunc {
 		if user == nil {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", noPermissionError)
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 

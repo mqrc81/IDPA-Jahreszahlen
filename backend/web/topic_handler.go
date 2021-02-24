@@ -97,7 +97,7 @@ func (h *TopicHandler) Create() http.HandlerFunc {
 			// then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error", "Unzureichende Berechtigung. "+
 				"Sie müssen als Admin eingeloggt sein, um ein neues Thema zu erstellen.")
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 
@@ -135,7 +135,7 @@ func (h *TopicHandler) CreateStore() http.HandlerFunc {
 		// Validate form
 		if !form.Validate() {
 			h.sessions.Put(req.Context(), "form", form)
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 
@@ -206,7 +206,7 @@ func (h *TopicHandler) Edit() http.HandlerFunc {
 			// then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error",
 				"Unzureichende Berechtigung. Sie müssen als Admin eingeloggt sein, um ein Thema zu bearbeiten.")
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 
@@ -259,7 +259,7 @@ func (h *TopicHandler) EditStore() http.HandlerFunc {
 		// Validate form
 		if !form.Validate() {
 			h.sessions.Put(req.Context(), "form", form)
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 

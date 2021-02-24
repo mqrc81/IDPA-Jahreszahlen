@@ -64,6 +64,7 @@ var (
 		"konto":        profileURL,
 		"profil":       profileURL,
 		"passwort":     profileURL,
+		"pw":           profileURL,
 		"mail":         profileURL,
 		"email":        profileURL,
 		"e-mail":       profileURL,
@@ -330,7 +331,7 @@ func (h *Handler) Search() http.HandlerFunc {
 		// Search query didn't find a match
 		h.sessions.Put(req.Context(), "flash_info",
 			"Es wurde kein Suchergebnis gefunden. Versuchen Sie es genauer und in ganzen Worten.")
-		http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+		http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 	}
 }
 
@@ -424,6 +425,17 @@ func (h *Handler) fileServer(path string, dir http.FileSystem) {
 		fs := http.StripPrefix(pathPrefix, http.FileServer(dir))
 		fs.ServeHTTP(res, req)
 	})
+}
+
+// url catches empty URLs, which my occur when directly typing in a link to
+// which a user doesn't have access, without previously having visited the
+// website, in which case the 'req.Referer()' would be empty. In this case it
+// will redirect to the home-page.
+func url(url string) string {
+	if url == "" {
+		return "/"
+	}
+	return url
 }
 
 // min returns the smallest out of all the numbers.

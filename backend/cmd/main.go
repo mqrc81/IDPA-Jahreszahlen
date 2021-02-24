@@ -51,7 +51,6 @@ func main() {
 
 	// Generate random 32-byte key for CSRF-protection
 	csrfKey := make([]byte, 32)
-
 	if _, err = rand.Read(csrfKey); err != nil {
 		log.Fatalf("error generating csrf-key: %v", err)
 	}

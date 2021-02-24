@@ -53,7 +53,7 @@ func (h *UserHandler) EditUsername() http.HandlerFunc {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error",
 				"Unzureichende Berechtigung. Loggen Sie sich zuerst ein, um Ihr Benutzernamen zu ändern.")
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 
@@ -102,7 +102,7 @@ func (h *UserHandler) EditUsernameSubmit() http.HandlerFunc {
 		// Validate form
 		if !form.Validate() {
 			h.sessions.Put(req.Context(), "form", form)
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 
@@ -143,7 +143,7 @@ func (h *UserHandler) EditEmail() http.HandlerFunc {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error",
 				"Unzureichende Berechtigung. Loggen Sie sich zuerst ein, um Ihre Email zu ändern.")
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 
@@ -192,7 +192,7 @@ func (h *UserHandler) EditEmailSubmit() http.HandlerFunc {
 		// Validate form
 		if !form.Validate() {
 			h.sessions.Put(req.Context(), "form", form)
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 
@@ -234,7 +234,7 @@ func (h *UserHandler) EditPassword() http.HandlerFunc {
 			// If no user is logged in, then redirect back with flash message
 			h.sessions.Put(req.Context(), "flash_error",
 				"Unzureichende Berechtigung. Loggen Sie sich zuerst ein, um Ihr Passwort zu ändern.")
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 
@@ -276,7 +276,7 @@ func (h *UserHandler) EditPasswordSubmit() http.HandlerFunc {
 		// Validate form
 		if !form.Validate() {
 			h.sessions.Put(req.Context(), "form", form)
-			http.Redirect(res, req, req.Referer(), http.StatusSeeOther)
+			http.Redirect(res, req, url(req.Referer()), http.StatusSeeOther)
 			return
 		}
 
