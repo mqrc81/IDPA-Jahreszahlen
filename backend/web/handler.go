@@ -45,7 +45,7 @@ var (
 	homeTemplate, http404Template *template.Template
 
 	// Possible search result matches from the navigation bar search input
-	searchResultsHandlers = map[string]string{
+	searchKeywords = map[string]string{
 		"quiz":       topicsURL,
 		"thema":      topicsURL,
 		"themen":     topicsURL,
@@ -66,18 +66,23 @@ var (
 		"passwort":     profileURL,
 		"mail":         profileURL,
 		"email":        profileURL,
+		"e-mail":       profileURL,
 		"username":     profileURL,
 		"benutzername": profileURL,
 
 		"login":     loginURL,
 		"einloggen": loginURL,
+		"anmelden":  loginURL,
 
 		"register":     registerURL,
 		"registrieren": registerURL,
 
-		"user":     usersURL,
-		"users":    usersURL,
-		"benutzer": usersURL,
+		"user":      usersURL,
+		"users":     usersURL,
+		"benutzer":  usersURL,
+		"verwalten": usersURL,
+		"befördern": usersURL,
+		"admin":     usersURL,
 	}
 )
 
@@ -302,7 +307,7 @@ func (h *Handler) Search() http.HandlerFunc {
 		}
 
 		// Add topics to search results
-		searchResults := searchResultsHandlers
+		searchResults := searchKeywords
 		for _, topic := range topics {
 			topicSplit := strings.Split(strings.ToLower(topic.Name), " ")
 			for _, t := range topicSplit {

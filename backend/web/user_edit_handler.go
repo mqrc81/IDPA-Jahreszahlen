@@ -198,6 +198,7 @@ func (h *UserHandler) EditEmailSubmit() http.HandlerFunc {
 
 		// Update user's email
 		user.Email = form.NewEmail
+		user.Verified = false
 
 		// Execute SQL statement to update user
 		if err = h.store.UpdateUser(&user); err != nil {
