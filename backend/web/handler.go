@@ -42,7 +42,7 @@ var (
 
 	// Parsed HTML-templates to be executed in their respective HTTP-handler
 	// functions when needed
-	homeTemplate, http404Template *template.Template
+	homeTemplate, http404Template, http405Template *template.Template
 
 	// Possible search result matches from the navigation bar search input
 	searchKeywords = map[string]string{
@@ -103,6 +103,7 @@ func init() {
 		}).
 		ParseFiles(layout, templatePath+"home.html"))
 	http404Template = template.Must(template.ParseFiles(layout, templatePath+"http_not_found.html"))
+	http405Template = template.Must(template.ParseFiles(layout, templatePath+"http_method_not_allowed.html"))
 }
 
 // NewHandler initializes HTTP-handlers, including router and middleware.
@@ -201,6 +202,7 @@ func NewHandler(store x.Store, sessions *scs.SessionManager, csrfKey []byte) *Ha
 
 	// Handler for when a non-existing URL is called
 	handler.NotFound(handler.HTTP404())
+	handler.MethodNotAllowed(handler.HTTP405())
 
 	return handler
 }
@@ -342,6 +344,26 @@ func (h *Handler) HTTP404() http.HandlerFunc {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		if err := http404Template.Execute(res, data{
+			SessionData: GetSessionData(h.sessions, req.Context()),
+		}); err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+// HTTP405 gets called when a forbidden method gets called to an existing URL.
+//
+// Example: /users/1/delete as GET method, even though it should be POST.
+func (h *Handler) HTTP405() http.HandlerFunc {
+
+	// Data to pass to HTML-templates
+	type data struct {
+		SessionData
+	}
+
+	return func(res http.ResponseWriter, req *http.Request) {
+		if err := http405Template.Execute(res, data{
 			SessionData: GetSessionData(h.sessions, req.Context()),
 		}); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)

@@ -123,7 +123,7 @@ type QuizData struct {
 
 // Phase1 is a GET-method that is accessible to any user.
 //
-// It consists of a form with 3 multiple-choice questions, where the user has
+// It consists of a form with 4 multiple-choice questions, where the user has
 // to guess the year of a given event.
 func (h *QuizHandler) Phase1() http.HandlerFunc {
 
@@ -179,7 +179,7 @@ func (h *QuizHandler) Phase1() http.HandlerFunc {
 			topic.Events[n1], topic.Events[n2] = topic.Events[n2], topic.Events[n1]
 		})
 
-		// For each of the first 3 events in the array, generate 2 other random
+		// For each of the first 4 events in the array, generate 2 other random
 		// years for the user to guess from and to use in HTML-templates
 		questions := createPhase1Questions(topic.Events)
 
@@ -234,7 +234,7 @@ func (h *QuizHandler) Phase1Submit() http.HandlerFunc {
 		quiz.Step++ // step = 1 (submittedPhase1)
 		quiz.TimeStamp = time.Now()
 
-		// Loop through the 3 input forms of radio-buttons of phase 1
+		// Loop through the 4 input forms of radio-buttons of phase 1
 		for num := 0; num < phase1Questions; num++ {
 			// Retrieve user's guess from form
 			guess, _ := strconv.Atoi(req.FormValue(strconv.Itoa(num)))
@@ -945,7 +945,7 @@ func (quiz QuizData) validate(ok bool, step int, topicID int) string {
 	return ""
 }
 
-// phase1Question represents 1 of the 3 multiple-choice questions of phase 1.
+// phase1Question represents 1 of the 4 multiple-choice questions of phase 1.
 // It contains name of event, year of event and 2 random years randomly mixed
 // in with the correct year.
 type phase1Question struct {
@@ -956,13 +956,13 @@ type phase1Question struct {
 	UserGuess int // only relevant for review of phase 1
 }
 
-// createPhase1Questions generates 3 phase1Question structs by generating
-// 2 random years for each of the first 3 events in the array.
+// createPhase1Questions generates 4 phase1Question structs by generating
+// 2 random years for each of the first 4 events in the array.
 func createPhase1Questions(events []x.Event) []phase1Question {
 	var questions []phase1Question
 
 	// Loop through events 0-2 and turn them into questions
-	for _, event := range events[:phase1Questions] { // events[:3] -> 0-2
+	for _, event := range events[:phase1Questions] { // events[:4] -> 0-3
 
 		correctYear := event.Year // the event's year
 
@@ -1016,12 +1016,12 @@ type phase2Question struct {
 }
 
 // createPhase2Questions generates 4 phase2Question structs for events
-// indexed 3-6 respectively of the array of events of the topic.
+// indexed 4-7 respectively of the array of events of the topic.
 func createPhase2Questions(events []x.Event) []phase2Question {
 	var questions []phase2Question
 
 	// Loop through events 3-7 and turn them into questions
-	for _, event := range events[phase1Questions:(phase2Questions + phase1Questions)] { // events[3:7] -> 3-6
+	for _, event := range events[phase1Questions:(phase2Questions + phase1Questions)] { // events[4:8] -> 4-7
 		questions = append(questions, phase2Question{
 			EventName: event.Name,
 			EventYear: event.Year,
