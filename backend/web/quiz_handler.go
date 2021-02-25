@@ -867,7 +867,7 @@ func (h *QuizHandler) Summary() http.HandlerFunc {
 			return
 		}
 
-		// Get average score for this topic from database
+		// Execute SQL statement to get scores by topic
 		scores, err := h.store.GetScoresByTopic(topicID)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -882,15 +882,15 @@ func (h *QuizHandler) Summary() http.HandlerFunc {
 		amountOfLowerScores := len(scores) - potentialIndexOfScore
 		averageComparison := amountOfLowerScores * 100 / len(scores)
 
-		p3Amount := min(quiz.Topic.EventsCount, phase3Questions)
+		phase3Amount := min(quiz.Topic.EventsCount, phase3Questions) // amount of events in phase 3
 		// Amount of possible points, if every guess was correct
-		potentialPoints := phase1Questions*phase1Points + phase2Questions*phase2Points + p3Amount*phase3Points
+		potentialPoints := phase1Questions*phase1Points + phase2Questions*phase2Points + phase3Amount*phase3Points
 
 		// Execute HTML-templates with data
 		if err = quizSummaryTemplate.Execute(res, data{
 			SessionData:       GetSessionData(h.sessions, req.Context()),
 			Quiz:              quiz,
-			QuestionsCount:    phase1Questions + phase2Questions + p3Amount,
+			QuestionsCount:    phase1Questions + phase2Questions + phase3Amount,
 			PotentialPoints:   potentialPoints,
 			AverageComparison: averageComparison,
 		}); err != nil {
