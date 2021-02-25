@@ -395,7 +395,7 @@ func (errors *FormErrors) validateEmail(email string, errorName string) {
 func (errors *FormErrors) validatePassword(password string, errorName string) {
 	if password == "" {
 		(*errors)[errorName] = "Bitte Passwort angeben."
-	} else if len(password) < 8 {
+	} else if len(password) < 6 {
 		(*errors)[errorName] = "Passwort muss mindestens 6 Zeichen lang sein."
 	} else if !regex(password, "[a-zA-Z]") {
 		(*errors)[errorName] = "Passwort muss mindestens einen Buchstaben enthalten."
