@@ -396,13 +396,9 @@ func (errors *FormErrors) validatePassword(password string, errorName string) {
 	if password == "" {
 		(*errors)[errorName] = "Bitte Passwort angeben."
 	} else if len(password) < 8 {
-		(*errors)[errorName] = "Passwort muss mindestens 8 Zeichen lang sein."
-	} else if !regex(password, "[!@#$%^&*]") {
-		(*errors)[errorName] = "Passwort muss ein Sonderzeichen enthalten (!@#$%^&*)."
-	} else if !regex(password, "[a-z]") {
-		(*errors)[errorName] = "Passwort muss mindestens ein Kleinbuchstaben enthalten."
-	} else if !regex(password, "[A-Z]") {
-		(*errors)[errorName] = "Passwort muss mindestens ein Grossbuchstaben enthalten."
+		(*errors)[errorName] = "Passwort muss mindestens 6 Zeichen lang sein."
+	} else if !regex(password, "[a-zA-Z]") {
+		(*errors)[errorName] = "Passwort muss mindestens einen Buchstaben enthalten."
 	} else if !regex(password, "\\d") {
 		(*errors)[errorName] = "Passwort muss mindestens eine Zahl enthalten."
 	}

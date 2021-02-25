@@ -900,16 +900,7 @@ func TestValidateEditPasswordForm(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "#5 OLD PASSWORD INVALID",
-			form: input{
-				newPassword:          "Passw0rd",
-				oldPassword:          "Pwd",
-				incorrectOldPassword: false,
-			},
-			want: false,
-		},
-		{
-			name: "#6 OLD PASSWORD INCORRECT",
+			name: "#5 OLD PASSWORD INCORRECT",
 			form: input{
 				newPassword:          "Passw0rd!",
 				oldPassword:          "Passw0rd!",
@@ -1204,23 +1195,13 @@ func TestValidatePassword(t *testing.T) {
 			want:     false,
 		},
 		{
-			name:     "#3 NO UPPERCASE",
-			password: "passw0rd!",
+			name:     "#3 NO CHARACTER",
+			password: "1234!!",
 			want:     false,
 		},
 		{
-			name:     "#4 NO LOWERCASE",
-			password: "PASSW0RD!",
-			want:     false,
-		},
-		{
-			name:     "#5 NO SPECIAL-CHAR",
-			password: "Passw0rd",
-			want:     false,
-		},
-		{
-			name:     "#6 TOO SHORT",
-			password: "Pswrd0!",
+			name:     "#4 TOO SHORT",
+			password: "pwd1",
 			want:     false,
 		},
 	}
