@@ -28,10 +28,10 @@
                         <a href="/topics/{{.TopicID}}/events/{{.EventID}}/edit" title="Ereignis bearbeiten">
                             <i class="fas fa-edit x-hover-red fa-2x text-gray-500 mr-3"></i>
                         </a>
-                        <a href="#eventDeleteModal" data-bs-toggle="modal" title="Ereignis löschen">
+                        <a href="#eventDeleteModal-{{.EventID}}" data-bs-toggle="modal" title="Ereignis löschen">
                             <i class="fas fa-trash-alt x-hover-red fa-2x text-gray-500"></i>
                         </a>
-                        <div id="eventDeleteModal" class="modal fade">
+                        <div id="eventDeleteModal-{{.EventID}}" class="modal fade">
                             <form action="/topics/{{.TopicID}}/events/{{.EventID}}/delete" method="POST">
                                 {{$csrf}}
                                 <div class="modal-dialog modal-confirm">

@@ -120,10 +120,10 @@ Benutzer
                                     <span class="h5 font-weight-bold">{{.Username}}</span>
                                 </div>
                                 <div class="col-auto">
-                                    <a href="#userPromoteModal" data-bs-toggle="modal" title="Zum Admin befördern">
+                                    <a href="#userPromoteModal-{{.UserID}}" data-bs-toggle="modal" title="Zum Admin befördern">
                                         <i class="fas fa-user-cog fa-2x text-gray-500 x-hover-yellow"></i>
                                     </a>
-                                    <div id="userPromoteModal" class="modal fade">
+                                    <div id="userPromoteModal-{{.UserID}}" class="modal fade">
                                         <form action="/users/{{.UserID}}/promote" method="POST">
                                             {{$csrf}}
                                             <div class="modal-dialog modal-confirm">
@@ -153,10 +153,10 @@ Benutzer
                                             </div>
                                         </form>
                                     </div>
-                                    <a class="ml-4" href="#userDeleteModal" data-bs-toggle="modal" title="Benutzer löschen">
+                                    <a class="ml-4" href="#userDeleteModal-{{.UserID}}" data-bs-toggle="modal" title="Benutzer löschen">
                                         <i class="fas fa-trash-alt fa-2x text-gray-500 x-hover-red"></i>
                                     </a>
-                                    <div id="userDeleteModal" class="modal fade">
+                                    <div id="userDeleteModal-{{.UserID}}" class="modal fade">
                                         <form action="/users/{{.UserID}}/delete" method="POST">
                                             {{$csrf}}
                                             <div class="modal-dialog modal-confirm">
