@@ -373,7 +373,7 @@ func (h *UserHandler) Profile() http.HandlerFunc {
 				bestPoints = scores[0].Points
 			}
 			maxPoints := phase1Questions*phase1Points + phase2Questions*phase2Points + min(topic.EventsCount,
-				phase3Points)*phase3Points
+				phase3Questions)*phase3Points
 
 			scoresChart = append(scoresChart, scoresPerTopic{
 				TopicName:  topic.Name,
