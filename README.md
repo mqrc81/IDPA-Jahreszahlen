@@ -6,8 +6,7 @@ This is the product of the finals project at `Kantonsschule Hottingen`.
 
 ## Using Jahreszahlen
 
-To use the application, visit [jahreszahlen.herokuapp.com](https://jahreszahlen.herokuapp.com) und registrieren Sie sich
-dort.
+To use the application, visit [jahreszahlen.herokuapp.com](https://jahreszahlen.herokuapp.com) and register a new account.
 
 In order to use this application from the point of view of a teacher and be able to create custom topics and events, ask
 an existing teacher to promote your account.
