@@ -10,9 +10,3 @@ To use the application, visit [jahreszahlen.herokuapp.com](https://jahreszahlen.
 
 In order to use this application from the point of view of a teacher and be able to create custom topics and events, ask
 an existing teacher to promote your account.
-
-## Contributors
-
-* [@mqrc81](https://github.com/mqrc81)
-* [@KathrinBuerki](https://github.com/KathrinBuerki)
-* [@luginbuehln](https://github.com/luginbuehln)
